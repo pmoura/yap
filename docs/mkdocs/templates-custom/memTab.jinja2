@@ -1,0 +1,72 @@
+{% macro trl(name) -%}
+  {% set len  =  name|list|length()  -%}
+  {% set j  = -3  -%}
+{% for i in name -%}
+{% if i  == "_" -%}
+  {%  set ch = 47 -%}
+  {%  if loop.revindex > 5  -%}
+  {% set lft = "ABCDEFGHIJKLMNOPQRSTU".index(loop.nextitem) -%}
+  {% set rgt = "ABCDEFGHIJKLMNOPQRSTU".index(name[loop.index0+2]) -%}
+  {% set ch = lft*16+rgt -%}
+  {% endif -%}
+  {{ "{0:c}".format(ch) -}} 
+ {%  elif loop.index0 > 1 and loop.previtem != "_" and  name[loop.index0-2] != "_"  -%}
+  {{ i  -}}
+ {%  elif loop.index0 == 1 and loop.previtem != "_" -%}
+  {{ i -}}
+ {%  elif loop.index0 == 0 -%}	
+  {{ i  -}}
+ {%  elif loop.index == len -%}	
+  {{ i  -}}
+{% endif %}
+{%- endfor %}
+{%- endmacro %}
+
+{% filter indent(config.get('indent_level', 0), True) %}
+{# This template is used inside of member.py #}
+
+
+{%- if parent is none -%}
+## {{title}}
+{%- else -%}
+## {{title}} inherited from {{node.name}}
+
+See [{{node.name_long}}]({{node.url}})
+{%- endif %}
+
+
+## Predicates
+
+| Name | Text |
+| :--- | :--- |
+{% for member in node.query(visibility, "class", static) -%}
+{%- if member.is_class and member.name_short[-2] == "_" and member.name_short[-1]|int(-1) > -1 -%}
+| [**{{trl(member.name)}}**]({{member.url}}) | {{member.suffix}}<br>{{member.brief}}  |
+{%- endif %}
+{% endfor -%}
+
+
+| Type | Name |
+| ---: | :--- |
+{% for member in node.query(visibility, kinds, static) -%}
+{%- if not (member.is_class and member.name_short[-2] == "_" and member.name_short[-1]|int(-1) > -1) -%}
+{%- if member.is_group -%}
+| module | [**{{member.title}}**]({{member.url}}) {{member.suffix}}<br>{{member.brief}} |
+{%- elif member.is_file -%}
+| file | [**{{member.name_short}}**]({{member.url}}) {{member.suffix}}<br>{{member.brief}} |
+{- elif member.is_dir -%}
+| dir | [**{{member.name_short}}**]({{member.url}}) {{member.suffix}}<br>{{member.brief}} |
+{%- elif member.is_namespace -%}
+| {{member.kind.value}} | [**{{member.name_long if node.is_group else member.name_short}}**]({{member.url}}) {{member.suffix}}<br>{{member.brief}} |
+{%- elif member.is_class or member.is_interface or member.is_struct -%}
+| {{member.kind.value}} | [**{{member.name_long if node.is_group else member.name_short}}**]({{member.url}}) {{member.suffix}}<br>{{member.brief}} |
+{%- elif member.is_enum or member.is_function or member.is_variable or member.is_union or member.is_typedef -%}
+| {{member.prefix}} {{member.type}} | [**{{member.name_long if node.is_group else member.name_short}}**]({%- if parent %}{{member.url}}{%- else -%}#{{member.anchor}}{%- endif -%}) {{member.params}} {{member.suffix}}<br>{{member.brief}} |
+{%- else -%}
+| {{member.prefix}} {{member.type}} | [**{{member.name_long if node.is_group else member.name_short}}**]({{member.url}}) {{member.params}} {{member.suffix}}<br>{{member.brief}} |
+{%- endif -%}
+{%- endif -%}
+{% endfor -%}
+
+{%- endfilter %}
+b
