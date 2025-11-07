@@ -7,14 +7,14 @@
 
 :- module( completions,
 	   [
-	       completions/3
+	       completions/2
 	   ]).
 :-	 use_module(library(completer)).
 :-	 use_module(library(maplist)).
 
 /**
  *  @defgroup YAPCompleter  Call Prolog completer from Python
- *  @ingroup YAP4PY
+ *  @ingroup YAP4Py
  *  @{
  *
  *  @brief Prolog completer from Python.
@@ -28,8 +28,7 @@
 % is stored in the
 % `matches` field of the python object.
 %
-completions(Line, Pos, FCs) :-
-    sub_string(Line,0,Pos,_,Text),
+completions(Text, FCs) :-
     completer(Text,Cs),
     maplist(atom_string, Cs, FCs).
 
