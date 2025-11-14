@@ -187,14 +187,13 @@ static Int p_encoding(USES_REGS1) { /* '$encoding'(Stream,N) */
 }
 
 /**
-   get_char( + Code, -Char)
+   CodePointFromCharTerm( + Code, -Char USES_REGS)
    if the number _Code_ represents a valid Unicode point, the atom _Char_ will
 represent the s
 ame
    unicode point.
 */
-static int get_char(Term t) {
-  CACHE_REGS
+static int CodePointFromCharTerm(Term t  USES_REGS) {
   if (IsVarTerm(t = Deref(t))) {
     Yap_ThrowError(INSTANTIATION_ERROR, t, NULL);
     return 0;
@@ -216,12 +215,12 @@ static int get_char(Term t) {
 }
 
 /**
-   @pred get_char( +Char -Code)
+   @pred get_coe( +Char -Code)
 
    if the  atom _Char_ represents a valid Unicode point, the number _Coder_ will represent the same
    unicode point.
 */
-static int get_code(Term t) {
+static int CodePointFromCodeTerm(Term t USES_REGS) {
   if (IsVarTerm(t = Deref(t))) {
     Yap_ThrowError(INSTANTIATION_ERROR, t, NULL);
     return 0;
@@ -239,11 +238,11 @@ static int get_code(Term t) {
 }
 
 /**
-   @pred get_char_or_code( +CharOrCode, -CodeOrChar)
+   @pred CodePointFromCharTerm_or_code( +CharOrCode, -CodeOrChar)
 
  convert from char to code or from code to char.
 */
-static int get_char_or_code(Term t, bool *is_char) {
+static int CodePointFromCharTerm_or_code(Term t, bool *is_char) {
   CACHE_REGS
   if (!IsAtomTerm(t)) {
     if (!IsIntegerTerm(t)) {
@@ -272,7 +271,7 @@ static int get_char_or_code(Term t, bool *is_char) {
 static bool to_upper( Term t, Term t2 USES_REGS)
 {
    bool is_char = false;
-   Int out = get_char_or_code(t, &is_char), uout;
+   Int out = CodePointFromCharTerm_or_code(t, &is_char), uout;
     uout = towupper(out);
     if (is_char)
       return Yap_unify(t2, MkCharTerm(uout));
@@ -285,7 +284,7 @@ static bool to_lower( Term t, Term t2 USES_REGS)
 {
     bool is_char = false;
 
-    Int out = get_char_or_code(t, &is_char), uout;
+    Int out = CodePointFromCharTerm_or_code(t, &is_char), uout;
     uout = towlower(out);
     if (is_char)
       return Yap_unify(t2, MkCharTerm(uout));
@@ -353,7 +352,7 @@ static bool type_alpha(int ch)
 Holds true if Code is a letter of the alphabet.
  */
 static Int code_type_alpha(USES_REGS1) {
-  return type_alpha(  get_code(ARG1) );
+  return type_alpha(  CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  char_type_alpha( Char )
@@ -361,7 +360,7 @@ static Int code_type_alpha(USES_REGS1) {
 Holds true if Char is a letter of the alphabet.
  */
 static Int char_type_alpha(USES_REGS1) {
-  return type_alpha(  get_char(ARG1) );
+  return type_alpha(  CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -374,7 +373,7 @@ static bool type_alnum(int ch)
 Holds true if Code is a letter of the alphabet or a digit.
  */
 static Int code_type_alnum(USES_REGS1) {
-  return type_alnum(  get_code(ARG1) );
+  return type_alnum(  CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  char_type_alnum( Char )
@@ -382,7 +381,7 @@ static Int code_type_alnum(USES_REGS1) {
 Holds true if Char is a letter of the alphabet or a digit.
  */
 static Int char_type_alnum(USES_REGS1) {
-  return type_alnum(  get_char(ARG1) );
+  return type_alnum(  CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -396,7 +395,7 @@ static bool type_ascii(int ch)
 Holds true if Char belongs to the ASCII code.
  */
 static Int char_type_ascii(USES_REGS1) {
-  return type_ascii( get_char(ARG1) );
+  return type_ascii( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  code_type_ascii( Code )
@@ -404,7 +403,7 @@ static Int char_type_ascii(USES_REGS1) {
 Holds true if Code belongs to the ASCII code.
  */
 static Int code_type_ascii(USES_REGS1) {
-  return type_ascii( get_code(ARG1) );
+  return type_ascii( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
   static bool type_cntrl(int ch)
@@ -417,7 +416,7 @@ static Int code_type_ascii(USES_REGS1) {
     Holds true if Char is an ASCII control character.
 */
 static Int char_type_cntrl(USES_REGS1) {
-  return type_cntrl( get_char(ARG1) );
+  return type_cntrl( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  code_type_cntrl( Code )
@@ -425,7 +424,7 @@ static Int char_type_cntrl(USES_REGS1) {
     Holds true if Code is an ASCII control character.
 */
 static Int code_type_cntrl(USES_REGS1) {
-  return type_cntrl( get_code(ARG1) );
+  return type_cntrl( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
   static bool type_csym(int ch)
@@ -440,7 +439,7 @@ static Int code_type_cntrl(USES_REGS1) {
 Holds true if Code is a letter, digit or underscore.
  */
 static Int code_type_csym(USES_REGS1) {
-  return type_csym( get_code(ARG1) );
+  return type_csym( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  char_type_csym( Char )
@@ -448,7 +447,7 @@ static Int code_type_csym(USES_REGS1) {
 Holds true if Char is a letter, digit or underscore.
  */
 static Int char_type_csym(USES_REGS1) {
-  return type_csym( get_char(ARG1) );
+  return type_csym( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -463,14 +462,14 @@ static bool type_csymf(int ch)
 Holds true if Char is an uppercase letter, digit or underscore.
  */
 static Int char_type_csymf(USES_REGS1) {
-  return type_csymf( get_char(ARG1) );
+  return type_csymf( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 /** @pred  code_type_csymf( Code )
 
 Holds true if Code is an uppercase letter, digit or underscore.
  */
 static Int code_type_csymf(USES_REGS1) {
-  return type_csymf( get_code(ARG1) );
+  return type_csymf( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 static bool type_digit(int ch)
@@ -482,14 +481,14 @@ static bool type_digit(int ch)
     Holds true if Char is a character between `'0'` and `'9'`.
 */
 static Int char_type_digit(USES_REGS1) {
-  return type_digit( get_char(ARG1) );
+  return type_digit( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 /** @pred  code_type_digit( Code )
 
     Holds true if Code is a character between `'0'` and `'9'`.
 */
 static Int code_type_digit(USES_REGS1) {
-  return type_digit( get_code(ARG1) );
+  return type_digit( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -502,14 +501,14 @@ static bool type_xdigit(int ch)
     Holds true if Char is an hexadecimal digit.
 */
 static Int char_type_xdigit(USES_REGS1) {
-  return type_xdigit( get_char(ARG1) );
+  return type_xdigit( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 /** @pred  code_type_xdigit( Code )
 
     Holds true if Code is an hexadecimal digit.
 */
 static Int code_type_xdigit(USES_REGS1) {
-  return type_xdigit( get_code(ARG1) );
+  return type_xdigit( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -525,7 +524,7 @@ static bool type_graph(int ch)
     Holds true if Char outputs a mark.
 */
 static Int char_type_graph(USES_REGS1) {
-  return type_graph( get_char(ARG1) );
+  return type_graph( CodePointFromCharTerm(ARG1 PASS_REGS) );
 
 }
 
@@ -534,7 +533,7 @@ static Int char_type_graph(USES_REGS1) {
     Holds true if Code outputs a mark.
 */
 static Int code_type_graph(USES_REGS1) {
-  return type_graph( get_code(ARG1) );
+  return type_graph( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 
 }
 
@@ -548,7 +547,7 @@ static bool type_lower(int ch)
     Holds true if Code is lower case.
 */
 static Int code_type_lower(USES_REGS1) {
-  return  type_lower( get_code(ARG1) );
+  return  type_lower( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  char_type_lower( Char )
@@ -556,7 +555,7 @@ static Int code_type_lower(USES_REGS1) {
     Holds true if Char is lower case.
 */
 static Int char_type_lower(USES_REGS1) {
-    return  type_lower( get_char(ARG1) );
+    return  type_lower( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -569,7 +568,7 @@ static bool type_punct(int ch)
     Holds true if Char is a punctuation character.
 */
 static Int char_type_punct(USES_REGS1) {
-  return type_punct(get_char(ARG1) );
+  return type_punct(CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  code_type_punct( Code )
@@ -577,7 +576,7 @@ static Int char_type_punct(USES_REGS1) {
     Holds true if Code is a punctuation codeacter.
 */
 static Int code_type_punct(USES_REGS1) {
-  return type_punct(get_code(ARG1) );
+  return type_punct(CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -592,7 +591,7 @@ static bool type_space(int ch)
     
 */
 static Int char_type_space(USES_REGS1) {
-  return type_space(get_char(ARG1) );
+  return type_space(CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 
 /** @pred  code_type_space( Code )
@@ -600,7 +599,7 @@ static Int char_type_space(USES_REGS1) {
     Holds true if Code only moves the output.
 */
 static Int code_type_space(USES_REGS1) {
-  return type_space(get_code(ARG1) );
+  return type_space(CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 /** @pred  code_type_space( Code )
 
@@ -616,7 +615,7 @@ static bool type_upper(int ch)
     Holds true if Char is upper case.
 */
 static Int char_type_upper(USES_REGS1) {
-  return type_upper (get_char(ARG1) );
+  return type_upper (CodePointFromCharTerm(ARG1 PASS_REGS) );
 
 }
 /** @pred  code_type_upper( Code )
@@ -624,7 +623,7 @@ static Int char_type_upper(USES_REGS1) {
     Holds true if Code is upper case.
 */
 static Int code_type_upper(USES_REGS1) {
-  return type_upper( get_code(ARG1) );
+  return type_upper( CodePointFromCodeTerm(ARG1 PASS_REGS) );
 }
 
 
@@ -637,14 +636,14 @@ static bool type_white(int ch)
     Holds true if Char is a space or tab character.
 */
 static Int char_type_white(USES_REGS1) {
-  return type_white( get_char(ARG1) );
+  return type_white( CodePointFromCharTerm(ARG1 PASS_REGS) );
 }
 /** @pred  code_type_white( Code )
 
     Holds true if Code is a space or tab character.
 */
 static Int code_type_white(USES_REGS1) {
-  return type_white(get_code(ARG1));
+  return type_white(CodePointFromCodeTerm(ARG1 PASS_REGS));
 }
 
 
@@ -653,7 +652,7 @@ static Int code_type_white(USES_REGS1) {
     Holds true if Char represents a file that has been completely read..
 */
 static Int char_type_end_of_file(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   return ch == WEOF || ch == -1;
 }
 
@@ -663,7 +662,7 @@ static Int char_type_end_of_file(USES_REGS1) {
     
 */
 static Int char_type_end_of_line(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   if (ch < 256) {
     return ch >= 10 && ch <= 13;
   }
@@ -677,7 +676,7 @@ static Int char_type_end_of_line(USES_REGS1) {
     
 */
 static Int char_type_newline(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   if (ch < 256) {
     return ch == 10;
   }
@@ -689,7 +688,7 @@ static Int char_type_newline(USES_REGS1) {
     
 */
 static Int char_type_period(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   return ch == '.' || ch == '!' || ch == '?';
 }
 
@@ -698,7 +697,7 @@ static Int char_type_period(USES_REGS1) {
     
 */
 static Int char_type_quote(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   utf8proc_category_t ct = utf8proc_category(ch);
   return ct == UTF8PROC_CATEGORY_PI || ct == UTF8PROC_CATEGORY_PF;
 }
@@ -708,7 +707,7 @@ static Int char_type_quote(USES_REGS1) {
     
 */
 static Int char_type_paren(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   utf8proc_category_t ct = utf8proc_category(ch);
   return ct == UTF8PROC_CATEGORY_PS || ct == UTF8PROC_CATEGORY_PE;
 }
@@ -718,7 +717,7 @@ static Int char_type_paren(USES_REGS1) {
     
 */
 static Int char_type_prolog_var_start(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k == LC || ch == '_';
 }
@@ -728,7 +727,7 @@ static Int char_type_prolog_var_start(USES_REGS1) {
     
 */
 static Int char_type_prolog_atom_start(USES_REGS1) {
-  Int ch = get_char(ARG1);
+  Int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k == UC;
 }
@@ -738,7 +737,7 @@ static Int char_type_prolog_atom_start(USES_REGS1) {
     
 */
 static Int char_type_prolog_identifier_continue(USES_REGS1) {
-  int ch = get_char(ARG1);
+  int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k >= UC && k <= NU;
 }
@@ -748,7 +747,7 @@ static Int char_type_prolog_identifier_continue(USES_REGS1) {
     
 */
 static Int char_type_prolog_prolog_symbol(USES_REGS1) {
-  int ch = get_char(ARG1);
+  int ch = CodePointFromCharTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k == SL || k == SY;
 }
@@ -764,7 +763,7 @@ static Int char_type_prolog_prolog_symbol(USES_REGS1) {
     Holds true if Code represents a file that has been completely read..
 */
 static Int code_type_end_of_file(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   return ch == WEOF || ch == -1;
 }
 
@@ -774,7 +773,7 @@ static Int code_type_end_of_file(USES_REGS1) {
     
 */
 static Int code_type_end_of_line(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   if (ch < 256) {
     return ch >= 10 && ch <= 13;
   }
@@ -788,7 +787,7 @@ static Int code_type_end_of_line(USES_REGS1) {
     
 */
 static Int code_type_newline(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   if (ch < 256) {
     return ch == 10;
   }
@@ -800,7 +799,7 @@ static Int code_type_newline(USES_REGS1) {
     
 */
 static Int code_type_period(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   return ch == '.' || ch == '!' || ch == '?';
 }
 
@@ -809,7 +808,7 @@ static Int code_type_period(USES_REGS1) {
     
 */
 static Int code_type_quote(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   utf8proc_category_t ct = utf8proc_category(ch);
   return ct == UTF8PROC_CATEGORY_PI || ct == UTF8PROC_CATEGORY_PF;
 }
@@ -818,7 +817,7 @@ static Int code_type_quote(USES_REGS1) {
     Holds true if Code  is a bracket, curly bracket, square bracket, or similar.
     
 */static Int code_type_paren(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   utf8proc_category_t ct = utf8proc_category(ch);
   return ct == UTF8PROC_CATEGORY_PS || ct == UTF8PROC_CATEGORY_PE;
 }
@@ -828,7 +827,7 @@ static Int code_type_quote(USES_REGS1) {
     
 */
 static Int code_type_prolog_var_start(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k == LC || ch == '_';
 }
@@ -838,7 +837,7 @@ static Int code_type_prolog_var_start(USES_REGS1) {
     
 */
 static Int code_type_prolog_atom_start(USES_REGS1) {
-  Int ch = get_code(ARG1);
+  Int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k == UC;
 }
@@ -847,7 +846,7 @@ static Int code_type_prolog_atom_start(USES_REGS1) {
     Holds true if Code  can be used to extend an atom or variable.
 */
 static Int code_type_prolog_identifier_continue(USES_REGS1) {
-  int ch = get_code(ARG1);
+  int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k >= UC && k <= NU;
 
@@ -860,7 +859,7 @@ static Int code_type_prolog_identifier_continue(USES_REGS1) {
     
 */
 static Int code_type_prolog_prolog_symbol(USES_REGS1) {
-  int ch = get_code(ARG1);
+  int ch = CodePointFromCodeTerm(ARG1 PASS_REGS);
   char_kind_t k = Yap_wide_chtype(ch);
   return k == SL || k == SY;
 }
@@ -876,10 +875,10 @@ static Int code_char(USES_REGS1) {
   if (IsVarTerm(t1)) {
     if (t2 == TermEof)
       return Yap_unify(ARG1,MkIntTerm(-1));      
-    int ch = get_char(t1);
+    int ch = CodePointFromCharTerm(t1 PASS_REGS);
     return Yap_unify(ARG2,MkCharTerm(ch));
   }
-  int ch = get_code(t1);
+  int ch = CodePointFromCodeTerm(t1 PASS_REGS);
   if (ch < 0)
     return Yap_unify(ARG2,TermEof);
   return Yap_unify(ARG2,MkCharTerm(ch));
@@ -891,10 +890,10 @@ static Int char_code(USES_REGS1) {
   if (IsVarTerm(t1)) {
     if (t2 == TermEof)
       return Yap_unify(ARG1,MkIntTerm(-1));      
-    int ch = get_code(t2);
+    int ch = CodePointFromCodeTerm(t2 PASS_REGS);
     return Yap_unify(ARG1,MkCharTerm(ch));
   }
-  int ch = get_char(t1);
+  int ch = CodePointFromCharTerm(t1 PASS_REGS);
   if (ch < 0)
     return Yap_unify(ARG2,MkIntTerm(-1));
   return Yap_unify(ARG2,MkIntTerm(ch));

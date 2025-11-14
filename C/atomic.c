@@ -615,18 +615,14 @@ static Int string_atom(USES_REGS1) { /* string_to_atom(?String,?Atom)
 */
 static Int atom_chars(USES_REGS1) {
     int l = push_text_stack();
-Term    t1 = Deref(ARG1), t2 = Deref(ARG2);
-  if (IsAtomTerm(t1)) {
-    Term tf = Yap_AtomSWIToListOfAtoms(t1 PASS_REGS);
-     if (tf) {
+    Term    t1 = Deref(ARG1), t2 = Deref(ARG2);
+    if (IsAtomTerm(t1)) {
+      Term tf = Yap_AtomSWIToListOfAtoms(t1 PASS_REGS);
+      if (tf) {
         pop_text_stack(l);
 	return Yap_unify(ARG2, tf);
-    }
-       Term end, *tailp = &end;
-   Yap_SkipList(&t2, &tailp);
-    if (*tailp != TermNil && !IsVarTerm(*tailp)) {
-      Yap_ThrowError(INSTANTIATION_ERROR, t1, "atom_chars(_,_)");
-    }
+      }
+      must_be_list(t2);
   } else if (IsVarTerm(t1)) {
     if (IsPairTerm(t2)||t2==TermNil) {
     /* ARG1 unbound */
@@ -720,7 +716,6 @@ static Int string_concat3(USES_REGS1) {
   t2 = Deref(ARG2);
   must_be_string(t2);
   must_be_string(t1);
-  must_be_string(t2);
   Term at = Yap_ConcatStrings(t1, t2 PASS_REGS);
   return Yap_unify((at), ARG3);
 }

@@ -102,11 +102,11 @@ def validate_yap(ls,uri,source,version):
                         message=msg,
                         severity = ls.sev_as_enum(sev),
                         range=types.Range(
-                            start=types.Position(line=line - 1, character=col),
-                            end=types.Position(line=line - 1, character=col+1)
+                            start=types.Position(line=line, character=col),
+                            end=types.Position(line=line, character=col+length)
                         ),
                     )
-                     for (sev, msg,line,col) in uri_diags]
+                     for (sev, msg,line,col,length) in uri_diags]
                 )
             )
 

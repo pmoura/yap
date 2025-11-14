@@ -1036,7 +1036,12 @@ static int binary_file(const char *file_name) {
 
 static int write_bom(int sno, StreamDesc *st) {
   /* dump encoding */
+  if (st->status & Append_Stream_f) {
+    return true;
+  }
   switch (st->encoding) {
+  case ENC_OCTET:
+    return true;
   case ENC_ISO_UTF8:
     if (st->stream_putc(sno, 0xEF) < 0)
       return false;
@@ -1095,6 +1100,9 @@ static int check_bom(int sno, StreamDesc *st) {
     Yap_ThrowError(SYSTEM_ERROR_INTERNAL, Yap_MkStream(sno),
               "YAP does not support BOM n %x type of files", st->status);
     return -1;
+  }
+  if (st->encoding == ENC_OCTET) {
+    return false;
   }
   ch1 = fgetc(st->file);
   switch (ch1) {
@@ -1553,6 +1561,8 @@ xarg *   args = Yap_ArgListToVector(tlist, open_defs, OPEN_END, NULL,DOMAIN_ERRO
       st->encoding = ENC_OCTET;
       avoid_bom = true;
       needs_bom = false;
+      if (strcmp(s_encoding,"default"))
+	return false;
     } else if (t == TermText) {
 #ifdef _WIN32
       strncat(io_mode, "t", 8);

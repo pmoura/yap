@@ -154,8 +154,8 @@ pred2dox(Pred,Pred).
     dox2pred(String,String).
 
 fetch_chars([]) -->[], !.
-nnfetch_chars([C|Cs]) -->
-{var(C)},
+fetch_chars([C|Cs]) -->
+    {var(C)},
     [0'_],
     [A,B],
     {A >= "A", A< "A"+16,

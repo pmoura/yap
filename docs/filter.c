@@ -78,8 +78,8 @@ static bool pred_doc(char *line, char *end, ssize_t sz) {
     } else {
       args = strtok(NULL, ")");
       int arity = commas(args);
-      fprintf(ostream, "\n@class %s \n @brief %s/%d %s(%s)",
-              protect_class(buf, arity, name, strlen(name)), name, arity, name,
+      fprintf(ostream, "\n@class %s %s/%d %s(%s)",
+              protect_class(buf, arity, name, strlen(name)),  name,
               args);
       line = args + strlen(args) + 1;
     }

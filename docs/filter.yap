@@ -424,7 +424,7 @@ trl_pi(L,NewLine) :-
     Right is Extra-1,
     sub_string(L,_,Right,0,RightLine),
     trl_pi(RightLine,More),
-    string_concat([Prefix,"@ref ",DoxName," \"",Name,"/",D,"\" ",More],NewLine).
+    string_concat([Prefix,"@ref #",DoxName," \"",Name,"/",D,"\" ",More],NewLine).
 trl_pi(S,S).
     
 

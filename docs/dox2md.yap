@@ -28,51 +28,11 @@ main:-
     unix(argv(Params)),
     main_process(Params).
 
-main_process([IDir,ODir,Home]) :-
-    exists_directory(Home  ),
-    (
-	sub_atom(Home,_,1,0,'/')
-    ->
-    H = Home
-    ;
-    atom_concat(H,'/',Home)
-    ),
-    atom_concat(H,'packages/xml2yap/libYAPxml', LibPath),
-    load_foreign_files([LibPath],[],libxml_yap_init),
-    atom_concat(IDir,'/',InputDir),
-    exists_directory(IDir),
-!,
-    (
-	sub_atom(IDir,_,1,0,'/')
-    ->
-    IDir= InputDir
-    ;
-    atom_concat(IDir,'/',InputDir)
-    ),
-    directory_files(InputDir,Fs),
-    forall(member(F,Fs),do(InputDir,ODir,F)).
-main_process([IDir,ODir,_]) :-
-    exists_directory(IDir),
-   !,
-    (
-	sub_atom(IDir,_,1,0,'/')
-    ->
-    IDir= InputDir
-    ;
-    atom_concat(IDir,'/',InputDir)
-    ),
-    atom_concat(InputDir,'index.xml',Index),
-    xml_load(Index,[doxygenindex(_,XMLTasks)]),
-    (
-	sub_atom(ODir,_,1,0,'/')
-    ->
-    ODir= OutputDir
-    ;
-    atom_concat(ODir,'/',OutputDir)
-    ),
-    forall((enum(XMLTasks,ID),group(ID)),(scan(ID,InputDir,OutputDir))),
-    forall((enum(XMLTasks,ID),group(ID)),(trl( ID,InputDir,OutputDir))),
-    forall((enum(XMLTasks,ID),class(ID)),(trl( ID,InputDir,OutputDir))).
+main_process([IDir,ODir,_Home]) :-
+    %atom_concat(Home,'packages/xml2yap/libYAPxml', LibPath),
+    %load_foreign_files([LibPath],[],libxml_yap_init),
+    directory_files(IDir,Fs),
+    forall(member(F,Fs),do(IDir,ODir,F)).
 
 enum([_|XMLTasks],ID) :-
     member(ID,XMLTasks).
@@ -94,20 +54,6 @@ class(compound( OAtts,_OProps)) :-
     (
 	Kind == "class"
     
-    ).
-
-scan(compound(OAtts,_OProps) , IDir,_ODir) :-
-    key_in(refid(Id),OAtts),
-    atom_concat([IDir,Id,'.xml'], IFile),
-    catch(xml_load(IFile,XML),Error,(printf("failed while processsing ~w: ~w",[Id,Error]), fail)),
-    XML = [doxygen(_,XMLData)],
-    XMLData = [compounddef(_Atts,Children)],
-    (
-	key_in(briefdescription(BArgs,Paras),Children),
-	briefs([briefdescription(BArgs,Paras)],Brief,[]),
-	assert_static(brief(Id,Brief))
-    ;
-    true
     ).
 
 do(_IDir,_ODir,'.') :-
@@ -144,91 +90,141 @@ do(_IDir,_ODir,F) :-
 do(_IDir,_ODir,F) :-
     atom_concat(_,'_8yap.xml',F),
     !.
+do(_IDir,_ODir,F) :-
+    atom_concat(Id, '.xml',F),
+    atom_string(Id,S),
+    sub_string(S ,_, 2, 0, Arity),
+    string_chars(Arity,['_',Dig]),
+    char_type_digit(Dig),
+    !.
 do(IDir,ODir,F) :-
     atom_concat(Id, '.xml',F),
-    get_xml(IDir,Id, Atts,Children),
-    key_in(kind(Kind),Atts),
-    (children2page([idir=IDir,odir=ODir,kind=Kind],Children,All)),
+    atom_concat(group, _,F),
+    get_xml(IDir,Id, _Atts,Children),
+    writeln(Id),
     !,
+    children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
     atom_concat([ODir,'/',Id,'.md'],OFile),
     open(OFile,write,O,[]),
     format(O,'~s',[All]),
     close(O).   
-do(_,_,F) :- writeln(ugh:F).
+do(_,_,_) .
 
-trl(compound( OAtts,_OProps) ,_IDir,_ODir) :-
-    key_in(refid(Id),OAtts),
-    visited(Id),
-    !.
-
-trl(compound( OAtts,_OProps) ,IDir,ODir) :-
-    key_in(refid(Id),OAtts),
-    assert_static(visited(Id)),
+sub_do(IDir,Id,FAll) :-
     get_xml(IDir,Id, Atts,Children),
-    key_in(kind(Kind),Atts),
-    (children2page([idir=IDir,odir=ODir,kind=Kind],Children,All)),
+    key_in(kind("class"),Atts),
+    sub_string(Id ,_, 2, 0, Arity),
+    string_chars(Arity,['_',Dig]),
+    char_type_digit(Dig),
     !,
-     atom_concat([ODir,'/',Id,'.md'],OFile),
-    open(OFile,write,O,[]),
-    format(O,'~s',[All]),
-    close(O).
-
-trl(compound( OAtts,_OProps),_,_):-
-    writeq(failed:trl(compound( OAtts,_OProps),_,_)),
-    nl.
+    children2page([idir=IDir,kind="class"],Children,All),
+    string_concat(["\n|","[](){#",Id,"}     \n",All],FAll).
+sub_do(_,_,_).
  
 get_xml(IDir,Id,Atts,Children) :-
-    atom_concat([IDir,Id,'.xml'], IFile),
-    catch(xml_load(IFile,XML),Error,(format(user_error,'failed while processsing ~w: ~w',[IFile,                      Error]),fail)),
+    path_concat([IDir,Id], IFile),
+    (sub_atom(IFile ,_, 1, 0, '.')
+     ->
+     atom_concat(IFile,xml,XFile)
+     ;
+     atom_concat(IFile,'.xml',XFile)
+    ),
+    catch(xml_load(XFile,XML),Error,(format(user_error,'failed while processsing ~w: ~w',[IFile,                      Error]),fail)),  
     XML = [doxygen(_,XMLData)],
     XMLData = [compounddef(Atts,Children)].
 
 children2page(State,Children,All) :-
     get_name(Children,Name),
-as_title(Name,Children,Title),
+    as_title(Name,Children,Title),
 %(Title="term_hash_E" -> spy process_all ; true ),
-	foldl(process_all(State),Children,[]-[]-[]-[]-[]-[]-[],AllRaw-Briefs-Details-Pages-Groups-Predicates-Locations),
-    string_concat(AllRaw,Info),
+    foldl(process_all(State),Children,t([],[],[],[],[],[],[],[],[]),t(AllRaw,Briefs,Details,Pages,Groups,Predicates,XPreds,Infs,Locations)),
+    string_concat(AllRaw,Raw),
     string_concat(Briefs,Bs),
     string_concat(Details,Ds),
     string_concat(Groups,Gs),
     string_concat(Predicates,Ps),
+    string_concat(XPreds, XPs),
+   string_concat(Infs,Info),
     string_concat(Pages,As),
     string_concat(Locations,Ls),
-    string_concat(["# ",Title, "\n\n",Bs,"\n\n\n",As,Gs,"\n\n\n",Ds,"\n\n\n",Ps,"\n\n",Info,"\n\n",Ls],All).
- 
+    string_concat(["## ",Title, "\n\n",Bs,"\n\n\n",As,Gs,"\n\n\n",Ds,"\n\n\n",Ps,"\n\n",XPs,"\n\n",Info,"\n\n",Raw,"\n\n",Ls],All).
 
-process_all(State,Op,S0s,SFs) :-
-    functor(Op,_N,_),
+
+process_all(State,innerclass(Atts,_CHildren),S0s,SFs) :-
+    !,
     process(State,Op,Strings,[]),
-    string_concat(Strings,SC),
-    add2strings(Op,SC,S0s,SFs),!.
-process_all(State,Op,S0s,S0s):-
+    string_concat(Strings,String),
+    add2strings(Op,String,S0s,S1s),
+    member(idir=IDir, State),
+    key_in(refid(Ref),Atts),
+      !,
+      sub_do(IDir,Ref,ClassText),
+    add2strings(extra,(ClassText),S1s,SFs).
+process_all(State,Op,S0s,SFs) :-
+    %    functor(Op,N,_),
+    process(State,Op,Strings,[]),
+    string_concat(Strings,String),
+    add2strings(Op,String,S0s,SFs),!.
+process_all(State,Op,S0s,SFs):-
+    S0s=SFs,
     writeln(failed:Op:State).
+%    spy process_all
+%    process_all(State,Op,S0s,SFs).
 
 
-
-add2strings(briefdescription(_,_),Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,S-[Strings|Sb]-Sd-Sa-Sg-Sp-Sl)
- :-
+add2strings(_,[], Target, Target) :-
+   !.
+add2strings(_, "", Target, Target) :-
     !.
-add2strings(detaileddescription(_,_),Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,S-Sb-[Strings|Sd]-Sa-Sg-Sp-Sl) :-
+add2strings(_,[""], Target, Target) :-
     !.
-add2strings(innerclass(_,_),Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,S-Sb-Sd-Sa-Sg-[Strings|Sp]-Sl) :-
+add2strings(briefdescription(_,_),Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, NSb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    NSb =[Strings|Sb],
     !.
-add2strings(innergroup(_,_),Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,S-Sb-Sd-Sa-[Strings|Sg]-Sp-Sl) :-
-    !.
-add2strings(innerpage(_,_),Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,S-Sb-Sd-[Strings|Sa]-Sg-Sp-Sl) :-
-    !.
-add2strings(location(_,_),Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,S-Sb-Sd-[Strings|Sa]-Sg-Sp-Sl) :-
-    !.
-add2strings(_Op,Strings,S-Sb-Sd-Sa-Sg-Sp-Sl,[Strings|S]-Sb-Sd-Sa-Sg-Sp-Sl).
+add2strings(detaileddescription(_,_),Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, Sb, NSd, Sa, Sg, Sp, Sx, Si, Sl),
+    NSd =[Strings|Sd].
+add2strings(innerclass(_,_),Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, Sb, Sd, Sa, Sg, NSp, Sx, Si, Sl),
+writeln(who=NSp),
+    NSp=[Strings|Sp].
+add2strings(extra,Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, Sb, Sd, Sa, Sg, Sp, NSx, Si, Sl),
+    NSx=["\n\n---\n\n",Strings|Sx].
+add2strings(innergroup(_,_),Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, Sb, Sd, Sa, NSg, Sp, Sx, Si, Sl),
+    NSg=[Strings|Sg].
+add2strings(innerpage(_,_),Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, Sb, Sd, NSa, Sg, Sp, Sx, Si, Sl),
+    NSa=[Strings|Sa].
+add2strings(location(_,_),Strings,Source, Target) :-
+    !,
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, NSl),
+    NSl=[Strings|Sl].
+add2strings(_,Strings,Source, Target) :-
+    Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    Target = t(NS, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
+    NS=[Strings|S].
 
 		
 process(_State,compoundname(_Atts,_Children)) -->
 !.
 process(_State,title(_Atts,_Children)) -->
-!
-.
+!.
 process(State,basecompoundref(Atts,Children)) -->
     !,
     seq(State,basecompoundref(Atts,Children)).
@@ -248,7 +244,7 @@ process(State,derivedcompoundref(Atts,Children)) -->
 % ignoreseq(NState,innerclass(_,_),Innerfile,Innerclass),
 process(State,innerclass(Atts,Children)) -->
     !,
-    innerclass([kind="class"|State],Atts,Children).    % ignoreseq(NState,innernamespace(_,_),Innerclass,Innernamespace),
+    innerclass([kind="class"|State],Atts,Children).    % ignoreseq(NState,innernamespace(_,_),Innerclass,Innernamespace),,
 process(State,innerpage(Atts,Children)) -->
     !,
     innerpage([kind="page"|State],Atts,Children).
@@ -296,14 +292,17 @@ xtract_label([Label],Label) :-
 xtract_label(Label,Label).
 
 innerclass(Status,Atts,AllLabel) -->
-    ["\n* "], 
-    {key_in(refid(Ref),Atts),
-     xtract_label(AllLabel,Label),
-     decode(Label,Pred)},
+    ["\n\n* "], 
+    {key_in(refid(Ref),Atts) },
+    !,
+    {
+      xtract_label(AllLabel,Label),
+      decode(Label,Pred)
+    },
     link_inner(Status,Ref,Pred).
 
 innerpage(Status,Atts,AllLabel) -->
-    ["\n\n* "], 
+    ["\n|","[](){#",Ref,"}     "], 
     {key_in(refid(Ref),Atts),
      xtract_label(AllLabel,Label)},
     link_inner(Status,Ref,Label).
@@ -314,16 +313,9 @@ innergroup(Status,Atts,AllLabel) -->
      xtract_label(AllLabel,Label)},
     link_inner(Status,Ref,Label).
 
-link_inner(Status,Ref,Label) -->
-{ decode(Label,PLabel) },
-    ref(Ref,PLabel),
-    {
-	key_in(idir=IDir,Status),
-	key_in(odir=ODir,Status),
-	key_in(kind=Kind,Status),
-	trl(compound([refid(Ref),kind(Kind)],[]),IDir,ODir)
-    }.
-
+link_inner(_Status,Ref,Label) -->
+    { decode(Label,PLabel) },
+    ref(Ref,PLabel).
 
 innermodule(Status,Atts,AllLabel) -->
     {key_in(refid(Ref),Atts),
@@ -382,7 +374,13 @@ sectdef(member(Atts,Children))-->
 {decode(Name,PName)},
     ref(Ref,PName).
 
-
+sectdef(memberdef(Atts,[name(_,[Name])|Children]))-->
+    {
+      key_in(kind(`enum`), Atts),
+      !
+      },
+    [ "enum ", Name ],
+      foldl(enumvalue,Children).
 sectdef(memberdef(Atts,Children))-->
     {
 
@@ -406,32 +404,35 @@ sectdef(memberdef(Atts,Children))-->
 
     ),
     [Header],
-    (	{ key_in(briefdescription([],Brief),Children) }
+    get_descriptions(Children).
 
-    ->
-    [": "],
-    description(Brief)
-    ;
-    []
-    ),
-    (
-	{ key_in(inbodydescription([],InBody),Children) }
-    ->
-    [ "\n  "],
-    description(InBody)
-    ;
-    []
-    ),
-    (
-	{ key_in(detaileddescription([],Detailed),Children)}
-    ->
-    [ "\n\n"],
-    description(Detailed)
-    ;
-    []
-    ),
+enumvalue(location(_,_Children)) -->
+    !.
+enumvalue(initializer(_,_Children)) -->
+    !.
+enumvalue(enumvalue(_Atts,Children)) -->
+    ["+ *", PName,"*"],
+    { get_name(Name, Children),
+      decode(Name, PName) },
+    get_descriptions(Children),
+    !.
+enumvalue(Children) -->
+    {writeln( enumvalue(Children)) }.
+
+
+get_descriptions(Children) -->
+    get_description(briefdescription(_,Brief),Brief,Children),
+    get_description(inbpdydescription(_,Brief),Brief,Children),
+    get_description(detaileddescription(_,Brief),Brief,Children).
+
+
+get_description(Desc, Text, Children) -->
+    {key_in(Desc, Children) },
     !,
+    description(Text),
     [ "\n"].
+get_description(_Desc, _Text, _Children) -->
+    [].
 
 %sectiondef(A,Remainder) --> {writeln(A),fail}.
 briefs(briefdescription(_Atts,Els)) -->
@@ -606,8 +607,10 @@ description(simplesect(Parms,S)) -->
 !,
     sect(Parms,S," ").
 
-description([]) -->
-    !.
+description(itemizedlist(Atts,Text)) -->
+    !,
+    itemlist(Atts,Text).
+    
 description([G|S]) -->
     !,
     description(G),
@@ -723,7 +726,7 @@ bd(s, "~~").
 bd(underline, "<ins>").
 
 
-para(ulink([url(Title)],[URL|_])) -->
+    para(ulink([url(Title)],[URL|_])) -->
 { decode(Title, DTitle) },
     !,
 {   format(string(S),"[~s](~s)", [DTitle,URL])},
@@ -754,11 +757,11 @@ para(itemizedlist(Atts,Text)) -->
 para(variablelist(Atts,Text)) -->
     varlist(Atts,Text). % docVariableListType
 para(simplesect([kind(Kind)|Text])) -->
-!,
-["\n\n"],
-[Kind],
-[" "],
-description(Text).
+    !,
+    ["\n\n"],
+    [Kind],
+    [" "],
+    description(Text).
 para(table(_,Text)) -->
    table(Text). % docTableType
 para(heading(_,Text)) -->
@@ -780,7 +783,7 @@ para(copydoc(_,Text)) -->
 para(details(_,Text)) -->
     unimpl(details,Text). % docDetailsType
 para(parblock(_,Text))-->
-    paras(Text). % docParBlockType         
+    para(Text). % docParBlockType         
 para(superscript(_,Text)) -->
     {string(Text)},
     !,
@@ -918,7 +921,7 @@ para('acirc'(_,_))  -->
 para('atilde'(_,_))  -->
     [    "<atilde/>"].
 para('auml'(_,_))  -->
-    [      "<aumlaut/>"].
+    q    [      "<aumlaut/>"].
 para('aring'(_,_))  -->
     [     "<aring/>"].
 para('aelig'(_,_))  -->
@@ -1333,6 +1336,8 @@ para(plantuml([],_Text)) -->
     []. % docPlantumlType
 para(anchor(Parms,Children))-->
 anchor(Parms,Children).
+
+para([]) --> !.
 para(ref(Atts,[Name])) -->
     {
         key_in(refid(Ref),Atts)
@@ -1880,7 +1885,7 @@ ref(S,W) -->
     { decode(W,L)
     },
 
-    { format(string(Str),'[~s][~s]' ,[L,P]) },
+    { format(string(Str),'[~s][#~s]' ,[L,P]) },
     [Str].
 ref(S,W)-->
     { decode(W,L)
