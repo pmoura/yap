@@ -691,7 +691,7 @@ static Int file_name_extension(USES_REGS1) {
     const char *ext;
     char *base;
     bool rc = true;
-    seq_type_t typ = Yap_TextType(t3);
+    enum_seq_type_t typ = Yap_TextType(t3);
     if (!f) {
       pop_text_stack(l);
       return false;

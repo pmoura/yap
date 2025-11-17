@@ -1163,13 +1163,14 @@ static Int numbervars(USES_REGS1)
   return Yap_unify(ARG3, MkIntegerTerm(out));
 }
  
-/** @pred  singleton_vs_numbervars( _t,+ _N1_,- _Nn_)
+/** @pred  singleton_vs_numbervars( _T,+ _N1_,- _Nn_)
     
     Instantiates each variable in term  _T_ to a term of the form:
-    - `$VAR( PP_I_)`, with  _I_ increasing from  _N1_ to  _Nn_.
-    - or of the form '_J` if `J is abs(I)`
+    - `$VAR`(_I_), with  _I_ increasing from  _N1_ to  _Nn_.
+    - or of the form `_J_` where `J is abs(I)`
  
-    YAP also accepts atoms and strings.
+    YAP also accepts atoms and strings as arguments to `$VAR`.  If so. it prints the constant.
+    
 */
 static Int singleton_vs_numbervars(USES_REGS1) {
   Functor f = Yap_MkFunctor(AtomOfTerm(getAtomicLocalPrologFlag(NUMBERVARS_FUNCTOR_FLAG)),1);

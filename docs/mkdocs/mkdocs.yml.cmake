@@ -28,8 +28,7 @@ plugins:
 markdown_extensions:
   - attr_list
   - def_list
-  - loc:
-  - toc
+  - toc:
       permalink: True
   - admonition
   - markdown.extensions.md_in_html

@@ -1,4 +1,4 @@
-/*************************************************************************
+1/*************************************************************************
 *									 *
   *	 YAP Prolog 							 *
   *									 *
@@ -254,7 +254,7 @@ abolish(N0,A) :-
 		( '$is_dynamic'(T, M) -> '$abolishd'(T,M) ;
 	      	 /* else */	      '$abolishs'(T,M) ).
 
-/** @pred  abolish(+ _PredSpec_) is iso
+/** @pred  abolish(+ _PredSpec_)
 
 
 Deletes the predicate given by  _PredSpec_ from the database. If
@@ -263,8 +263,7 @@ current module. The
 specification must include the name and arity, and it may include module
 information.
 
-Since YAP8.0  this built-in will only abolish
-dynamic procedures. Consider using abolish/2 (an YAP extensio) in this case.
+For compatibility, onsider using abolish/2 (an YAP extensio) or doing abolieh only on  dynamic predicxates.
 
 
 */

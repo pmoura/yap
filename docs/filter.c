@@ -43,7 +43,7 @@ static bool infixpred_doc(char *line, char *end, ssize_t sz) {
 
     op = protect_class(buf, 2, op, strlen(op));
     line = arg2 + strlen(arg2) + 1;
-    fprintf(ostream, "@class \"%s_2\"\n \n @brief  %s %s %s ", op, arg1, op,
+    fprintf(ostream, "@class #%s_2\n \n @brief  %s %s %s ", op, arg1, op,
             arg2);
     return true;
   }
@@ -72,15 +72,14 @@ static bool pred_doc(char *line, char *end, ssize_t sz) {
     if (name == NULL || name + strlen(name) == end) {
       name = prefix + strlen(prefix) + 1;
       name = strtok(name, " \n");
-      fprintf(ostream, "@class %s\n@brief  %s",
+      fprintf(ostream, "@class #%s\n@brief  %s",
               protect_class(buf, 0, name, strlen(name)), name);
       line = name + strlen(name);
     } else {
       args = strtok(NULL, ")");
       int arity = commas(args);
-      fprintf(ostream, "\n@class %s %s/%d %s(%s)",
-              protect_class(buf, arity, name, strlen(name)),  name,
-              args);
+      fprintf(ostream, "@class  %s\n *%s(%s)*\n",
+              protect_class(buf, arity, name, strlen(name)), name, args);
       line = args + strlen(args) + 1;
     }
     return true;

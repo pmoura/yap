@@ -414,20 +414,34 @@ trl_pi(L,NewLine) :-
     sub_string(L,_,1,Extra1,D),
     digit(D),
     string_number(D,Arity),
+    
     back(Left,L,NPrefix),
     NPrefix \= Left,
     !,
     sub_string(L,0,NPrefix,_,Prefix),
     ExtraP1 is Extra+1,
     sub_string(L,NPrefix,_,ExtraP1,Name),
-    encode(Name/Arity,DoxName),
+    encode(Name/Arity,DoxName0),
+    encode_dox(DoxName0,DoxName),
     Right is Extra-1,
     sub_string(L,_,Right,0,RightLine),
     trl_pi(RightLine,More),
-    string_concat([Prefix,"@ref #",DoxName," \"",Name,"/",D,"\" ",More],NewLine).
+    format(string(NewLine), "~s~s~s", [Prefix,DoxName0,More]).
 trl_pi(S,S).
     
+encode_dox(S,ES) :-
+    string_chars(S,Cs),
+    doxtrl(Cs,NCs),
+    string_chars(ES,NCs).
 
+doxtrl([],[]).
+doxtrl(['_'|L],['_','_'|NL]) :-
+    !,
+    doxtrl(L,NL).
+doxtrl([C|L],[C|NL]) :-
+    doxtrl(L,NL).
+
+    
 back(0,_L,0) :-
     !.
 back(I0,S,I0) :-
@@ -462,7 +476,7 @@ addcomm(N/A,S,false) :-
     !, length(L,A),
     maplist(=('?'),L),
     T =.. [N|L],
-    format(ostream,'~n~n/**   @class ~s~n	 ~w     (undocumented)  **/~n~n',[S,T]).
+    format(ostream,'~n~n/** ~n@class #~s ~w     (undocumented)  **/~n~n',[S,T]).
 addcomm(_,_,_).
 
 

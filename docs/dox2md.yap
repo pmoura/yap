@@ -32,10 +32,8 @@ main_process([IDir,ODir,_Home]) :-
     %atom_concat(Home,'packages/xml2yap/libYAPxml', LibPath),
     %load_foreign_files([LibPath],[],libxml_yap_init),
     directory_files(IDir,Fs),
+    forall(member(F,Fs),clmember(IDir,F)),
     forall(member(F,Fs),do(IDir,ODir,F)).
-
-enum([_|XMLTasks],ID) :-
-    member(ID,XMLTasks).
 
 
 group(compound( OAtts,_OProps)) :-
@@ -55,6 +53,18 @@ class(compound( OAtts,_OProps)) :-
 	Kind == "class"
     
     ).
+
+clmember(IDir,F) :-
+atom_string(F,SF),
+string_concat(Id, ".xml",SF),
+    get_xml(IDir,Id, _Atts,Children),
+    member(innerclass(Atts,_),Children),
+    key_in(refid(Ref),Atts),
+    atom_string(R,Ref),
+    assert_static(g(R,Id)),
+    !.
+clmember(_,_).
+
 
 do(_IDir,_ODir,'.') :-
     !.
@@ -99,26 +109,25 @@ do(_IDir,_ODir,F) :-
     !.
 do(IDir,ODir,F) :-
     atom_concat(Id, '.xml',F),
+%    writeln(Id),
     atom_concat(group, _,F),
     get_xml(IDir,Id, _Atts,Children),
-    writeln(Id),
     !,
     children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
     atom_concat([ODir,'/',Id,'.md'],OFile),
     open(OFile,write,O,[]),
     format(O,'~s',[All]),
     close(O).   
-do(_,_,_) .
+do(_,_,_).
 
-sub_do(IDir,Id,FAll) :-
+sub_do(IDir,Id,All) :-
     get_xml(IDir,Id, Atts,Children),
     key_in(kind("class"),Atts),
-    sub_string(Id ,_, 2, 0, Arity),
-    string_chars(Arity,['_',Dig]),
+    sub_atom(Id ,_, 2, 0, Arity),
+    atom_chars(Arity,['_',Dig]),
     char_type_digit(Dig),
     !,
-    children2page([idir=IDir,kind="class"],Children,All),
-    string_concat(["\n|","[](){#",Id,"}     \n",All],FAll).
+    pred2page(Id,[idir=IDir,kind="class"],Children,All).
 sub_do(_,_,_).
  
 get_xml(IDir,Id,Atts,Children) :-
@@ -145,9 +154,23 @@ children2page(State,Children,All) :-
     string_concat(Predicates,Ps),
     string_concat(XPreds, XPs),
    string_concat(Infs,Info),
-    string_concat(Pages,As),
+   string_concat(Pages,As),
     string_concat(Locations,Ls),
-    string_concat(["## ",Title, "\n\n",Bs,"\n\n\n",As,Gs,"\n\n\n",Ds,"\n\n\n",Ps,"\n\n",XPs,"\n\n",Info,"\n\n",Raw,"\n\n",Ls],All).
+    string_concat(["# ",Title, "\n\n",Bs,"\n\n\n",As,Gs,"\n\n\n",Ds,"\n\n\n",Ps,"\n\n",XPs,"\n\n",Info,"\n\n",Raw,"\n\n",Ls],All).
+
+pred2page(Id,State,Children,All) :-
+    get_name(Children,Name),
+    as_title(Name,Children,Title),
+%(Title="term_hash_E" -> spy process_all ; true ),
+    foldl(process_all(State),Children,t([],[],[],[],[],[],[],[],[]),t(_AllRaw,Briefs,Details,Pages,Groups,Predicates,XPreds,_Infs,_Locations)),
+    %  string_concat(AllRaw,Raw),
+    string_concat(Briefs,Bs),
+    string_concat(Details,Ds),
+    string_concat(Groups,Gs),
+    string_concat(Predicates,Ps),
+    string_concat(XPreds, XPs),
+    string_concat(Pages,As),
+    string_concat(["[](){ #",Id," }\n### ",Title,"\n**",Bs,"**\n\n",As,Gs,"\n\n",Ds,"\n",Ps,"\n\n",XPs],All).
 
 
 process_all(State,innerclass(Atts,_CHildren),S0s,SFs) :-
@@ -157,17 +180,24 @@ process_all(State,innerclass(Atts,_CHildren),S0s,SFs) :-
     add2strings(Op,String,S0s,S1s),
     member(idir=IDir, State),
     key_in(refid(Ref),Atts),
-      !,
-      sub_do(IDir,Ref,ClassText),
+    !,
+    atom_string(ARef,Ref),
+    sub_do(IDir,ARef,ClassText),
     add2strings(extra,(ClassText),S1s,SFs).
 process_all(State,Op,S0s,SFs) :-
     %    functor(Op,N,_),
     process(State,Op,Strings,[]),
     string_concat(Strings,String),
-    add2strings(Op,String,S0s,SFs),!.
+    add2strings(Op,String,S0s,SFs),
+    !.
 process_all(State,Op,S0s,SFs):-
+    %spy sectdef,
+    writeln(failed:Op:State),
+    spy sectiondef/4,
+    (process_all(State,Op,S0s,SFs)),
+    !,
     S0s=SFs,
-    writeln(failed:Op:State).
+    fail.
 %    spy process_all
 %    process_all(State,Op,S0s,SFs).
 
@@ -193,7 +223,6 @@ add2strings(innerclass(_,_),Strings,Source, Target) :-
     !,
     Source = t(S, Sb, Sd, Sa, Sg, Sp, Sx, Si, Sl),
     Target = t(S, Sb, Sd, Sa, Sg, NSp, Sx, Si, Sl),
-writeln(who=NSp),
     NSp=[Strings|Sp].
 add2strings(extra,Strings,Source, Target) :-
     !,
@@ -336,9 +365,6 @@ innermodule(_Status,Atts,AllLabel) -->
     ["\n."].
 
 
-
-
-
 sectiondef(Atts,Els) -->
     {
 	key_in(kind(Kind),Atts)
@@ -353,13 +379,12 @@ v(Msg,S0,S0) :-
     writeln(Msg:S0).
 
 sectdef(header([],[Text]))-->
-{decode(Text,PText)},
+    {decode(Text,PText)},
     ["\n",PText,"\n"].
 sectdef(member(Atts,Children))-->
-    {
-	key_in(refid(Ref),Atts),
+    { key_in(refid(Ref),Atts) },
 	(
-	    key_in(defname(_,[Name] ),Children)
+	 {   key_in(defname(_,[Name] ),Children) }
 	->
 	true
 	;
@@ -368,57 +393,41 @@ sectdef(member(Atts,Children))-->
 	true
 	;
 	Name = "" %writeln(Children)
-	)
-    } ,
+	),
     ["%- " ],
-{decode(Name,PName)},
+    {decode(Name,PName)},
     ref(Ref,PName).
 
-sectdef(memberdef(Atts,[name(_,[Name])|Children]))-->
-    {
-      key_in(kind(`enum`), Atts),
-      !
-      },
-    [ "enum ", Name ],
-      foldl(enumvalue,Children).
 sectdef(memberdef(Atts,Children))-->
-    {
-
-	( key_in(argsstring([],[Args]),Children) -> true ; Args = ""),
-	key_in(id(Ref),Atts),
-	get_name(Children,Name),
-	decode(Name, PName)
-%	short_ref(Ref, PRef)
-    },
+    { key_in(kind(Kind), Atts) },
     (
-	{key_in(definition([],[Def0]),Children),
-    	decode(Def0, Def)}
+      { Kind == "enum" }
+      ->
+      (
+      { Children=[name(_,[Name])|Extra] }
+      ->
+      [" case ",Name,":\n\n"]
+      ;
+      {Extra=Children}
+      ),
+      foldl(enumvalue,Extra)
+      ;
+    []
+    ).
+
+/* ignore for now */
 
 
-    ->
-
-	{format(string(Header), '. [](){#~s}~s~s~n', [Ref,Def,Args])}
-    ;
-
-	{format(string(Header), '. [](){#~s}~s~s~n', [Ref,PName,Args])}
-
-    ),
-    [Header],
+enumvalue(enumvalue(_,[name(_,[Name])|Children])) -->
+    !,
+    ["- ",Name," "],
     get_descriptions(Children).
-
 enumvalue(location(_,_Children)) -->
     !.
 enumvalue(initializer(_,_Children)) -->
     !.
-enumvalue(enumvalue(_Atts,Children)) -->
-    ["+ *", PName,"*"],
-    { get_name(Name, Children),
-      decode(Name, PName) },
-    get_descriptions(Children),
+enumvalue(What) --> 
     !.
-enumvalue(Children) -->
-    {writeln( enumvalue(Children)) }.
-
 
 get_descriptions(Children) -->
     get_description(briefdescription(_,Brief),Brief,Children),
@@ -461,15 +470,15 @@ highlight(highlight(_,Line)) -->
     foldl(rawt,Line).
 
 rawt(Text) -->
-{string(Text) },
-!,
-[" "],
-[Text].
+    {string(Text) },
+    !,
+    [" "],
+    [Text].
 rawt(ref([refid(Id)|_],[Info])) -->
-!,
-ref(Id,Info).
+    !,
+    ref(Id,Info).
 rawt(Text) -->
-{writeln(ugh:Text)}.
+    {writeln(ugh:Text)}.
 
 rawl([]) -->
     !.
@@ -725,12 +734,9 @@ bd(s, "~~").
 	       bd(ref,"\"").
 bd(underline, "<ins>").
 
-
-    para(ulink([url(Title)],[URL|_])) -->
-{ decode(Title, DTitle) },
-    !,
-{   format(string(S),"[~s](~s)", [DTitle,URL])},
-[S].
+para(ulink([url(URL)],[Title|_])) -->
+    ref(Title , URL),
+    !.
 para(hruler([],_)) -->
     [ "\n- - -\n"].
 para(preformatted([],Text)) -->
@@ -1858,15 +1864,6 @@ split_domains([_-A|All],Bs,Ds,[A|Ts]):-
     !,
     split_domains(All,Bs,Ds,Ts).
 
-inner(S,P) :-
-    string_chars(S,Cs),
-    append(_Prefix,['_'|Pos],Cs),
-    maplist(char_type_xdigit, Pos),
-    length(Pos,Len),
-    Len> 30,
-    !,
-    string_chars(P,Pos).
-
 
 short_ref(Ref,Short) :-
     inner(Ref,Short),
@@ -1878,19 +1875,42 @@ short_ref(Ref,Ref).
 % -translate a ref to mkdocs
 %
 ref(S,W) -->
+    {      writeln(S:W),
+	   sub_string(S,0,_,_,"class"),
+    atom_to_string(A,S),
+    g(A,Group) },
+    !,
+    {
+      decode_dox(W,L0),
+      decode(L0,L),
+      format(string(Str),'[~s](~s#~s})' ,[L,Group,A]) ,
+    writeln(0:Str)},
+    [Str].
+    
+ref(S,W) -->
 %     {writeln(S:W)},
-    { inner(S,P)
+    {
+    fail,
+    unix(argv([D|_])),
+    path_concat([D,S], IFile),
+    atom_concat(IFile, '.xml', Wx),
+    exists(Wx)
     },
     !,
-    { decode(W,L)
+    {
+    decode_dox(W,L0),
+    decode(L0,L)
     },
-
-    { format(string(Str),'[~s][#~s]' ,[L,P]) },
+    !,
+    {
+      format(string(Str),'[~s]({{~s}})' ,[L,S]),
+      writeln(1:Str)
+    },
     [Str].
 ref(S,W)-->
-    { decode(W,L)
-    },
-    { format(string(Str),'[~s](~s.md)' ,[L,S]) },
+    { format(string(Str),'[~s](~s)' ,[W,S]),
+
+      writeln(2:Str) },
     [Str].
 
 %% ref(+Link,+Name)
@@ -1970,28 +1990,29 @@ anchor([id(Ref)],[]) -->
   ["[](){#",Ref,"}\n"].
 
 gengroup(Ref0) :-
-abolish(visited/1),
-string_concat("/group__",Ref0,Ref),
-Kind="group",
-unix(argv([IDir,ODir,_])),
-    	trl(compound([refid(Ref),kind(Kind)],[]),IDir,ODir).
+    abolish(visited/1),
+    string_concat("/group__",Ref0,Ref),
+    Kind="group",
+    unix(argv([IDir,ODir,_])),
+    trl(compound([refid(Ref),kind(Kind)],[]),IDir,ODir).
+
 genclass(Ref0) :-
-abolish(visited/1),
-Kind="class",
-unix(argv([IDir,ODir,_])),
-    	trl(compound([refid(Ref0),kind(Kind)],[]),IDir,ODir).
+    abolish(visited/1),
+    Kind="class",
+    unix(argv([IDir,ODir,_])),
+    trl(compound([refid(Ref0),kind(Kind)],[]),IDir,ODir).
 
  % 
 table([Row|Rows]) -->
-["\n\n"],
-row(Row),
-centering(Row),
-foldl(row,Rows),
-["\n\n"].
+    ["\n\n"],
+    row(Row),
+    centering(Row),
+    foldl(row,Rows),
+    ["\n\n"].
 
 row(row(_,Entries)) -->
-foldl(entry,Entries),
-["  |\n"].
+    foldl(entry,Entries),
+    ["  |\n"].
 
 entry(entry([thead(_),align(_)],Info)) -->
     ["|     "],
@@ -2001,7 +2022,7 @@ centering(row([],Entries)) -->
 foldl(align,Entries),
 ["|\n"].
 
-align(entry([thead("yes"),align("center")],_Info)) -->
+align(entry([thead("yes"),align("center")],_In:fo)) -->
 !,
     ["|:                 :"].
 align(entry([thead("yes"),align("right")],_Info)) -->
@@ -2010,3 +2031,4 @@ align(entry([thead("yes"),align("right")],_Info)) -->
 align(entry([thead("yes"),align("left")],_Info)) -->
 !,
     ["|:                 "].
+

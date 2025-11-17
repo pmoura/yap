@@ -52,15 +52,20 @@ static char SccsId[] = "%W% %G%";
 
 static Int file_exists(USES_REGS1) {
   Term tname = Deref(ARG1);
-  char *file_name;
+  const char *file_name;
 
   if (IsVarTerm(tname)) {
     Yap_ThrowError(INSTANTIATION_ERROR, tname, "access");
-  } else if (!IsAtomTerm(tname)) {
+  } else if (IsAtomTerm(tname)) {
+    file_name = RepAtom(AtomOfTerm(tname))->StrOfAE;
+  } else if (IsStringTerm(tname)) {
+    file_name = StringOfTerm(tname);
+  } else {
     Yap_ThrowError(TYPE_ERROR_ATOM, tname, "access");
     return false;
-  } else {
+  }
 #if HAVE_STAT
+  {
     struct SYSTEM_STAT ss;
 
     file_name = RepAtom(AtomOfTerm(tname))->StrOfAE;
@@ -72,7 +77,7 @@ static Int file_exists(USES_REGS1) {
     }
     return true;
 #else
-    return FALSE;
+    return false;
 #endif
   }
   return false;

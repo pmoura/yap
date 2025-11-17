@@ -179,3 +179,35 @@ fetch_chars([C|Cs]) -->
     [C],
 fetch_chars(Cs).
 
+
+encode_dox(S,ES) :-
+    string_chars(S,Cs),
+    doxtrl(Cs,[c,l,a,s,s|NCs]),
+    string_chars(ES,NCs).
+
+doxtrl([],[]).
+doxtrl(['_'|L],['_','_'|NL]) :-
+    !,
+    doxtrl(L,NL).
+doxtrl([C|L],[C|NL]) :-
+    doxtrl(L,NL).
+
+decode_dox(S,ES) :-
+    string_chars(S,Cs),
+    dedoxtrl(Cs,NCs),
+    string_chars(ES,NCs).
+
+%dedoxtrl([c,l,a,s,s],[]).
+dedoxtrl([],[]).
+dedoxtrl(['_','_'|L],['_'|NL]) :-
+    !,
+    dedoxtrl(L,NL).
+dedoxtrl([C|L],[C|NL]) :-
+    dedoxtrl(L,NL).
+
+is_pi(S) :-
+    string_chars(S,Cs),
+    append(_Prefix,['/'|Pos],Cs),
+    maplist(char_type_xdigit, Pos).
+
+

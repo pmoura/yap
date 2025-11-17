@@ -228,7 +228,7 @@ nonvar(A)
 
 /** @pred  atom_list_concat(+ _As_,? _A_)
 
-Alias for atom_cooncat/2.
+Alias for atom_concat/2.
 
 The predicate holds when the first argument is a list of atomic terms,
 and the second unifies with the atom obtained by concatenating all the

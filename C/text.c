@@ -227,7 +227,7 @@ unsigned char *Yap_readText(seq_tv_t *inp USES_REGS) {
   yap_error_number err = YAP_NO_ERROR;
   /* we know what the term is */
   if (!(inp->type & (YAP_STRING_CHARS | YAP_STRING_WCHARS))) {
-    seq_type_t inpt = inp->type & (YAP_STRING_TERM|YAP_STRING_ATOM|YAP_STRING_ATOMS_CODES);
+    enum_seq_type_t inpt = inp->type & (YAP_STRING_TERM|YAP_STRING_ATOM|YAP_STRING_ATOMS_CODES);
     if (!(inpt & YAP_STRING_TERM)) {
       if (IsVarTerm(inp->val.t)) {
        err = INSTANTIATION_ERROR;
@@ -622,8 +622,7 @@ Term Yap_StringToNumberTerm(const char *s, encoding_t *encp, bool error_on) {
 #endif
   GLOBAL_Stream[sno].status |= CloseOnException_Stream_f;
   if (error_on) {
-    GLOBAL_Stream[sno].status |= RepError_Prolog_f;
-
+   GLOBAL_Stream[sno].status |= FailOnScanError_Stream_f;
     return TermNil;
   }
   int i = push_text_stack();

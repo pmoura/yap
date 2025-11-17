@@ -1108,11 +1108,32 @@ static Int atomic_concat3(USES_REGS1) {
   bool g1, g2, g3;
 restart_aux:
   t1 = Deref(ARG1);
+  if (IsVarTerm(t1)) {
+    g1 = false;
+  } else if (!(IsNumTerm(t1) || IsAtomTerm(t1) || IsStringTerm(t1))) {
+    Yap_ThrowError(TYPE_ERROR_ATOMIC, t1, "on atomic_concat");
+    return false;
+  } else {
+    g1 = true;
+  }
   t2 = Deref(ARG2);
+  if (IsVarTerm(t2)) {
+    g2 = false;
+  } else if (!(IsNumTerm(t2) || IsAtomTerm(t2) || IsStringTerm(t2))) {
+    Yap_ThrowError(TYPE_ERROR_ATOMIC, t2, "on atomic_concat");
+    return false;
+  } else {
+    g2 = true;
+  }
   t3 = Deref(ARG3);
-  g1 = Yap_IsGroundTerm(t1);
-  g2 = Yap_IsGroundTerm(t2);
-  g3 = Yap_IsGroundTerm(t3);
+  if (IsVarTerm(t3)) {
+    g3 = false;
+  } else if (!(IsNumTerm(t3) || IsAtomTerm(t3) || IsStringTerm(t3))) {
+    Yap_ThrowError(TYPE_ERROR_ATOMIC, t3, "on atomic_concat");
+    return false;
+  } else {
+    g3 = true;
+  }
   if (g1 && g2) {
     int l = push_text_stack();
     at = Yap_ConcatAtomics(t1, t2 PASS_REGS);
@@ -2806,7 +2827,6 @@ void Yap_InitAtomPreds(void) {
   Yap_InitCPred("$hidden_atom", 1, hidden_atom,
                 HiddenPredFlag | SafePredFlag | SyncPredFlag);
 }
-
 /**
    @}
 */

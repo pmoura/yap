@@ -309,7 +309,9 @@ typedef enum stream_f {
    Aliased_Stream_f =
    0x02000000,              /**< stream has an alias, or more */
    Text_Stream_f =
-   0x04000000              /**< stream is a text stream */
+   0x04000000,              /**< stream is a text stream */
+    FailOnScanError_Stream_f =
+    0x1000000, /**< just simply fail on a scan error, eg trying to read a number from text */
  } estream_f;
 
 

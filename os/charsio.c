@@ -556,7 +556,6 @@ static Int put_char_1(USES_REGS1) { /* '$put'(,N)                      */
   must_be_atom(t2);
   Atom at = AtomOfTerm(t2);
   unsigned char *s = RepAtom(at)->UStrOfAE;
-  utf8proc_int32_t c;
   s += get_utf8(s, 1, &ch);
   GLOBAL_Stream[sno].stream_wputc(sno, ch);
   /*
@@ -586,7 +585,6 @@ static Int put_char(USES_REGS1) { /* '$put'(Stream,N)                      */
   must_be_atom(t2);
   Atom at = AtomOfTerm(t2);
   unsigned char *s = RepAtom(at)->UStrOfAE;
-  utf8proc_int32_t c;
   s += get_utf8(s, 1, &ch);
   GLOBAL_Stream[sno].stream_wputc(sno, ch);
   /*

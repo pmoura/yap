@@ -102,6 +102,7 @@ extern Term Yap_tokFullRep(void *tokptr);
 
 typedef enum
   {
+    YAP_STRING_NONE = 0x0,          /// target is not text
     YAP_STRING_STRING = 0x1,          /// target is a string term
     YAP_STRING_CODES = 0x2,           /// target is a list of integer codes
     YAP_STRING_ATOMS = 0x4,           /// target is a list of kength-1 atom
@@ -130,8 +131,6 @@ typedef enum
     YAP_STRING_PREFER_LIST = 0x1000000 // when we're not sure
   } enum_seq_type_t;
 
-typedef UInt seq_type_t;
-
 #include "iopreds.h"
 
 #include "YapUTF8.h"
@@ -155,7 +154,7 @@ typedef union {
 } seq_val_t;
 
 typedef struct text_cvt {
-  seq_type_t type;
+  long int type;
   seq_val_t val;
   Term mod;   // optional
   Term dif;   // diff-list, usually TermNil
@@ -163,9 +162,8 @@ typedef struct text_cvt {
   encoding_t enc;
 } seq_tv_t;
 
-
 // string type depends on current module
-static inline seq_type_t mod_to_type(int quote, Term mod USES_REGS) {
+static inline long int mod_to_type(int quote, Term mod USES_REGS) {
   // see pl-incl.h
   mod_entry_flags_t flags = Yap_GetModuleEntry(mod)->flags;
   if (quote == '`') {
@@ -182,6 +180,7 @@ static inline seq_type_t mod_to_type(int quote, Term mod USES_REGS) {
     if (flags & DBLQ_STRING) {
       return YAP_STRING_STRING;
     } else if (flags & DBLQ_ATOM) {
+
       return YAP_STRING_ATOM | YAP_STRING_OUTPUT_TERM;
     } else if (flags & DBLQ_CHARS) {
       return YAP_STRING_ATOMS;
@@ -201,7 +200,7 @@ static inline seq_type_t mod_to_type(int quote, Term mod USES_REGS) {
   }
 }
 
-  static inline seq_type_t Yap_TextType(Term t) {
+  static inline enum_seq_type_t Yap_TextType(Term t) {
   if (IsVarTerm(t = Deref(t))) {
     Yap_ThrowError(INSTANTIATION_ERROR, t, "expected text");
   }
@@ -212,7 +211,7 @@ static inline seq_type_t mod_to_type(int quote, Term mod USES_REGS) {
     return YAP_STRING_STRING;
   }
   if (IsPairTerm(t)) {
-    Term hd = HeadOfTerm(t);
+   Term hd = HeadOfTerm(t);
     if (IsVarTerm(hd)) {
       Yap_ThrowError(INSTANTIATION_ERROR, t, "expected text");
     }
@@ -224,8 +223,9 @@ static inline seq_type_t mod_to_type(int quote, Term mod USES_REGS) {
     }
   }
   Yap_ThrowError(TYPE_ERROR_TEXT, t, "expected text");
-  return YAP_STRING_ATOM;
-}
+  return YAP_STRING_NONE;
+  }
+
 
 // the routines
 
@@ -357,7 +357,7 @@ static inline Atom Yap_AtomicToLowAtom(Term t0 USES_REGS) {
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
 
-  out.type = YAP_STRING_ATOM | YAP_STRING_DOWNCASE;
+  out.type =(enum_seq_type_t) YAP_STRING_ATOM | YAP_STRING_DOWNCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     Yap_ThrowError(LOCAL_Error_TYPE, t0, "");
   return out.val.a;
@@ -369,7 +369,7 @@ static inline Atom Yap_AtomicToUpAtom(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_ATOM | YAP_STRING_UPCASE;
+  out.type = (enum_seq_type_t)YAP_STRING_ATOM | YAP_STRING_UPCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     Yap_ThrowError(LOCAL_Error_TYPE, t0, "");
   return out.val.a;
@@ -381,7 +381,7 @@ static inline Term Yap_AtomicToLowString(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_STRING | YAP_STRING_DOWNCASE;
+  out.type = (enum_seq_type_t)YAP_STRING_STRING | YAP_STRING_DOWNCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     Yap_ThrowError(LOCAL_Error_TYPE, t0, "");
   return out.val.t;
@@ -393,7 +393,7 @@ static inline Term Yap_AtomicToUpString(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_STRING | YAP_STRING_UPCASE;
+  out.type = (enum_seq_type_t)YAP_STRING_STRING | YAP_STRING_UPCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     Yap_ThrowError(LOCAL_Error_TYPE, t0, "");
   return out.val.t;
@@ -405,7 +405,7 @@ static inline Term Yap_AtomicToLowListOfCodes(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_CODES | YAP_STRING_DOWNCASE;
+  out.type =  (enum_seq_type_t)YAP_STRING_CODES | YAP_STRING_DOWNCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     return 0;
   return out.val.t;
@@ -417,7 +417,7 @@ static inline Term Yap_AtomicToUpListOfCodes(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_CODES | YAP_STRING_UPCASE;
+  out.type = (enum_seq_type_t)YAP_STRING_CODES | YAP_STRING_UPCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     return 0;
   return out.val.t;
@@ -429,7 +429,7 @@ static inline Term Yap_AtomicToLowListOfAtoms(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_ATOMS | YAP_STRING_DOWNCASE;
+  out.type = (enum_seq_type_t)YAP_STRING_ATOMS | YAP_STRING_DOWNCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     return 0;
   return out.val.t;
@@ -441,7 +441,7 @@ static inline Term Yap_AtomicToUpListOfAtoms(Term t0 USES_REGS) {
   inp.type = YAP_STRING_STRING | YAP_STRING_CODES | YAP_STRING_ATOMS |
     YAP_STRING_ATOM | YAP_STRING_INT | YAP_STRING_FLOAT |
     YAP_STRING_BIG | YAP_STRING_TERM;
-  out.type = YAP_STRING_ATOMS | YAP_STRING_UPCASE;
+  out.type = (enum_seq_type_t)YAP_STRING_ATOMS | YAP_STRING_UPCASE;
   if (!Yap_CVT_Text(&inp, &out PASS_REGS))
     return 0;
   return out.val.t;
@@ -1546,7 +1546,7 @@ static inline Term Yap_SubtractTailString(Term t1, Term th USES_REGS) {
  *
  ≈  * @return the term
 */
-static inline Term Yap_MkTextTerm(const char *s, seq_type_t guide USES_REGS) {
+static inline Term Yap_MkTextTerm(const char *s, enum_seq_type_t guide USES_REGS) {
   if (guide == YAP_STRING_ATOM) {
     return MkAtomTerm(Yap_LookupAtom(s));
   } else if (guide == YAP_STRING_STRING) {
