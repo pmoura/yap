@@ -177,7 +177,7 @@ it is both more efficient and more portable.
   X, Y.
 
 
-/** @pred  if(? _G_,? _H_,? _I_)
+/** @pred  if( ?_G_, ?_H_, ?_I_)
 
 Call goal  _H_ once per each solution of goal  _H_. If goal
  _H_ has no solutions, call goal  _I_.

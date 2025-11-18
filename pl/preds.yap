@@ -1,4 +1,4 @@
-1/*************************************************************************
+/*************************************************************************
 *									 *
   *	 YAP Prolog 							 *
   *									 *
@@ -268,7 +268,7 @@ For compatibility, onsider using abolish/2 (an YAP extensio) or doing abolieh on
 
 */
 abolish(X0) :-
-    %    current_prolog_flag(language,iso), !,
+    %    current_prolog_flag(language,iso),
     !,
     must_be_predicate_indicator(X0,M,N,A),
     '$new_abolish'(N,A,M).

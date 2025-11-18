@@ -38,8 +38,8 @@ static char SccsId[] = "%W% %G%";
 
 /**
  *
- * @addtogroup absf
- *
+ * @defgroup OSPaths
+ * @ingroup InputOutput
  * @brief C-code support for dealing with absolute and relative paths.
  *
  * This code provides the necessary built-ins to open, close and move around

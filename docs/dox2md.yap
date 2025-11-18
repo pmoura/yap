@@ -111,9 +111,8 @@ do(IDir,ODir,F) :-
     atom_concat(Id, '.xml',F),
 %    writeln(Id),
     atom_concat(group, _,F),
-    get_xml(IDir,Id, _Atts,Children),
-    !,
-    children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
+    (atom_concat(group__ReadTerm,_) -> spy children2page; true),
+    get_xml(IDir,Id, _Atts,Children),			  children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
     atom_concat([ODir,'/',Id,'.md'],OFile),
     open(OFile,write,O,[]),
     format(O,'~s',[All]),
@@ -147,30 +146,24 @@ children2page(State,Children,All) :-
     as_title(Name,Children,Title),
 %(Title="term_hash_E" -> spy process_all ; true ),
     foldl(process_all(State),Children,t([],[],[],[],[],[],[],[],[]),t(AllRaw,Briefs,Details,Pages,Groups,Predicates,XPreds,Infs,Locations)),
-    string_concat(AllRaw,Raw),
-    string_concat(Briefs,Bs),
-    string_concat(Details,Ds),
-    string_concat(Groups,Gs),
-    string_concat(Predicates,Ps),
-    string_concat(XPreds, XPs),
-   string_concat(Infs,Info),
-   string_concat(Pages,As),
-    string_concat(Locations,Ls),
-    string_concat(["# ",Title, "\n\n",Bs,"\n\n\n",As,Gs,"\n\n\n",Ds,"\n\n\n",Ps,"\n\n",XPs,"\n\n",Info,"\n\n",Raw,"\n\n",Ls],All).
+   foldl(add_text,[Briefs,Pages,Groups,Details,Predicates,XPreds,Infs,AllRaw,Locations],Text, []),
+   string_concat(["# ",Title, "\n"|Text], All).
 
 pred2page(Id,State,Children,All) :-
     get_name(Children,Name),
     as_title(Name,Children,Title),
 %(Title="term_hash_E" -> spy process_all ; true ),
     foldl(process_all(State),Children,t([],[],[],[],[],[],[],[],[]),t(_AllRaw,Briefs,Details,Pages,Groups,Predicates,XPreds,_Infs,_Locations)),
-    %  string_concat(AllRaw,Raw),
-    string_concat(Briefs,Bs),
-    string_concat(Details,Ds),
-    string_concat(Groups,Gs),
-    string_concat(Predicates,Ps),
-    string_concat(XPreds, XPs),
-    string_concat(Pages,As),
-    string_concat(["[](){ #",Id," }\n### ",Title,"\n**",Bs,"**\n\n",As,Gs,"\n\n",Ds,"\n",Ps,"\n\n",XPs],All).
+   foldl(add_text,[Briefs,Pages,Groups,Predicates,Details,XPreds],Text,[]),   
+   string_concat(["[](){ #",Id, "}\n## ",Title,"\n"|Text], All).
+
+add_text([]) --> !.
+add_text(H)  --> {string_concat(H, S)}, [S].
+
+
+
+
+
 
 
 process_all(State,innerclass(Atts,_CHildren),S0s,SFs) :-
@@ -196,8 +189,8 @@ process_all(State,Op,S0s,SFs):-
     spy sectiondef/4,
     (process_all(State,Op,S0s,SFs)),
     !,
-    S0s=SFs,
-    fail.
+    S0s=SFs.
+
 %    spy process_all
 %    process_all(State,Op,S0s,SFs).
 
@@ -321,17 +314,21 @@ xtract_label([Label],Label) :-
 xtract_label(Label,Label).
 
 innerclass(Status,Atts,AllLabel) -->
-    ["\n\n* "], 
-    {key_in(refid(Ref),Atts) },
+    ["\n* "], 
+    {key_in(refid(Ref),Atts),
+     string_concat("class", _, Ref)
+    },
     !,
     {
       xtract_label(AllLabel,Label),
       decode(Label,Pred)
     },
     link_inner(Status,Ref,Pred).
+innerclass(_Status,_Atts,_AllLabel) -->
+    [].
 
 innerpage(Status,Atts,AllLabel) -->
-    ["\n|","[](){#",Ref,"}     "], 
+    ["\n|","[](){#",Ref,"}\n     "], 
     {key_in(refid(Ref),Atts),
      xtract_label(AllLabel,Label)},
     link_inner(Status,Ref,Label).
@@ -426,7 +423,7 @@ enumvalue(location(_,_Children)) -->
     !.
 enumvalue(initializer(_,_Children)) -->
     !.
-enumvalue(What) --> 
+enumvalue(_What) --> 
     !.
 
 get_descriptions(Children) -->
@@ -1870,8 +1867,8 @@ short_ref(Ref,Short) :-
     !.
 short_ref(Ref,Ref).
 
-
-%% ref(+Link,+Name)
+/*
+%% ref(+Link,+Name)0
 % -translate a ref to mkdocs
 %
 ref(S,W) -->
@@ -1886,12 +1883,12 @@ ref(S,W) -->
       format(string(Str),'[~s](~s#~s})' ,[L,Group,A]) ,
     writeln(0:Str)},
     [Str].
-    
+  */  
 ref(S,W) -->
 %     {writeln(S:W)},
     {
-    fail,
-    unix(argv([D|_])),
+	   sub_string(S,0,_,_,"class"),
+           unix(argv([D|_])),
     path_concat([D,S], IFile),
     atom_concat(IFile, '.xml', Wx),
     exists(Wx)
@@ -1903,12 +1900,13 @@ ref(S,W) -->
     },
     !,
     {
-      format(string(Str),'[~s]({{~s}})' ,[L,S]),
+%      format(string(Str),'[~s]({{~s}})' ,[L,S]),
+      format(string(Str),'[~s][~s]' ,[L,S]),
       writeln(1:Str)
     },
     [Str].
 ref(S,W)-->
-    { format(string(Str),'[~s](~s)' ,[W,S]),
+    { format(string(Str),'[~s](~s.md)' ,[W,S]),
 
       writeln(2:Str) },
     [Str].

@@ -182,7 +182,7 @@ fetch_chars(Cs).
 
 encode_dox(S,ES) :-
     string_chars(S,Cs),
-    doxtrl(Cs,[c,l,a,s,s|NCs]),
+    doxtrl(Cs,NCs),
     string_chars(ES,NCs).
 
 doxtrl([],[]).

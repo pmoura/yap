@@ -365,7 +365,7 @@ RESET_VARIABLE(HR+1);
    + `number`(Number)
    + `var`(VarName)
    + `string`(String)
-   + 'EOF''
+   + `EOF`
    + symbols, including `(`, `)`, `,`, `;`
 
 */
@@ -434,7 +434,7 @@ char * Yap_syntax_error__(const char *file, const char *function, int lineno,Ter
                        TokEntry *err, const char *msg,  ...) {
   CACHE_REGS
 #if HAVE_FTELLO
-  offset_t opos;
+R  offset_t opos;
 #else
   long opos;
 #endif

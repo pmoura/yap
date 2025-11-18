@@ -376,7 +376,7 @@ selectlists(Pred, [In|ListIn], [In1|ListIn1], ListOut, ListOut1) :-
 /**
   @pred  exclude( 2:Goal, + List1, ? List2)
 
-  Filter elements for which  _Goal_ fails. True if  _List2_ contains
+  Filter elements for which  _Goal_ . True if  _List2_ contains
   those elements  _Xi_ of  _List1_ for which `call(Goal, Xi)` fails.
 */
 exclude(_, [], []).

@@ -19,14 +19,14 @@ static char SccsId[] = "%W% %G%";
 #endif
 
 /**
- *
+ * @file  streams.c
 
- * This file includes the definition of a miscellania of standard predicates
+ * @brief This file includes the definition of a miscellania of standard predicates
  * for yap refering to: Files and GLOBAL_Streams, Simple Input/Output,
  *
  */
-/** defgroup StreamM Stream Operations
- *
+/** @addtogroup StreamOps Stream Operations
+ * @{
  */
     
 #if HAVE_FCNTL_H
@@ -1687,3 +1687,6 @@ void Yap_InitIOStreams(void) {
                 SafePredFlag| SyncPredFlag);
   Yap_InitCPred("set_stream", 2, set_stream, SafePredFlag | SyncPredFlag);
 }
+
+///  @}
+

@@ -147,14 +147,18 @@ predicate_definition(N/A,W) :-
 true
     ).
 
+:- dynamic new_mod/0.
+
 insert_module_header(W) :-
     current_source_module(M,M),
     %    format(ostream,'class Predicate(M),
     !,
-    format(W,'namespace ~s~n{~n',[M]).
+    format(W,'namespace ~s~n{~n',[M]),
+    assert(new_mod).
 insert_module_header(_).
 
 insert_module_tail(W) :-
+    new_mod,
     defines_module(_M),
     !,
     format(W,'}~n',[]).
@@ -177,24 +181,29 @@ simplify(C,Simplified) :-
     sub_string(C,0,4,_,"/**<"),
     sub_string(C,4,1,_,Space),
     sp(Space),
+    sub_string(C,5,_,0,NC),
     !,
-    string_list_concat(ListSlashStar, "\n", C),
+    string_list_concat(ListSlashStar, "\n", NC),
     maplist(simplify_slash, ListSlashStar,  S),
-    string_list_concat(S, "\n", Simplified).
-simplify(C,Simplified) :-
+    string_list_concat([ "/**<\n",S, "\n\n"], Simplified).
+simplify(C, Simplified) :-
     sub_string(C,0,3,_,"/**"),
     sub_string(C,3,1,_,Space),
     sp(Space),
+    sub_string(C,4,_,0,NC),
     !,
-    string_list_concat(ListSlashStar, "\n", C),
+    string_list_concat(ListSlashStar, "\n", NC),
     maplist(simplify_slash, ListSlashStar,  S),
-    string_list_concat(S, "\n", Simplified).
+    string_list_concat(S,"\n", Simplified0),
+    string_concat(["/**\n", Simplified0,"\n\n"], Simplified).
+
+
 simplify(C,C) :-
-    sub_string(C,0,3,_,"/*"),
+    sub_string(C,0,2,_,"/*"),
     !.
 simplify(C,Simplified) :-
-    sub_string(C,0,4,_,"%%<"),
-    sub_string(C,4,1,_,Space),
+    sub_string(C,0,3,_,"%%<"),
+    sub_string(C,3,1,_,Space),
     sp(Space),
     !,
     sub_string(C,4,_,0,Slash),
@@ -292,7 +301,7 @@ trl_pred(L,NewLine) :-
     assert(pred_found(M,At,Arity)),
     sub_string(L,0,Bef,_, Prefix),
     encode(Name/Arity,DoxName),
-    string_concat([Prefix,"@class ",DoxName,"\n       *",Name,Args,"* ",RL],NewLine).
+    string_concat([Prefix,"@class ",DoxName,"\n       ** ",Name,Args," ** ",RL],NewLine).
 % arity == 0
 trl_pred(L,NewLine) :-
     (
@@ -311,7 +320,7 @@ trl_pred(L,NewLine) :-
     assert(pred_found(M,At,A)),
     sub_string(L,0,Bef,_, Prefix),
     encode(Name/A,DoxName),
-    string_concat( [Prefix,"@class ",DoxName,"\n       *",Name,Args,"* ",RL],NewLine).
+    string_concat( [Prefix,"@class ",DoxName,"\n       ** ",Name,Args," ** ",RL],NewLine).
 trl_pred(L,NewLine) :-
     sub_string(L,Bef,10,_After,"@infixpred"),
     A0 is Bef+10,
@@ -388,7 +397,7 @@ trl_pred(L,L).
     block(I,_Line,I).
 
   
-detect_name(Line,Name,Args,Arity,Extra) :-
+detect_name(Line,Name,NewArgs,Arity,Extra) :-
     sub_string(Line,Bef,1,_,"("),
     !,
     sub_string(Line,_,1,After,")"),
@@ -396,50 +405,30 @@ detect_name(Line,Name,Args,Arity,Extra) :-
     sub_string(Line,Bef,_Sz,After,Args),
     sub_string(Line,_,After,0,Extra),
     findall(I,sub_string(Args,I,1,_,","),Is),
-    length([_|Is],Arity).
+    length([_|Is],Arity),
+    string_chars(Args,LArgs),
+    exclude(controlarg,LArgs,EAs),
+    EAs = ['('|Cs], 
+    Out = ['(',' '|NCs],
 
-detect_name(Line,Name,"",0,Extra) :-
-    sub_string(Line,Bef,1,After,SP),
-    sp(SP),
-    !,
-    sub_string(Line,0,Bef,_,Name),
-    sub_string(Line,_,After,0,Extra).
-detect_name(Name,Name,"",0,"").
+    addsp(Cs,NCs),
+    string_chars(NewArgs,Out).
 
-trl_pi(L,NewLine) :-
-    sub_string(L,Left,1,Extra,"/"),
-    Left > 0,
-    Extra > 0,
-    Extra1 is Extra-1,
-    sub_string(L,_,1,Extra1,D),
-    digit(D),
-    string_number(D,Arity),
-    
-    back(Left,L,NPrefix),
-    NPrefix \= Left,
-    !,
-    sub_string(L,0,NPrefix,_,Prefix),
-    ExtraP1 is Extra+1,
-    sub_string(L,NPrefix,_,ExtraP1,Name),
-    encode(Name/Arity,DoxName0),
-    encode_dox(DoxName0,DoxName),
-    Right is Extra-1,
-    sub_string(L,_,Right,0,RightLine),
-    trl_pi(RightLine,More),
-    format(string(NewLine), "~s~s~s", [Prefix,DoxName0,More]).
-trl_pi(S,S).
-    
-encode_dox(S,ES) :-
-    string_chars(S,Cs),
-    doxtrl(Cs,NCs),
-    string_chars(ES,NCs).
+controlarg(' ').
+controlarg('\t').
+controlarg('*').
+controlarg('_').
+/*
+controlarg('+').
+controlarg('?').
+*/
 
-doxtrl([],[]).
-doxtrl(['_'|L],['_','_'|NL]) :-
+addsp([','|Cs],[',',' '|NCs]) :-
     !,
-    doxtrl(L,NL).
-doxtrl([C|L],[C|NL]) :-
-    doxtrl(L,NL).
+    addsp(Cs,NCs).
+addsp([C|Cs],[C|NCs]) :-
+    addsp(Cs,NCs).
+addsp([],[]).
 
     
 back(0,_L,0) :-
@@ -465,6 +454,30 @@ digit("8").
 digit("9").
     
 
+
+trl_pi(L,NewLine) :-
+    sub_string(L,Left,1,Extra,"/"),
+    Left > 0,
+    Extra > 0,
+    Extra1 is Extra-1,
+    sub_string(L,_,1,Extra1,D),
+    digit(D),
+    string_number(D,Arity),
+    
+    back(Left,L,NPrefix),
+    NPrefix \= Left,
+    !,
+    sub_string(L,0,NPrefix,_,Prefix),
+    ExtraP1 is Extra+1,
+    sub_string(L,NPrefix,_,ExtraP1,Name),
+    encode(Name/Arity,DoxName0),
+    encode_dox(DoxName0,DoxName),
+    Right is Extra-1,
+    sub_string(L,_,Right,0,RightLine),
+    trl_pi(RightLine,More),
+    format(string(NewLine), "~s@ref [~s/~d][class~s] ~s", [Prefix,Name,Arity,DoxName,More]).
+trl_pi(S,S).
+    
 alphanum(A) :-
     char_type(A,csym),
     !.
@@ -477,6 +490,7 @@ addcomm(N/A,S,false) :-
     maplist(=('?'),L),
     T =.. [N|L],
     format(ostream,'~n~n/** ~n@class #~s ~w     (undocumented)  **/~n~n',[S,T]).
+
 addcomm(_,_,_).
 
 

@@ -13,9 +13,11 @@ theme:
     - javascript
     - R
   logo: 'img/favicon.ico'
+
 plugins:
   - search
-  - autorefs
+  - autorefs:
+      resolve_closest: true
   - mkdoxy:
       # debug: true
       ignore-errors: true
