@@ -104,25 +104,25 @@ static inline const char *enc_name(encoding_t enc) {
   case ENC_OCTET:
     return "octet";
   case ENC_ISO_LATIN1:
-    return "iso_latin_1";
+    return "ISO-8859-1";
   case ENC_ISO_ASCII:
-    return "ascii";
+    return "US_ASCII";
   case ENC_ISO_ANSI:
     return "octet";
   case ENC_ISO_UTF8:
-    return "utf8";
+    return "UTF-8";
   case ENC_UTF16_BE:
-    return "utf16_be";
+    return "UTF-16BE";
   case ENC_UTF16_LE:
-    return "utf16_le";
+    return "UTF-16LE";
   case ENC_UCS2_BE:
-    return "ucs2_be";
+    return "UCS-32BE";
   case ENC_UCS2_LE:
-    return "ucs2_le";
+    return "UCS-2LE";
   case ENC_ISO_UTF32_BE:
-    return "utf32_be";
+    return "UTF-32BE";
   case ENC_ISO_UTF32_LE:
-    return "utf32_le";
+    return "UTF-32LE";
   default:
     return "thanks for watching!!";
   }
@@ -151,7 +151,7 @@ static inline encoding_t enc_id(const char *s, encoding_t enc_bom) {
       return ENC_UTF16_BE;
     if (!strcmp(s, "octet"))
       return ENC_OCTET;
-    if (!strcmp(s, "iso_latin_1"))
+    if (!strcmp(s, "ISO-8859-1"))
       return ENC_ISO_LATIN1;
     if (!strcmp(s, "iso_ascii"))
       return ENC_ISO_ASCII;

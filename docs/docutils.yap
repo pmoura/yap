@@ -1,4 +1,4 @@
-:- dynamic exported/2, defines_module/1.
+%:- dynamic exported/2, defines_module/1.
 
 :- include(yapops).
 
@@ -108,16 +108,18 @@ encode(Pred/A,String) :-
      ;
      Pred = SPred
     ),
-    pred2dox(SPred, String0),
-    (number(A) ->
-     number_string(A, Arity)
+    (number(A)
+     -> number_string(A,Arity)
      ;
-    atom(A) ->
-    atom_string(A, Arity);
-    A = Arity
+     A = Arity
     ),
-    string_concat([String0,"_",Arity],String).
-encode(Pred, Pred).
+    string_concat([String0,"/",Arity],String0),
+    pred2safe(String0,String).
+encode(Pred, SPred) :-
+    string(Pred),
+    !,
+    pred2safe(Pred, SPred).
+ncode(Pred, Pred).
 
   decode(A,SF):-
     atom(A),
@@ -125,38 +127,29 @@ encode(Pred, Pred).
     atom_string(A,S),
     decode(S,SF).
   decode(S,SF):-
-    sub_string(S,_,1,1,"_"),
-    sub_string(S,_,1,0,C),
-    string_codes(C,[CN]),
-    code_type_digit(CN),
-   sub_string(S,0,_,2,Name),
 		 !,
-     dox2pred(Name,Name1),
-     string_concat([Name1,"/",C],SF).
-  decode(S,SF):-
-    dox2pred(S,SF),
-    !.
+     safe2pred(S,SF).
 decode(P,P).
 
 
-pred2dox(Pred, String) :-
+pred2safe(Pred, String) :-
     string_codes(Pred,Chars),
     fetch_chars(Chars,Codes,[]),
     !,
     string_codes(String,Codes).
-pred2dox(Pred,Pred).
+pred2safe(Pred,Pred).
 
-    dox2pred(String,Pred) :-
+    safe2pred(String,Pred) :-
     string_codes(String,Codes),
     fetch_chars(Chars,Codes,[]),
     !,
     string_codes(Pred,Chars).
-    dox2pred(String,String).
+    safe2pred(String,String).
 
 fetch_chars([]) -->[], !.
-nnfetch_chars([C|Cs]) -->
-{var(C)},
-    [0'_],
+fetch_chars([C|Cs]) -->
+    {var(C)},
+    [0'Z],
     [A,B],
     {A >= "A", A< "A"+16,
      B >= "A", B< "A"+16
@@ -167,15 +160,41 @@ C is (A-"A")*16+(B-"A")
     },
 fetch_chars(Cs).
 fetch_chars([C|Cs]) -->
-    {nonvar(C),
-    \+ code_type_alnum(C)},
+   {nonvar(C),
+     (C=0'Z;\+ code_type_alnum(C))},
 !,    {
 A is (C div 16)+"A",
 B is (C mod 16)+"A"
 },
-    [0'_,A,B],
+    [0'Z,A,B],
 fetch_chars(Cs).
 fetch_chars([C|Cs]) -->
     [C],
 fetch_chars(Cs).
+
+
+encode_dox(S,ES) :-
+    string_concat(["class",S],ES).
+
+decode_dox(S,ES) :-
+    string_concat(["class",ES],S),
+    !.
+decode_dox(S,S).
+
+pred(Id) :-
+    sub_atom(Id ,_, 4, 0, Arity),
+    atom_chars(Arity,['Z','C','P',Dig]),
+    char_type_digit(Dig).
+
+%dedoxtrl([c,l,a,s,s],[]).
+dedoxtrl([],[]).
+
+dedoxtrl([C|L],[C|NL]) :-
+    dedoxtrl(L,NL).
+
+is_pi(S) :-
+    string_chars(S,Cs),
+    append(_Prefix,['/'|Pos],Cs),
+    maplist(char_type_xdigit, Pos).
+
 

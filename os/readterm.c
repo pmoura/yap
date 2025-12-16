@@ -365,7 +365,7 @@ RESET_VARIABLE(HR+1);
    + `number`(Number)
    + `var`(VarName)
    + `string`(String)
-   + 'EOF''
+   + `EOF`
    + symbols, including `(`, `)`, `,`, `;`
 
 */
@@ -434,7 +434,7 @@ char * Yap_syntax_error__(const char *file, const char *function, int lineno,Ter
                        TokEntry *err, const char *msg,  ...) {
   CACHE_REGS
 #if HAVE_FTELLO
-  offset_t opos;
+R  offset_t opos;
 #else
   long opos;
 #endif
@@ -815,6 +815,8 @@ int Yap_encoding_error__(const char *file, const char *function, int line ,int c
       }
       return EOF;
     }
+    if (st->status & FailOnScanError_Stream_f)
+      return 0;
     if (!st ||st->status & RepError_Prolog_f || trueGlobalPrologFlag(ISO_FLAG)) {
       Yap_syntax_error__(file, function, line,  MkIntTerm(ch), st-GLOBAL_Stream, start, err, msg, ch);
       return EOF;
@@ -1497,8 +1499,8 @@ read_term2(USES_REGS1) /* '$read'(+Flag,?Term,?Module,?Vars,-Pos,-Err) */
 controlled by the following options:
 
 
- term_position(-@var{Position})
-Unify @var{Position} with a term describing the position of the stream
++ term_position(- _Position_)
+Unify _Position_ with a term describing the position of the stream
 at the start of parse. Use stream_position_data/3 to obtain extra
 information.
 

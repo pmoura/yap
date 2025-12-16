@@ -1666,7 +1666,7 @@ void Yap_AllocHole(UInt actual_request, UInt total_size) {
 ///
 /// API for wrapper: 
 /// 1. `int push_text_stack(): start a new level
-/// 1. `int pop_text_stack(int lvl)`: release all heap object at level `lvl`
+/// 1. `int pop_text_stack(int lvl): release all heap object at level `lvl`
 /// 1. `int pop_output_text_stack(int lvl, const void *export)`: same as before, but `export` is stil avaliable.
 /// 1. void *Malloc(size_t sz)
 /// 2. Realloc(ptr, sz)

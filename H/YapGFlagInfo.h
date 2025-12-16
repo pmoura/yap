@@ -178,7 +178,7 @@ YAP_FLAG(CLAUSE_PREPROCESSOR, "clause_preprocessor", true, isatom, "none",
 	   NULL),
   /**<   Writable flag telling how much preprocessing to do after reading a clause.
    reading terms.
- The defaults are `none` when fast-compiling, `all` when compiling a file, and `user otherwise (eg, when asserting or running directives.
+ The defaults are `none` when fast-compiling, `all` when compiling a file, and `user` otherwise (eg, when asserting or running directives.
 */
     
   
@@ -392,7 +392,7 @@ YAP_FLAG(HALT_AFTER_CONSULT_FLAG, "halt_after_consult", false, booleanFlag,
   
 
 YAP_FLAG(HOME_FLAG, "home", false, isatom, YAP_ROOTDIR, NULL),
-		     /**< home `
+		     /**< `home`
 
      the root of the YAP installation, by default `/usr/local` in Unix or
      `c:\Yap` in Windows system. Can only be set at configure time
@@ -402,7 +402,7 @@ YAP_FLAG(HOME_FLAG, "home", false, isatom, YAP_ROOTDIR, NULL),
 
 
 YAP_FLAG(HOST_TYPE_FLAG, "host_type", false, isatom, HOST_ALIAS, NULL),
-		     /**< host_type `
+		     /**< `host_type`
 
     Return `configure` system information, including the machine-id
     for which YAP was compiled and Operating System information.
@@ -412,7 +412,7 @@ YAP_FLAG(HOST_TYPE_FLAG, "host_type", false, isatom, HOST_ALIAS, NULL),
 
 
 YAP_FLAG(INDEX_FLAG, "index", true, indexer, "multi", NULL),
-		     /**< `index `
+		     /**< `index`
 
     If `on` allow indexing (default), if `off` disable it, if
     `single` allow on first argument only.
@@ -423,7 +423,7 @@ YAP_FLAG(INDEX_FLAG, "index", true, indexer, "multi", NULL),
 
 YAP_FLAG(INDEX_SUB_TERM_SEARCH_DEPTH_FLAG, "index_sub_term_search_depth",
              true, nat, "0", NULL),
-		     /**< `Index_sub_term_search_depth `
+		     /**< `Index_sub_term_search_depth`
 
    Maximum bound on searching sub-terms for indexing, if `0` (default) no
    bound.
@@ -434,7 +434,7 @@ YAP_FLAG(INDEX_SUB_TERM_SEARCH_DEPTH_FLAG, "index_sub_term_search_depth",
 
 YAP_FLAG(INFORMATIONAL_MESSAGES_FLAG, "informational_messages", true,
              isatom, "normal", NULL),
-		     /**< `informational_messages `
+		     /**< `informational_messages`
 
     If `on` allow printing of informational messages, such as the ones
     that are printed when consulting. If `off` disable printing

@@ -38,8 +38,8 @@ static char SccsId[] = "%W% %G%";
 
 /**
  *
- * @addtogroup absf
- *
+ * @defgroup OSPaths
+ * @ingroup InputOutput
  * @brief C-code support for dealing with absolute and relative paths.
  *
  * This code provides the necessary built-ins to open, close and move around
@@ -515,8 +515,8 @@ static Int real_path(USES_REGS1) {
   cmd = rc;
 #endif
   int lvl = push_text_stack();
-        const char *p = PlExpandVars(cmd, NULL);
-	rc0 = myrealpath(p PASS_REGS);
+  const char *p = PlExpandVars(cmd, NULL);
+  rc0 = myrealpath(p PASS_REGS);
   if (!rc0) {
     pop_text_stack(lvl);
     PlIOError(SYSTEM_ERROR_OPERATING_SYSTEM, ARG1, NULL);
@@ -530,7 +530,7 @@ static Int real_path(USES_REGS1) {
 static char *close_path(char *b0, char *o0, char *o) {
      if (b0[0] == '\0') {
            return o;
-          } else if (!strcmp(b0, "..")) {
+     qs} else if (!strcmp(b0, "..")) {
             while (o-- > o0) {
                   if (Yap_dir_separator(*o)) {
                         break;
@@ -625,18 +625,18 @@ static Int prolog_to_os_filename(USES_REGS1) {
   if (IsVarTerm(t)) {
 
     if (IsVarTerm(t2)) {
-      Yap_ThrowError(INSTANTIATION_ERROR, t, "prolog_to_os_filename");
+      Yap_Error(INSTANTIATION_ERROR, t, "prolog_to_os_filename");
       return false;
     } else if (IsAtomTerm(t2)) {
       if (!(fp = PrologPath(RepAtom(AtomOfTerm(t2))->StrOfAE, out)))
         return false;
       return Yap_unify(ARG1, MkAtomTerm(Yap_LookupAtom(fp)));
     } else {
-      Yap_ThrowError(TYPE_ERROR_ATOM, t2, "prolog_to_os_filename");
+      Yap_Error(TYPE_ERROR_ATOM, t2, "prolog_to_os_filename");
       return false;
     }
   } else if (!IsAtomTerm(t)) {
-    Yap_ThrowError(TYPE_ERROR_ATOM, t, "prolog_to_os_filename");
+    Yap_Error(TYPE_ERROR_ATOM, t, "prolog_to_os_filename");
     return false;
   }
 
@@ -691,7 +691,7 @@ static Int file_name_extension(USES_REGS1) {
     const char *ext;
     char *base;
     bool rc = true;
-    seq_type_t typ = Yap_TextType(t3);
+    enum_seq_type_t typ = Yap_TextType(t3);
     if (!f) {
       pop_text_stack(l);
       return false;
@@ -739,38 +739,50 @@ static Int file_name_extension(USES_REGS1) {
     pop_text_stack(l);
     return rc;
   } else {
-    const char *f;
-    char *f2;
-    seq_type_t typ, typ1 = Yap_TextType((t1 = Deref(ARG1))),
-                    typ2 = Yap_TextType((t2 = Deref(ARG2)));
-    if (typ1 == typ2) {
-      typ = typ1;
-    } else if (typ1 == YAP_STRING_ATOM || typ2 == YAP_STRING_ATOM) {
-      typ = YAP_STRING_ATOM;
+    // both prefix and sffix are available.
+    t1 = Deref(ARG1);
+    t2 = Deref(ARG2);
+    bool atom_as_output = false;
+    char *f;
+    const char *f1, *f2;
+    if (IsAtomTerm(t1)) {
+      f1  =  RepAtom(AtomOfTerm(t1))->StrOfAE;
+      atom_as_output = true;
     } else {
-      typ = YAP_STRING_STRING;
+      f1  =  StringOfTerm(t1);
     }
-    if (!(f = Yap_TextTermToText(t1 PASS_REGS))) {
-      pop_text_stack(l);
-      return false;
+    if (IsAtomTerm(t2)) {
+      f2  =  RepAtom(AtomOfTerm(t2))->StrOfAE;
+      atom_as_output = true;
+    } else {
+      f2  =  StringOfTerm(t2);
     }
-    if (!(f2 = (char *)Yap_TextTermToText(t2 PASS_REGS))) {
-      pop_text_stack(l);
-      return false;
+    size_t s1 =strlen(f1),
+    s2 = strlen(f2);
+    f = Malloc(s1+s2+2);
+    strcpy(f, f1);
+    if (f2[0]=='.') {
+      strcpy(f+s1,f2);
+    } else {
+      f[s1] = '.';
+      strcpy(f+s1+1,f2);
     }
-    if (f2[0] == '.') {
-      f2++;
+    if (IsVarTerm(t3)) {
+      if (atom_as_output) {
+	return Yap_unify(ARG3 ,
+			 MkAtomTerm(Yap_LookupAtom(f)));
+      } else {
+	return Yap_unify(ARG3 ,
+			 MkStringTerm(f));
+      }
+    } else if (IsAtomTerm(t3)) {
+      return !strcmp(f,RepAtom(AtomOfTerm(t3))->StrOfAE);
+    } else {
+      return !strcmp(f,StringOfTerm(t3));
     }
-
-    size_t lenb_b = strlen(f);
-    char *o = Realloc((void *)f, lenb_b + strlen(f2) + 2);
-    o[lenb_b] = '.';
-    o += lenb_b + 1;
-    pop_text_stack(l);
-    return strcpy(o, f2) && (t3 = Yap_MkTextTerm(o, typ PASS_REGS)) &&
-           Yap_unify(t3, ARG3);
   }
 }
+  
 #if 0
 static Int access_path(USES_REGS1) {
   Term tname = Deref(ARG1);
@@ -800,12 +812,14 @@ static Int access_path(USES_REGS1) {
       return true;
     }
     return true;
+  }
 #else
     return false;
-#endif
-  }
 }
+#endif
+#endif
 
+#if 0
 static char *clean_path(const char *path) {
   const char *p, *p0;
   int lvl = push_text_stack();
@@ -890,16 +904,23 @@ static Int true_file_name3(USES_REGS1) {
   return rc && Yap_unify(ARG3, MkAtomTerm(at));
 }
 
+/**
+   @pred path_concat( +ListOfPaths, -Path )
+
+Concatenate the paths in _ListOfPaths_ and unify the result with Path
+*/
 static Int path_concat(USES_REGS1) {
-  int l = push_text_stack();
   size_t len;
   Term t = Deref(ARG1);
   Term *tailp;
   int n = Yap_SkipList(&t, &tailp);
+  if (IsVarTerm(*tailp)) {
+      Yap_ThrowError(INSTANTIATION_ERROR, t, "sub-paths missing");
+  }
   if (*tailp != TermNil) {
       Yap_ThrowError(TYPE_ERROR_LIST, t, "while concatenating sub-paths");
   }
-  const  char **inp = Malloc( (n+1)*sizeof(const char *) );
+  const  char **inp = malloc( (n+1)*sizeof(const char *) );
   int i=0;
   while (IsPairTerm(t)) {
     Term th = HeadOfTerm(t);
@@ -913,16 +934,17 @@ static Int path_concat(USES_REGS1) {
   inp[i] = NULL;
     len = PATH_MAX;
    size_t sz;
-           char *buf = Malloc(len);
+           char *buf = malloc(len);
   do {
 
     sz = cwk_path_join_multiple(inp,buf,len-1);
       if (sz >= len) {
           len = sz+1;
-        buf = Realloc (buf, len);
+        buf =realloc (buf, len);
       } else {
     bool rc= Yap_unify(MkAtomTerm(Yap_LookupAtom(buf)),ARG2);
-    pop_text_stack(l);
+    free(buf);
+    free(inp);
     return rc;
       }
   } while (true);

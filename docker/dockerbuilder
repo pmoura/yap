@@ -1,19 +1,32 @@
 #!/usr/bin/env bash 
+#  first argument describes the target machine:
+#  ubuntu
+#  fedora
+#  debian
+#  arch
+#  by default we support the latest image, these are the details:
+#   ubuntu.latest
+#   ubuntu:22.04
+#   ubuntu:20.04
+#   ubuntu:18.04
 TARGET=$1
+shift
 BUILD=¨¨
 SU=sudo
+TZ=Portugal
 WITH_PACKAGES=1
-WITH_CUDD=$WITH_PACKAGES
-WITH_Gecode=$WITH_PACKAGES
-WITH_Python3=$WITH_PACKAGES
-WITH_Raptor2=$WITH_PACKAGES
-WITH_SAT=$WITH_PACKAGES
-WITH_MYDDAS=$WITH_PACKAGES
-WITH_SQLite3=$WITH_MYDDAS
+WITH_CUDD=0
+WITH_Gecode=0
+WITH_Python3=0
+WITH_Raptor2=0
+WITH_MYDDAS=0
+WITH_SAT=0
+WITH_SQLite3=0
+
 
 #REPO=file:///home/vsc/github/yap
 REPO=https://github.com/vscosta/yap
-while [ -a $*  ] ; do
+while [ -a $#  ] ; do
             case "${1}" in
 	    	 --all-packages)
 		    OPTIONS+=" -DWITH_PACKAGES=1"
@@ -31,6 +44,11 @@ while [ -a $*  ] ; do
 	    	 --with-gecode)
 		    WITH_Gecode=1
 		    OPTIONS+=" -DWITH_Gecode=1"
+		    ALL_PACKAGES=NO
+		    ;;
+	    	 --with-sat)
+		    WITH_SAT=1
+		    OPTIONS+=" -DWITH_SAT=1"
 		    ALL_PACKAGES=NO
 		    ;;
 	    	 --with-python)
@@ -69,10 +87,11 @@ fi
 #
 # header: uses TARGET
 #
+# trouble maker
 cat > Dockerfile << EOF
 FROM $TARGET AS base
 
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime & echo $TZ > /etc/timezone
 # Set the working directory to /app
 
 WORKDIR /app
@@ -85,8 +104,12 @@ EOF
     ubuntu*|debian*)
 	cat >> Dockerfile << EOF
 
-RUN  \
+#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
+
+
+RUN DEBIAN_FRONTEND=noninteractive \
     apt -y update && apt -y upgrade && \
+    apt -y install tzdata && \
     apt -y install git gcc g++ make cmake\
     autotools-dev automake autoconf perl-base m4 doxygen\
     libreadline-dev libgmp-dev \
@@ -94,8 +117,20 @@ RUN  \
     swig ninja-build\
     mkdocs  \
     r-cran-rcpp
+EOF
+
+if [ "$TARGET" = ubuntu:18.04 -o   "$TARGET" = ubuntu:20a.04 ]; then 	cat >> Dockerfile << EOF
+
+RUN\
+ apt -y install wget libgmp10 &&\
+ wget https://cmake.org/files/v3.30/cmake-3.30.9-linux-x86_64.tar.gz\
+ && cd / \
+ &&ln -s usr cmake-3.30.9-linux-x86_64 &&\
+ tar xfz /app/cmake-3.30.9-linux-x86_64.tar.gz
 
 EOF
+fi
+
 ;;
     fedora*)
  	cat >> Dockerfile << EOF
@@ -279,7 +314,6 @@ RUN  \
 EOF
 	;;
 esac
-fi
 
 
 	cat >> Dockerfile << EOF
@@ -290,6 +324,7 @@ cd  glucose/release && \
 cmake -DBUILD_SHARED_LIBS=1 -DCMAKE_POLICY_VERSION_MINIMUM=3.5   -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr -G Ninja .. && \
  ninja 
 EOF
+fi
 
 #
 # MYDDAS DB Interface
@@ -298,7 +333,7 @@ if [ $WITH_MYDDAS = 1 ]; then
 case "$TARGET" in
     ubuntu*|debian*)
 	cat >> Dockerfile << EOF
-RUN  apt install -y  libsqlite3-dev libpq-dev libmariadb-dev libmariadb-dev-compat unixodbc-dev
+RUN  apt install -y  libsqlite3-dev libpq-dev libmariadb-deav libmariadb-dev-compat unixodbc-dev
 
 EOF
 ;;
@@ -308,7 +343,7 @@ RUN  dnf install -y  sqlite-devel postgresql-devel mariadb-devel unixODBC-devel
 
 EOF
 	;;
-    Archlinux*)
+    archlinux*)
  	cat >> Dockerfile << EOF
 
 RUN  \
@@ -335,6 +370,6 @@ ninja install && \
 ENV NAME=World
 
 EOF
-if [ x$BUILD != x ]; then
-    $SU docker build .
-fi
+# if [ x$BUILD != x ]; then
+#     $SU docker build .
+# fi

@@ -177,7 +177,7 @@ it is both more efficient and more portable.
   X, Y.
 
 
-/** @pred  if(? _G_,? _H_,? _I_)
+/** @pred  if( ?_G_, ?_H_, ?_I_)
 
 Call goal  _H_ once per each solution of goal  _H_. If goal
  _H_ has no solutions, call goal  _I_.
@@ -739,17 +739,18 @@ call_in_module(M:G) :-
  * Call _G_ unifying _N_ with the number of answers so far.
  *
  * An example is:
- * ```
- * ?- call_nth(between(1,10,N),N).
- * N=1 ;
- * N=2 ;
- * N=3
- * ```
+
+```
+?- call_nth(between(1,10,N),N).
+N=1 ;
+N=2 ;
+N=3
+```
  * when _N is bound:
- * ```
- * ?- call_nth(between(1,6,X),3).
- * X=3
- * ```
+```
+?- call_nth(between(1,6,X),3).
+X=3
+```
  */
 call_nth(Goal_0, Nth) :-
    (

@@ -36,7 +36,6 @@
         save_program/1,
         save_program/2], ['$init_state'/0]).
 
-:- use_system_module( '$_absf', ['$system_library_directories'/2]).
 
 :- use_system_module( '$_boot', ['$system_catch'/4]).
 

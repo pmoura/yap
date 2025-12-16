@@ -219,7 +219,7 @@ static inline encoding_t enc_id(const char *s, encoding_t enc_bom) {
     if (!strcmp(s, "UCS-2BE"))
       return ENC_UCS2_BE;
 
-  }
+  }q
   
   }
   return Yap_DefaultEncoding();	  

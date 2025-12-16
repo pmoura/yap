@@ -217,9 +217,11 @@ static TokEntry *TrailSpaceError__(TokEntry *t, TokEntry *l USES_REGS) {
   return l;
 }
 
-static int number_encoding_error(int ch, seq_type_t code, struct stream_desc *st)
+static Term number_encoding_error(int ch, enum_seq_type_t code, struct stream_desc *st)
 {
   CACHE_REGS
+  if (st->status & FailOnScanError_Stream_f)
+     return TermNil;
    LOCAL_ErrorMessage=malloc(2048);
    snprintf(LOCAL_ErrorMessage, 2047,
             "unexpected character %c while  reading quoted text", (char)code);
@@ -1089,14 +1091,13 @@ TokEntry *Yap_tokenizer(void *st_, void *params_) {
         if (ch == 10 && !(Yap_GetModuleEntry(CurrentModule)->flags & M_MULTILINE)) {
 	  ch = Yap_encoding_error( 10, st, LOCAL_tokptr,LOCAL_toktide,          "in ISO a new linea terminates a string" );
        if (charp > (unsigned char *)TokImage + (imgsz - 1)) {
-          size_t sz = charp - (unsigned char *)TokImage;
           TokImage =
               Realloc(TokImage, (imgsz = Yap_Min(imgsz * 2, imgsz + MBYTE)));
           if (TokImage == NULL) {
             return CodeSpaceError(t, p, l);
           }
        }
-	  break;
+       break;
        }
 	if (ch == EOFCHAR) {
 	          	st->status |= Push_Eof_Stream_f;

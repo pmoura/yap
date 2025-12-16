@@ -19,14 +19,14 @@ static char SccsId[] = "%W% %G%";
 #endif
 
 /**
- *
+ * @file  streams.c
 
- * This file includes the definition of a miscellania of standard predicates
+ * @brief This file includes the definition of a miscellania of standard predicates
  * for yap refering to: Files and GLOBAL_Streams, Simple Input/Output,
  *
  */
-/** defgroup StreamM Stream Operations
- *
+/** @addtogroup StreamOps Stream Operations
+ * @{
  */
     
 #if HAVE_FCNTL_H
@@ -326,6 +326,8 @@ is_output(int sno USES_REGS) { /* '$set_output'(+Stream,-ErrorMessage) */
 static Int
 has_bom(int sno, Term t2 USES_REGS) { /* '$set_output'(+Stream,-ErrorMessage) */
   bool rc = GLOBAL_Stream[sno].status & HAS_BOM_f;
+  if (GLOBAL_Stream[sno].encoding==ENC_OCTET)
+    return false;
   if (!IsVarTerm(t2) && !booleanFlag(t2)) {
     //   Yap_Error( DOMAIN_ERROR_BOOLEAN, t2, " stream_property/2");
     return false;
@@ -439,6 +441,8 @@ static Int has_close_on_abort(
 static bool
 has_encoding(int sno,
              Term t2 USES_REGS) { /* '$set_output'(+Stream,-ErrorMessage)  */
+  if (GLOBAL_Stream[sno].encoding==ENC_OCTET)
+    return false;
   const char *s = enc_name(GLOBAL_Stream[sno].encoding);
   return Yap_unify(t2, MkAtomTerm(Yap_LookupAtom(s)));
 }
@@ -568,8 +572,8 @@ eof_action(int sno,
 }
 
 #define STREAM_PROPERTY_DEFS()                                                 \
-  PAR("alias", filler, STREAM_PROPERTY_ALIAS)                                  \
-  , PAR("bom", filler, STREAM_PROPERTY_BOM),                                   \
+  PAR("alias", filler, STREAM_PROPERTY_ALIAS),                                  \
+   PAR("bom", filler, STREAM_PROPERTY_BOM),                                   \
       PAR("close_on_abort", filler, STREAM_PROPERTY_CLOSE_ON_ABORT),           \
       PAR("encoding", filler, STREAM_PROPERTY_ENCODING),                       \
       PAR("end_of_stream", filler, STREAM_PROPERTY_END_OF_STREAM),             \
@@ -629,6 +633,8 @@ static bool do_stream_property(int sno,
                  sno, args[STREAM_PROPERTY_CLOSE_ON_ABORT].tvalue PASS_REGS);
         break;
       case STREAM_PROPERTY_ENCODING:
+	if (GLOBAL_Stream[sno].encoding==ENC_OCTET)
+	  return false;
         rc = rc &&
              has_encoding(sno, args[STREAM_PROPERTY_ENCODING].tvalue PASS_REGS);
         break;
@@ -918,6 +924,8 @@ static bool do_set_stream(int sno,
       case SET_STREAM_ENCODING: {
         Term t2 = args[SET_STREAM_ENCODING].tvalue;
         Atom atEnc = AtomOfTerm(t2);
+	if (GLOBAL_Stream[sno].encoding == ENC_OCTET)
+	  break;
         GLOBAL_Stream[sno].encoding =
             enc_id(atEnc->StrOfAE, (GLOBAL_Stream[sno].status & HAS_BOM_f
                                         ? GLOBAL_Stream[sno].encoding
@@ -1637,7 +1645,7 @@ FILE *Yap_FileDescriptorFromStream(Term t) {
 
 void Yap_InitBackIO(void) {
   Yap_InitCPredBack("stream_property", 2, 2, stream_property,
-                    cont_stream_property, SafePredFlag | SyncPredFlag);
+                    cont_stream_property,  SyncPredFlag);
 }
 
 void Yap_InitIOStreams(void) {
@@ -1679,3 +1687,6 @@ void Yap_InitIOStreams(void) {
                 SafePredFlag| SyncPredFlag);
   Yap_InitCPred("set_stream", 2, set_stream, SafePredFlag | SyncPredFlag);
 }
+
+///  @}
+

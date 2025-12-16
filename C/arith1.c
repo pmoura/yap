@@ -181,8 +181,7 @@ static char     SccsId[] = "%W% %G%";
    ```
    - <b>rationalize( _X_)</b><p> @anchor rationalize1
 
-   Convert the expression _X_ to a rational number or integer. The function is
-   vvxu    similar to [rational/1](@ref rational1), but the result is only accurate within the
+   Convert the expression _X_ to a rational number or integer. The function is   similar to rational/1, but the result is only accurate within the
    rounding error of floating point numbers, generally producing a much
    smaller denominator.
 

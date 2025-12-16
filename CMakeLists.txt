@@ -123,6 +123,7 @@ option(BUILD_SHARED_LIBS "Build shared library" ON)
 CMAKE_DEPENDENT_OPTION(WITH_SYSTEM_MMAP "Use MMAP for shared memory allocation" ON  "NOT WITH_YAPOR_THOR" OFF)
 CMAKE_DEPENDENT_OPTION(WITH_SYSTEM_SHM "Use SHM for shared memory allocation" ON "NOT WITH_YAPOR_THOR; NOT WITH_SYSTEM_MMAP" OFF)
 OPTION(WITH_CALL_TRACER  "support for procedure-call tracing" ${DEBUG})
+
 option(WITH_YAP_DLL "compile YAP as a DLL" ON)
 option(WITH_YAP_STATIC  "compile YAP statically" OFF)
 option(WITH_YAP_CONDOR   "allow YAP to be used from condor" OFF)
@@ -216,7 +217,7 @@ if (GMP_ROOT)
     list(PREPEND CMAKE_PREFIX_PATH ${GMP_ROOT})
 endif()
 pkg_check_modules(GMP
-                  REQUIRED
+                  
                   gmp)
 
 if( NOT GMP_FOUND)

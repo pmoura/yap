@@ -92,7 +92,7 @@ static Int flush_output(USES_REGS1);
    CACHE_REGS
   int32_t val;
 
-  get_utf8(at->UStrOfAE, 1, &val);
+  get_utf8(at->UStrOfAE, -1, &val);
   return val;
 }
 
@@ -548,20 +548,21 @@ static Int put_char_1(USES_REGS1) { /* '$put'(,N)                      */
   int sno = LOCAL_c_output_stream;
   Term t2;
   int ch;
-
-  t2 = Deref(ARG1);
-  must_be_char(t2);
-  ch = CharOfAtom(AtomOfTerm(t2));
-  if (GLOBAL_Stream[sno].status & Binary_Stream_f) {
+   if (GLOBAL_Stream[sno].status & Binary_Stream_f) {
     Yap_ThrowError(PERMISSION_ERROR_OUTPUT_BINARY_STREAM, ARG1, "put/2");
-    return (FALSE);
+    return false;
   }
+  t2 = Deref(ARG1);
+  must_be_atom(t2);
+  Atom at = AtomOfTerm(t2);
+  unsigned char *s = RepAtom(at)->UStrOfAE;
+  s += get_utf8(s, 1, &ch);
   GLOBAL_Stream[sno].stream_wputc(sno, ch);
   /*
    * if (!(GLOBAL_Stream[sno].status & Null_Stream_f))
    * yap_fflush(GLOBAL_Stream[sno].file);
    */
-  return (TRUE);
+  return true;
 }
 
 /** @pred  put_char(+ _S_,+ _A_) is iso
@@ -574,9 +575,6 @@ static Int put_char(USES_REGS1) { /* '$put'(Stream,N)                      */
   int sno;
 
   t2 = Deref(ARG2);
-  must_be_char(t2);
-  ch = CharOfAtom(AtomOfTerm(t2));
-  
   sno = Yap_CheckTextStream(ARG1, Output_Stream_f, "put/2");
   if (sno < 0)
     return false;
@@ -584,6 +582,10 @@ static Int put_char(USES_REGS1) { /* '$put'(Stream,N)                      */
     Yap_ThrowError(PERMISSION_ERROR_OUTPUT_BINARY_STREAM, ARG1, "put/2");
     return false;
   }
+  must_be_atom(t2);
+  Atom at = AtomOfTerm(t2);
+  unsigned char *s = RepAtom(at)->UStrOfAE;
+  s += get_utf8(s, 1, &ch);
   GLOBAL_Stream[sno].stream_wputc(sno, ch);
   /*
    * if (!(GLOBAL_Stream[sno].status & Null_Stream_f))
@@ -1082,3 +1084,4 @@ void Yap_InitCharsio(void) {
 }
 
 /// @}
+

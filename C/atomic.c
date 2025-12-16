@@ -335,14 +335,41 @@ restart_aux:
 static Int atom_concat3(USES_REGS1) {
   Term t1;
   Term t2;
+  Term t3;
   t1 = Deref(ARG1);
   t2 = Deref(ARG2);
-  must_be_atom(t2);
-  must_be_atom(t1);
-  int l = push_text_stack();
-  Atom at = Yap_ConcatAtoms(t1, t2 PASS_REGS);
-  pop_text_stack(l);
-  return Yap_unify(MkAtomTerm(at), ARG3);
+  t3 = Deref(ARG3);
+  if (IsVarTerm(t3)) {
+    if (IsVarTerm(t1)||IsVarTerm(t2)) {
+      Yap_ThrowError(INSTANTIATION_ERROR, t2, "atom_concat/3");
+      return false;
+    }
+    if (!IsAtomTerm(t1)) {
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");
+       return false;
+    }
+    if (!IsAtomTerm(t2)) {
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG2,"char_code/2");
+       return false;
+    }
+    return Yap_unify(ARG3, MkAtomTerm(Yap_ConcatAtoms(t1,t2 PASS_REGS)));
+  } else if (IsVarTerm(t2)) {
+    if (!IsAtomTerm(t1)) {
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");
+       return false;
+    }
+    return Yap_unify(ARG2, MkAtomTerm(Yap_SubtractHeadAtom(t3,t1 PASS_REGS)));
+  } else {
+    if (!IsAtomTerm(t2)) {
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG2,"char_code/2");
+       return false;
+    }
+    if (!IsAtomTerm(t3)) {
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG3,"char_code/2");
+       return false;
+    }
+    return Yap_unify(ARG1, MkAtomTerm(Yap_SubtractTailAtom(t3,t2 PASS_REGS)));
+  }
 }
 
 /**
@@ -588,18 +615,14 @@ static Int string_atom(USES_REGS1) { /* string_to_atom(?String,?Atom)
 */
 static Int atom_chars(USES_REGS1) {
     int l = push_text_stack();
-Term    t1 = Deref(ARG1), t2 = Deref(ARG2);
-  if (IsAtomTerm(t1)) {
-    Term tf = Yap_AtomSWIToListOfAtoms(t1 PASS_REGS);
-     if (tf) {
+    Term    t1 = Deref(ARG1), t2 = Deref(ARG2);
+    if (IsAtomTerm(t1)) {
+      Term tf = Yap_AtomSWIToListOfAtoms(t1 PASS_REGS);
+      if (tf) {
         pop_text_stack(l);
 	return Yap_unify(ARG2, tf);
-    }
-       Term end, *tailp = &end;
-   Yap_SkipList(&t2, &tailp);
-    if (*tailp != TermNil && !IsVarTerm(*tailp)) {
-      Yap_ThrowError(INSTANTIATION_ERROR, t1, "atom_chars(_,_)");
-    }
+      }
+      must_be_list(t2);
   } else if (IsVarTerm(t1)) {
     if (IsPairTerm(t2)||t2==TermNil) {
     /* ARG1 unbound */
@@ -691,8 +714,8 @@ static Int string_concat3(USES_REGS1) {
   Term t2;
   t1 = Deref(ARG1);
   t2 = Deref(ARG2);
-  must_be_string(t1);
   must_be_string(t2);
+  must_be_string(t1);
   Term at = Yap_ConcatStrings(t1, t2 PASS_REGS);
   return Yap_unify((at), ARG3);
 }
@@ -1085,11 +1108,32 @@ static Int atomic_concat3(USES_REGS1) {
   bool g1, g2, g3;
 restart_aux:
   t1 = Deref(ARG1);
+  if (IsVarTerm(t1)) {
+    g1 = false;
+  } else if (!(IsNumTerm(t1) || IsAtomTerm(t1) || IsStringTerm(t1))) {
+    Yap_ThrowError(TYPE_ERROR_ATOMIC, t1, "on atomic_concat");
+    return false;
+  } else {
+    g1 = true;
+  }
   t2 = Deref(ARG2);
+  if (IsVarTerm(t2)) {
+    g2 = false;
+  } else if (!(IsNumTerm(t2) || IsAtomTerm(t2) || IsStringTerm(t2))) {
+    Yap_ThrowError(TYPE_ERROR_ATOMIC, t2, "on atomic_concat");
+    return false;
+  } else {
+    g2 = true;
+  }
   t3 = Deref(ARG3);
-  g1 = Yap_IsGroundTerm(t1);
-  g2 = Yap_IsGroundTerm(t2);
-  g3 = Yap_IsGroundTerm(t3);
+  if (IsVarTerm(t3)) {
+    g3 = false;
+  } else if (!(IsNumTerm(t3) || IsAtomTerm(t3) || IsStringTerm(t3))) {
+    Yap_ThrowError(TYPE_ERROR_ATOMIC, t3, "on atomic_concat");
+    return false;
+  } else {
+    g3 = true;
+  }
   if (g1 && g2) {
     int l = push_text_stack();
     at = Yap_ConcatAtomics(t1, t2 PASS_REGS);
@@ -1822,8 +1866,19 @@ restart_aux:
   };
 }
 
-/** @pred downcase_text_to_atom(+Text, -Atom)
+/**
+ *  @pred downcase_atom(+Text, -Atom)
+ * Convert all upper case code-points in text _Text_ to
+ * downcase. Unify the result as atom _Atom_ with the second
+ * argument.
  *
+ * Same as @pred downcase_text_to_atom(+Text, -Atom)
+ *
+ */
+
+
+/** @pred downcase_text_to_atom(+Text, -Atom)
+ *  @pred downcase_atom(+Text, -Atom)
  * Convert all upper case code-points in text _Text_ to
  * downcase. Unify the result as atom _Atom_ with the second
  * argument.
@@ -1868,8 +1923,18 @@ static Int downcase_text_to_atom(USES_REGS1) {
   return false;
 }
 
-/** @pred upcase_text_to_atom(+Text, -Atom)
+/**
+ *  @pred upcase_atom(+Text, -Atom)
+ * Convert all lower case code-points in text _Text_ to  up
+ * case. Unify the result as atom _Atom_ with the second
+ * argument.
  *
+ * Same as upcase_text_to_atom/2.
+ */
+
+
+/** @pred upcase_text_to_atom(+Text, -Atom)
+ *  @pred upcase_atom(+Text, -Atom)
  * Convert all lower case code-points in text _Text_ to  up
  * case. Unify the result as atom _Atom_ with the second
  * argument.
@@ -2783,7 +2848,6 @@ void Yap_InitAtomPreds(void) {
   Yap_InitCPred("$hidden_atom", 1, hidden_atom,
                 HiddenPredFlag | SafePredFlag | SyncPredFlag);
 }
-
 /**
    @}
 */

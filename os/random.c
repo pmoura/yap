@@ -317,7 +317,7 @@ supports:
  - initialization;
  - random numbers as integers (signed or absolute) or as floating points;
  - cryptographic quality random numbers
-
+   
  By default YAP uses `random`, the pseudo-random number generator. Use the prolog flag `random_number_generator` if you prefer `random` or `rand`.
  Use `arc4random` for higher quality random numbers, that do not have a seed. 
 

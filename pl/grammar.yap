@@ -235,11 +235,11 @@ l2g([G], G) :-
 l2g([G|LGs], (G,Gs)) :-
     l2g(LGs,Gs).
 
-/** @pred  `C`( _S1_, _T_, _S2_)
+/** @pred  C( _S1_, _T_, _S2_)
 
 
 This predicate is used by the grammar rules compiler and is defined as
-`C`([H|T],H,T)`.
+C([H|T],H,T).
  */
 prolog:'C'([X|S],X,S).
 

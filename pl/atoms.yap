@@ -10,9 +10,12 @@
 
 /**
  * @file atoms.yap
- *
+ * @ operations on text
  */
 
+/**
+  @addtogroup  Predicates_on_Text Predicates on Text
+*/
 :- system_module_( '$_atoms', [
 			      atom_concat/
 			      string_concat/2,
@@ -101,13 +104,6 @@ sub_atom(Text,Below, Mid, Above,  Out) :-
     ).
       
       
-
-/**
- * @addtogroup Predicates_on_Text
- *
- * @{
- *
-*/
 
 /** @pred  atom_concat(+ As, ? A)
 
@@ -208,9 +204,12 @@ atomic_list_concat(L, El, At) :-
 
   */
 atom_concat(A,B,At) :-
-    var(At),
-    !,
-    '$atom_concat'(A,B,At).
+    (
+      nonvar(A), nonvar(B)
+   ->
+	      !,
+	      '$atom_concat'(A,B,At)
+		  ).
 atom_concat(A,B,At) :-
     (    A==B
       -> 
@@ -229,9 +228,10 @@ nonvar(A)
 
     ).
 
+
 /** @pred  atom_list_concat(+ _As_,? _A_)
 
-Alias for atom_cooncat/2.
+Alias for atom_concat/2.
 
 The predicate holds when the first argument is a list of atomic terms,
 and the second unifies with the atom obtained by concatenating all the

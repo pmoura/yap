@@ -245,7 +245,7 @@ CACHE_REGS
 
 
  void libxml_yap_init () {
-   YAPFLIP(xml_load, "load_xml", 2);
+   YAPFLIP(xml_load, "c_load_xml", 2);
    YAPFLIP(xml_load, "xml_load", 2);
    //YAPnewM(xml_load, "xml_load2", 2);
 }

@@ -254,7 +254,7 @@ abolish(N0,A) :-
 		( '$is_dynamic'(T, M) -> '$abolishd'(T,M) ;
 	      	 /* else */	      '$abolishs'(T,M) ).
 
-/** @pred  abolish(+ _PredSpec_) is iso
+/** @pred  abolish(+ _PredSpec_)
 
 
 Deletes the predicate given by  _PredSpec_ from the database. If
@@ -263,13 +263,12 @@ current module. The
 specification must include the name and arity, and it may include module
 information.
 
-Since YAP8.0  this built-in will only abolish
-dynamic procedures. Consider using abolish/2 (an YAP extensio) in this case.
+For compatibility, onsider using abolish/2 (an YAP extensio) or doing abolieh only on  dynamic predicxates.
 
 
 */
 abolish(X0) :-
-    %    current_prolog_flag(language,iso), !,
+    current_prolog_flag(language,iso),
     !,
     must_be_predicate_indicator(X0,M,N,A),
     '$new_abolish'(N,A,M).
@@ -298,12 +297,7 @@ abolish(X0) :-
 	throw_error(type_error(atom,M), Msg).
 
 '$old_abolish'(V,M) :- var(V), !,
-         % current_prolog_flag(language, sicstus) ->
-	    throw_error(instantiation_error,abolish(M:V))
-	%;
-	%    '$abolish_all_old'(M)
-	%)
-	.
+	   throw_error(instantiation_error,abolish(M:V)).
 '$old_abolish'(N/A, M) :- !,
 	'$abolish'(N, A, M).
 '$old_abolish'(A,M) :- atom(A), !,

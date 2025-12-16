@@ -126,7 +126,7 @@ user:pred_refs(Ob,URI,Line,Ch) :-
 
 
 user:complete(Self,_Line,_Pos,Prefix) :-
-    completions(Prefix,FCs),
+    completions(Prefi,FCs),
     ( var(Self)-> Self = FCs ; Self.items := FCs ).
 
     user:add_dir(Self,URI):-
@@ -157,6 +157,7 @@ validate_file( Self,File) :-
     atom_string(Path, SPath),
     string_concat("file://",SPath,URI),
     asserta(my(Self,URI)),
+    Self.errors[URI] = [],
     load_files(Path,[]),
     retract(my(Self,URI)),
    retract(lsp_on).
@@ -179,7 +180,7 @@ user:validate_text(Self,URI,S) :-
 
 
 q_msg(informational, _, _, _,  _, _) :-
-val    !,
+    !,
     fail.
 q_msg(help, _, _, _,  _, _) :-
     !,
@@ -206,7 +207,6 @@ q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), S, L0,C0, Siz) :-
 q_msg(_error, error(syntax_error(_Msg), Desc), "syntax error",L0,C0, Siz) :-
     !,	    
     exception_property(parserLine, Desc, L1),
-    exception_property(parserSize, Desc, Siz),
     L0 is L1-1,
     exception_property(parserLinePos, Desc, C0).
 
@@ -260,11 +260,11 @@ user:portray_message(A,B):-
     !,
     (var(Self)
     ->
-	writeln(URI/t(S,Line,Column,Size))
+     writeln(URI/t(S,Line,Column,Size))
     ;
     % assertz(lsp(URI,t(A,S,Line,Column)),
-    Self.errors[URI].append(t(A,S,Line,Column,Size))
-    ),
+    Self.errors[URI].append(t(A,S,Line,Column,Size)),
+    !,			     
     fail.
 
 :- writeln(ok).

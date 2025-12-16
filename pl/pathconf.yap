@@ -170,8 +170,8 @@ file_search_path(path, C) :-
 
 
 file_search_path(library, Dir) :-
-	library_directory(Dir).
-file_search_path(commons, Dir) :-
+	user:library_directory(Dir).
+file_search_path(library, Dir) :-
 	commons_directory(Dir).
 file_search_path(swi, Home) :-
 	current_prolog_flag(home, Home).

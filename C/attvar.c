@@ -23,8 +23,6 @@ static char SccsId[] = "%W% %G%";
  * @brief Attributed Variables C-code
  *
  */
-
-
 #include "Yap.h"
 
 #include "YapHeap.h"
@@ -530,13 +528,11 @@ static Term GetAllAtts(attvar_record *attv) {
   return attv->Atts;
 }
 
-/// @}
 
-/// @defgroup SICStusCConst SICStus-style Constraints in C
-/// @ingroup AttributedVariables_Builtins
-/// @{
-
-/// put a SICStus style attribute
+/// @pred put_atts( Var,Module, Binding)
+/// Put a SICStus style attribute,
+///
+/// This operation should be called by the preprocess dode.
 static Int put_att(USES_REGS1) {
   /* receive a variable in ARG1 */
   Term inp = Deref(ARG1);
@@ -964,12 +960,6 @@ static Int modules_with_atts(USES_REGS1) {
     return FALSE;
   }
 }
-
-/// @}
-
-/// @defgroup SWICConst SWI-style Constraints in C
-/// @ingroup AttributedVariables_Builtins
-/// @{
 
 /** @pred get_attr( + Var,+ Module,- Value)
 

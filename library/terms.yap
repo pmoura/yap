@@ -42,7 +42,7 @@ efficiency. They are available through the
 */
 /**
  @pred cyclic_term(? _Term_) 
-
+ut
 Succeed if the argument  _Term_ is a cyclic term.
  
 */

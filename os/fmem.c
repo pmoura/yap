@@ -74,9 +74,9 @@ int fill_pads(int sno, int sno0, int total, format_info *fg USES_REGS)
 // uses directly the buffer in the memory stream.
 {
   int  fill_space, nchars, len, extra_fill;
-  int (*f_putc)(int, int);
+  int (*f_wputc)(int, int);
    char *buf;
-  f_putc = GLOBAL_Stream[sno0].stream_putc;
+  f_wputc = GLOBAL_Stream[sno0].stream_wputc;
   fflush(GLOBAL_Stream[sno].file);
   buf = GLOBAL_Stream[sno].nbuf;
   len = strlen(buf);
@@ -86,7 +86,7 @@ int fill_pads(int sno, int sno0, int total, format_info *fg USES_REGS)
     fill_space=0;
     extra_fill=0;
    for (i = 0;i<len; i++) {
-   f_putc(sno0, buf[i]); 
+   f_wputc(sno0, buf[i]); 
   }
  } else{
     if (fg->gapi==0) {
@@ -105,16 +105,16 @@ int fill_pads(int sno, int sno0, int total, format_info *fg USES_REGS)
       int extra  = (extra_fill>0?1:0),j;
       if (extra) extra_fill--;
     for (j = 0; j < fill_space+extra; j++) {
-      f_putc(sno0, fg->gap[n].filler);
+      f_wputc(sno0, fg->gap[n].filler);
     k++;
     }
     n++;
     }
-    f_putc(sno0, buf[i]); 
+    f_wputc(sno0, buf[i]); 
 }
   if (k <total) {
     for (; k < total; k++) {
-      f_putc(sno0, fg->gap[n].filler);
+      f_wputc(sno0, fg->gap[n].filler);
     }
   }
   }

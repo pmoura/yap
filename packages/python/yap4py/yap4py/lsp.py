@@ -102,11 +102,11 @@ def validate_yap(ls,uri,source,version):
                         message=msg,
                         severity = ls.sev_as_enum(sev),
                         range=types.Range(
-                            start=types.Position(line=line - 1, character=col),
-                            end=types.Position(line=line - 1, character=col+1)
+                            start=types.Position(line=line, character=col),
+                            end=types.Position(line=line, character=col+length)
                         ),
                     )
-                     for (sev, msg,line,col) in uri_diags]
+                     for (sev, msg,line,col,length) in uri_diags]
                 )
             )
 
@@ -270,7 +270,7 @@ def did_change(ls:YAPLanguageServer , params: types.DidOpenTextDocumentParams):
     uri = params.text_document.uri
     doc = ls.workspace.get_text_document(uri)
     return init_doc(ls,uri,doc)
-    ;; return semantic_tokens(ls,uri,doc)
+    return semantic_tokens(ls,uri,doc)
 
 @server.feature(
     types.TEXT_DOCUMENT_COMPLETION,

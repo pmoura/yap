@@ -74,14 +74,14 @@ assert_in_program(G0) :-
   This user-defined predicate is called by YAP after
   reading goals and clauses.
 
-  - _Module_:`expand_term`( _T_ , _X_) is called first on the
+  - _Module_: expand_term( _T_ , _X_) is called first on the
   current source module _Module_ ; if i
-  - `user:expand_term`( _T_ , _X_ `)` is available on every module.
+  - user: expand_term( _T_ , _X_ ) is available on every module.
 
 This predicate is used by YAP for preprocessing each top level
 term read when consulting a file and before asserting or executing it.
 It rewrites a term  _T_ to a term  _X_ according to the following
-rules: first try term_expansion/2  in the current module, and then try to use the user defined predicate user:term_expansion/2`. If this call fails then the translating process
+rules: first try term_expansion/2  in the current module, and then try to use the user defined predicate user:term_expansion/2. If this call fails then the translating process
 for DCG rules is applied, together with the arithmetic optimizer
 whenever the compilation of arithmetic expressions is in progress.
 

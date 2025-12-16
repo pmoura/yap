@@ -24,7 +24,23 @@ This library imports a XML file as a Prolog term.
 :- use_module(library(maplist)).
 
 
-:- load_foreign_files([],['YAPxml'],libxml_yap_init).
+s
+
+/**
+ @pred load_xml(+File, -Term)
+
+Loads a XML file as a single Prolog term of the form key(Attr,Children)
+where Key is the name of the term, Attr is a (possibly empty) list of attributes,
+ and Children a list of nodes.
+
+*/
+load_xml(Inp, Out) :-
+    absolute_file_name(Inp,File,[extensions([xml,html]),expand(true)]),
+    c_load_xml(File, Out).
+
+xml_load(Inp,Out) :-
+    load_xml(Inp, Out).
+
 
 /**
  @pred xml_pretty_print(+Stream)

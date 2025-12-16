@@ -20,7 +20,7 @@
 /**
  * @file c_interface.c
  *
- * @addtogroup ChYInterface
+ * @addtogroup fli_c
  */
 
 
@@ -116,7 +116,7 @@ X_API int YAP_Reset(yap_reset_t mode, bool reset_global);
 
 /**
 @defgroup slotInterface Term Handles or Slots
-@ingroup ChYInterface
+@ingroup fli_c
 @{
 
 Term handles correspond to SWI-Prolog's term_t datatype: they are a safe

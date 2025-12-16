@@ -571,14 +571,14 @@ thread_exit(Term) :-
 
 
 Run  _Goal_ just before releasing the thread resources. This is to
-be compared to `at_halt/1`, but only for the current
+be compared to at_halt/1, but only for the current
 thread. These hooks are ran regardless of why the execution of the
 thread has been completed. As these hooks are run, the return-code is
 already available through thread_property/2 using the result of
 thread_self/1 as thread-identifier. If you want to guarantee the
 execution of an exit hook no matter how the thread terminates (the thread
 can be aborted before reaching the thread_at_exit/1 call), consider
-using instead the `at_exit/1` option of thread_create/3.
+using instead the at_exit/1 option of thread_create/3.
 
 
 */
@@ -796,10 +796,10 @@ threads :-
 /** @pred thread_statistics(+ _Id_, + _Key_, - _Value_)
 
 
-Obtains statistical information on thread  _Id_ as `statistics/2`
-does in single-threaded applications.  This call returns all keys
-of `statistics/2`, although only information statistics about the
-stacks and CPU time yield different values for each thread.
+Obtains statistical information on thread _Id_ as statistics/2 does in
+single-threaded applications.  This call returns all keys of
+statistics/2, although only information statistics about the stacks
+and CPU time yield different values for each thread.
 
 + mutex_statistics
 
