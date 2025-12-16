@@ -268,15 +268,8 @@ clean_name(N0,_OPts,NF) :-
 
 %
 %
-'$system_library_directories'(library, Dir) :-
-	user:library_directory( Dir ).
-%	'$split_by_sep'(0, 0, Dirs, Dir).
-'$system_library_directories'(foreign, Dir) :-
-    user:foreign_directory( Dir ).
-% compatibility with old versions
-%
 % search the current directory  first.
-'$system_library_directories'(commons, Dir) :-
+library_directoriy(commons, Dir) :-
 	user:commons_directory( Dir ).
 
 

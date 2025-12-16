@@ -621,9 +621,8 @@ Term Yap_StringToNumberTerm(const char *s, encoding_t *encp, bool error_on) {
     s++;
 #endif
   GLOBAL_Stream[sno].status |= CloseOnException_Stream_f;
-  if (error_on) {
+  if (!error_on) {
    GLOBAL_Stream[sno].status |= FailOnScanError_Stream_f;
-    return TermNil;
   }
   int i = push_text_stack();
   Term t = Yap_scan_num(GLOBAL_Stream + sno

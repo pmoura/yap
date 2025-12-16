@@ -1866,8 +1866,19 @@ restart_aux:
   };
 }
 
-/** @pred downcase_text_to_atom(+Text, -Atom)
+/**
+ *  @pred downcase_atom(+Text, -Atom)
+ * Convert all upper case code-points in text _Text_ to
+ * downcase. Unify the result as atom _Atom_ with the second
+ * argument.
  *
+ * Same as @pred downcase_text_to_atom(+Text, -Atom)
+ *
+ */
+
+
+/** @pred downcase_text_to_atom(+Text, -Atom)
+ *  @pred downcase_atom(+Text, -Atom)
  * Convert all upper case code-points in text _Text_ to
  * downcase. Unify the result as atom _Atom_ with the second
  * argument.
@@ -1912,8 +1923,18 @@ static Int downcase_text_to_atom(USES_REGS1) {
   return false;
 }
 
-/** @pred upcase_text_to_atom(+Text, -Atom)
+/**
+ *  @pred upcase_atom(+Text, -Atom)
+ * Convert all lower case code-points in text _Text_ to  up
+ * case. Unify the result as atom _Atom_ with the second
+ * argument.
  *
+ * Same as upcase_text_to_atom/2.
+ */
+
+
+/** @pred upcase_text_to_atom(+Text, -Atom)
+ *  @pred upcase_atom(+Text, -Atom)
  * Convert all lower case code-points in text _Text_ to  up
  * case. Unify the result as atom _Atom_ with the second
  * argument.

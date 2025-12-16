@@ -1549,7 +1549,7 @@ static Int cont_prolog_flag_property(USES_REGS1) { /* current_prolog_flag */
 
     * `access(+_Access_)` with  _Access_ one of `read_only` or `read_write`
 
-    * `scope(+_Scope_) the flag aplies to a `thread`, to a `module`, or is
+    * `scope(+_Scope_)` the flag aplies to a `thread`, to a `module`, or is
     `global` to the system.
 
 */

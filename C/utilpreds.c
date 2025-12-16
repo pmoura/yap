@@ -22,8 +22,7 @@ static char     SccsId[] = "@(#)utilpreds.c	1.3";
 /**
  * @file utilpreds.c
  *
- * @defgroup TermManipulation Term Visit and Manipulation
- * @ingroup YAPTerms
+ * @addtogroup YAPTerms
  *
  * @{
  */

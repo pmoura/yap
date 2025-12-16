@@ -114,7 +114,7 @@ following flags:
   `consult`, clauses are added to the data-base, unless from the same file;
   `reconsult`, clauses are recompiled,
   `db`, these are facts that need to be added to the data-base,
-  `exo`, these are facts with atoms and integers that can be stored in a compact representation (see load_exo/1).
+  `exo`, these are facts with atoms and integers that can be stored in a compact representation (see exoload/1).
 
 + silent(+ _Bool_)
 
@@ -457,7 +457,7 @@ source_file_property( F, load_context(M,OldF:Line,Opts)) :-
 2. the file being consulted;
 3. the current `user_input`,
 
-  + module  (prolog_load_context/2 option)
+  + `module`  (prolog_load_context/2 option)
 
   Current source module.
 
@@ -731,8 +731,7 @@ section_else.
 /** @pred    if( : _Goal_)
 
   Compile subsequent code only if  _Goal_ succeeds.  For enhanced
-portability,  _Goal_ is processed by `expand_goal/2` before execution.     
-If an error occurs, the error is printed and processing proceeds as if
+portability,  _Goal_ is processed by expand_goal/2 before execution.     If an error occurs, the error is printed and processing proceeds as if
  _Goal_ has failed.
 
 */
@@ -760,7 +759,7 @@ If an error occurs, the error is printed and processing proceeds as if
 
 /**
 @pred    else
-Start `else' branch.
+Start `else` branch.
 
 */
 '$else' :-

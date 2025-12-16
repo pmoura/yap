@@ -268,7 +268,7 @@ For compatibility, onsider using abolish/2 (an YAP extensio) or doing abolieh on
 
 */
 abolish(X0) :-
-    %    current_prolog_flag(language,iso),
+    current_prolog_flag(language,iso),
     !,
     must_be_predicate_indicator(X0,M,N,A),
     '$new_abolish'(N,A,M).
@@ -297,12 +297,7 @@ abolish(X0) :-
 	throw_error(type_error(atom,M), Msg).
 
 '$old_abolish'(V,M) :- var(V), !,
-         % current_prolog_flag(language, sicstus) ->
-	    throw_error(instantiation_error,abolish(M:V))
-	%;
-	%    '$abolish_all_old'(M)
-	%)
-	.
+	   throw_error(instantiation_error,abolish(M:V)).
 '$old_abolish'(N/A, M) :- !,
 	'$abolish'(N, A, M).
 '$old_abolish'(A,M) :- atom(A), !,

@@ -324,9 +324,9 @@ mksys(op(A,B,C)) :-
 :- source.
 
 
-/** @pred user:term_expansion( _T_,- _X_)
+/** @pred term_expansion( _T_,- _X_)
 
-also available  _CurrentModule_:term_expansion( _T_,- _X_),
+available as _CurrentModule_:term_expansion and user:term_expansion.
 
 This user-defined predicate is called by expand_term/3 to
 preprocess all terms read when consulting a file. If it succeeds:
@@ -335,7 +335,7 @@ preprocess all terms read when consulting a file. If it succeeds:
 If  _X_ is of the form `:- G` or `?- G`, it is processed as
 a directive.
 +
-If  _X_ is of the form `$source_location`( _File_, _Line_): _Clause_` it is processed as if from `File` and line `Line`.
+If  _X_ is of the form `$source_location`( _File_, _Line_): _Clause_ it is processed as if from `File` and line `Line`.
 
 +
 If  _X_ is a list, all terms of the list are asserted or processed
@@ -362,7 +362,7 @@ as directives.
 /** @pred  exception(+ _Exception_, + _Context_, - _Action_)
 
 
-Dynamic predicate, normally not defined. Calleded by the Prolog
+Dynamic predicate, user-defined. Calleded by the Prolog
 system on run-time exceptions that can be repaired `just-in-time`. The
 values for _Exception_ are described below. See also catch/3 and
 throw/1.  If this hook preodicate succeeds it must instantiate the

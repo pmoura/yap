@@ -23,7 +23,7 @@
 
     @defgroup YAP_Inlines Inlined Tests and Term Manipulation
 
-    @ingroup YAPTerms
+    @addtogroup YAPTerms
     @{
 
 
@@ -1185,7 +1185,7 @@ static Int parent_choice_point(USES_REGS1)
   ~~~
   ?- arg:genarg(I, f(a,b), A).
   A = a,
-  I = 1.
+                                  I = 1.
   ;
   A = b,
   I = 2.

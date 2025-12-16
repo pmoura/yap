@@ -80,19 +80,19 @@
  * Evaluation generates the following _Call_
  * exceptions:
  * 
- *    @exception`error(instantiation_error, Call )1 if not ground
+ *    @exception `error(instantiation_error, Call )' if not ground
  * 
- *    @exception`type_error(evaluable( V ), Call)` if not evaluable term
- *    @exception`type_error(integer( V ), Call)` if must be integer
- *    @exception`type_error(float( V ), Call)` if must be float
+ *    @exception `type_error(evaluable( V ), Call)` if not evaluable term
+ *    @exception `type_error(integer( V ), Call)` if must be integer
+ *    @exception `type_error(float( V ), Call)` if must be float
  * 
- *    @exception`domain_error(out_of_range( V ), Call)` if argument invalid
- *    @exception`domain_error(not_less_than_zero( V ), Call)` if argument must be
+ *    @exception `domain_error(out_of_range( V ), Call)` if argument invalid
+ *    @exception `domain_error(not_less_than_zero( V ), Call)` if argument must be
  * positive or zero
  * 
- *    @exception`evaluation_error(undefined( V ), Call)` result is not defined
+ *    @exception `evaluation_error(undefined( V ), Call)` result is not defined
  * (nan)
- *    @exception`evaluation_error(overflow( V ), Call)` result is arithmetic
+ *    @exception `evaluation_error(overflow( V ), Call)` result is arithmetic
  * overflow
  * 
  *  */
@@ -153,7 +153,7 @@
 /**
  * @addtogroup arithmetic_operators
  * @enum arith0_op constant operators
- * @brief specifies the available arithmetic`constants".
+ * @brief specifies the available arithmetic constants".
  */
 typedef enum {
   /** pi [ISO]
@@ -182,10 +182,10 @@ typedef enum {
       Infinity according to the IEEE Floating-Point standard. Note that
       evaluating this term will generate a domain error in the `iso` language mode.
       Also note that
-      * ```
-      *  ?- +inf =:= -inf.
-      * false.
-      * ```
+```
+?- +inf =:= -inf.
+ false.
+```
       *
       */
   op_inf,

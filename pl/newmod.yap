@@ -155,10 +155,10 @@ the current module.
 Export predicates defined in file  _F_ according to  _Decls_. The
 declarations should be of the form:
 
-<ul>
-    A list of predicate declarations to be exported. Each declaration
-may be a predicate indicator or of the form `` _PI_ `as`
- _NewName_'', meaning that the predicate with indicator  _PI_ is
+
+.    A list of predicate declarations to be exported. Each declaration
+may be a predicate indicator or of the form ` _PI_ `as`
+ _NewName_, meaning that the predicate with indicator  _PI_ is
 to be exported under name  _NewName_.
 
     `except`( _List_)

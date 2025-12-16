@@ -904,16 +904,23 @@ static Int true_file_name3(USES_REGS1) {
   return rc && Yap_unify(ARG3, MkAtomTerm(at));
 }
 
+/**
+   @pred path_concat( +ListOfPaths, -Path )
+
+Concatenate the paths in _ListOfPaths_ and unify the result with Path
+*/
 static Int path_concat(USES_REGS1) {
-  int l = push_text_stack();
   size_t len;
   Term t = Deref(ARG1);
   Term *tailp;
   int n = Yap_SkipList(&t, &tailp);
+  if (IsVarTerm(*tailp)) {
+      Yap_ThrowError(INSTANTIATION_ERROR, t, "sub-paths missing");
+  }
   if (*tailp != TermNil) {
       Yap_ThrowError(TYPE_ERROR_LIST, t, "while concatenating sub-paths");
   }
-  const  char **inp = Malloc( (n+1)*sizeof(const char *) );
+  const  char **inp = malloc( (n+1)*sizeof(const char *) );
   int i=0;
   while (IsPairTerm(t)) {
     Term th = HeadOfTerm(t);
@@ -927,16 +934,17 @@ static Int path_concat(USES_REGS1) {
   inp[i] = NULL;
     len = PATH_MAX;
    size_t sz;
-           char *buf = Malloc(len);
+           char *buf = malloc(len);
   do {
 
     sz = cwk_path_join_multiple(inp,buf,len-1);
       if (sz >= len) {
           len = sz+1;
-        buf = Realloc (buf, len);
+        buf =realloc (buf, len);
       } else {
     bool rc= Yap_unify(MkAtomTerm(Yap_LookupAtom(buf)),ARG2);
-    pop_text_stack(l);
+    free(buf);
+    free(inp);
     return rc;
       }
   } while (true);

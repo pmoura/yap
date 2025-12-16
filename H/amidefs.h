@@ -38,7 +38,7 @@
  *
  * Revision 1.26  2004/09/30 21:37:41  vsc
  * fixes for thread support
-` *
+ *
  * Revision 1.25  2004/09/27 20:45:04  vsc
  * Mega clauses
  * Fixes to sizeof(expand_clauses) which was being overestimated
@@ -62,8 +62,9 @@
  *************************************************************************/
 
 /**
-   @defgroup amidefs Inlines and type definitons ffor the emulator
+   @defgroup Amidefs Inlines and type definitons for the emulator
    @ingroup Implementation
+   @brief this file includes the datar structures used to represent YAAM instructions.
    @{
  */
 #ifndef AMIDEFS_H

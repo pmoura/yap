@@ -18,8 +18,8 @@
 */
 
 :- add_to_path('../library').
-:- add_to_path('../packages/xml4yap').
-:- load_foreign_files([],['YAPxml'],libxml_yap_init).
+%%:- add_to_path('../packages/xml4yap').
+:- use_module(library(xml2yap)).
 
 
 :-  initialization(main).
@@ -27,11 +27,13 @@
 main:-
     unix(argv(Params)),
     main_process(Params).
+%    nav.
 
 main_process([IDir,ODir,_Home]) :-
     %atom_concat(Home,'packages/xml2yap/libYAPxml', LibPath),
     %load_foreign_files([LibPath],[],libxml_yap_init),
     directory_files(IDir,Fs),
+    forall(member(F,Fs),group_edge(IDir,F)),
     forall(member(F,Fs),clmember(IDir,F)),
     forall(member(F,Fs),do(IDir,ODir,F)).
 
@@ -55,8 +57,8 @@ class(compound( OAtts,_OProps)) :-
     ).
 
 clmember(IDir,F) :-
-atom_string(F,SF),
-string_concat(Id, ".xml",SF),
+    atom_concat(group,_,F),
+    atom_string(F,Id),
     get_xml(IDir,Id, _Atts,Children),
     member(innerclass(Atts,_),Children),
     key_in(refid(Ref),Atts),
@@ -109,37 +111,45 @@ do(_IDir,_ODir,F) :-
     !.
 do(IDir,ODir,F) :-
     atom_concat(Id, '.xml',F),
-%    writeln(Id),
-    atom_concat(group, _,F),
-    (atom_concat(group__ReadTerm,_) -> spy children2page; true),
-    get_xml(IDir,Id, _Atts,Children),			  children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
-    atom_concat([ODir,'/',Id,'.md'],OFile),
+    atom_concat(group, _,Id),
+    % (atom_concat(group__ReadTerm,_) -> spy children2page; true),
+    get_xml(IDir,Id, _Atts,Children),
+    children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
+    path_concat([ODir,Id],OF),
+    atom_concat(OF,'.md',OFile),
     open(OFile,write,O,[]),
     format(O,'~s',[All]),
     close(O).   
 do(_,_,_).
+ 
+ parents(Id,ODir,O) :-
+   edge(Id, P),
+    !,
+    parents(P,ODir, PPath),
+    path_concat([PPath,Id],O),
+    ( exists_directory(PPath)
+      ->
+      true
+      ;
+      make_directory(PPath)
+    ).
+parents(Id,ODir,Path) :-
+    path_concat([ODir,Id],Path).
 
 sub_do(IDir,Id,All) :-
+    pred(Id),
     get_xml(IDir,Id, Atts,Children),
     key_in(kind("class"),Atts),
-    sub_atom(Id ,_, 2, 0, Arity),
-    atom_chars(Arity,['_',Dig]),
-    char_type_digit(Dig),
     !,
     pred2page(Id,[idir=IDir,kind="class"],Children,All).
-sub_do(_,_,_).
+sub_do(_,_,[]).
  
 get_xml(IDir,Id,Atts,Children) :-
-    path_concat([IDir,Id], IFile),
-    (sub_atom(IFile ,_, 1, 0, '.')
-     ->
-     atom_concat(IFile,xml,XFile)
-     ;
-     atom_concat(IFile,'.xml',XFile)
-    ),
-    catch(xml_load(XFile,XML),Error,(format(user_error,'failed while processsing ~w: ~w',[IFile,                      Error]),fail)),  
+    path_concat([IDir,Id], XFile),
+    catch(load_xml(XFile,XML),Error,(format(user_error,'failed while processsing ~w: ~w',[XFile,Error]),fail)),  
     XML = [doxygen(_,XMLData)],
-    XMLData = [compounddef(Atts,Children)].
+    member(compounddef(Atts,Children),XMLData),
+    !.
 
 children2page(State,Children,All) :-
     get_name(Children,Name),
@@ -184,9 +194,8 @@ process_all(State,Op,S0s,SFs) :-
     add2strings(Op,String,S0s,SFs),
     !.
 process_all(State,Op,S0s,SFs):-
-    %spy sectdef,
+    spy process_all,
     writeln(failed:Op:State),
-    spy sectiondef/4,
     (process_all(State,Op,S0s,SFs)),
     !,
     S0s=SFs.
@@ -385,7 +394,7 @@ sectdef(member(Atts,Children))-->
 	->
 	true
 	;
-	key_in(name(_,[Name] ),Children)
+	{ key_in(name(_,[Name] ),Children) }
 	->
 	true
 	;
@@ -448,15 +457,15 @@ briefs(briefdescription(_Atts,Els)) -->
 detaileds(detaileddescription(_Atts,Els)) -->
     !,
     [ "\n"],
-    separatedescription(Els),
+    detaileddescription(Els),
     [ "\n"].
 
-separatedescription([]) --> [].
-separatedescription([D|Detailed]) -->
+detaileddescription([]) --> [].
+detaileddescription([D|Detailed]) -->
     %    {writeln(D)},
     description(D),
     [ "\n\n"],
-    separatedescription( Detailed).
+    detaileddescription( Detailed).
 
 
 codeline(codeline(_,Highlights)) -->
@@ -583,6 +592,9 @@ description(para([],S)) -->
     !,
     description(S),
  ["\n\n"].
+description(ref([refid(Id)|_],[Info])) -->
+!,
+ref(Id,Info).
 description(S) -->
     { string(S) },
     !,
@@ -924,7 +936,7 @@ para('acirc'(_,_))  -->
 para('atilde'(_,_))  -->
     [    "<atilde/>"].
 para('auml'(_,_))  -->
-    q    [      "<aumlaut/>"].
+    [      "<aumlaut/>"].
 para('aring'(_,_))  -->
     [     "<aring/>"].
 para('aelig'(_,_))  -->
@@ -1901,14 +1913,11 @@ ref(S,W) -->
     !,
     {
 %      format(string(Str),'[~s]({{~s}})' ,[L,S]),
-      format(string(Str),'[~s][~s]' ,[L,S]),
-      writeln(1:Str)
+      format(string(Str),'[~s][~s]' ,[L,S])
     },
     [Str].
 ref(S,W)-->
-    { format(string(Str),'[~s](~s.md)' ,[W,S]),
-
-      writeln(2:Str) },
+    { format(string(Str),'[~s](~s.md)' ,[W,S]) },
     [Str].
 
 %% ref(+Link,+Name)
@@ -2029,4 +2038,55 @@ align(entry([thead("yes"),align("right")],_Info)) -->
 align(entry([thead("yes"),align("left")],_Info)) -->
 !,
     ["|:                 "].
+
+group_edge(IDir,F) :-
+    atom_concat(group,_,F),
+    ge(IDir,F),
+    !.
+group_edge(_,_).
+
+ge(IDir,F) :-
+    atom_concat(F0,'.xml',F),
+    path_concat([IDir,F], XFile),
+    catch(load_xml(XFile,XML),Error,(format(user_error,'failed while processsing ~w: ~w',[XFile,Error]))),  
+    XML = [doxygen(_,[compounddef(_,XMLData)|_XData])],
+    (member(title([],[Title]),XMLData) -> true ;
+     member(compoundname([],[Title]),XMLData) -> true
+    ),
+    assert(title(F0,Title)),
+    member(innergroup([refid(Child)|_],_),XMLData),
+    atom_string(A1,Child),
+    assert(edge(F0,A1)), % parent to child
+%    writeln(F0:A1),
+    fail.
+
+nav :-
+    path_concat([ODir,'SUMMARY.md'], OFile),
+    open(OFile, write,  _, [alias(nav)]),
+    Gap = 4,
+    C is " ",
+    root(Index),
+    title(Index,Title),
+    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,Title,Index]),
+    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,'Installing YAP','INSTALL']),
+    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,'Calling and Executing  YAP Programs','CALLING_YAP']),
+    edge(Index,E),
+    subtree(E,C,Gap,Gap),
+    fail.
+   nav(ODir)  :-
+    close(nav),
+    told.
+
+root(Index) :-
+    edge(Index,_),
+    \+ edge(_,Index),
+    !.
+
+subtree(E,C,Gap,CurrentGap) :-
+    TotalGap is CurrentGap+Gap,
+    title(E,Title),
+    format(nav,"q~n~*c* [~s](~s.md)~n",[CurrentGap,C,Title,E]),
+    edge(E,NE),
+    subtree(NE,C,Gap,TotalGap).
+
 

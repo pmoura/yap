@@ -1,10 +1,8 @@
-
-
 /**
  * @file   maplist.yap
- * @author Lawrence Byrd + Richard A. O'Keefe, VITOR SANTOS COSTA <vsc@VITORs-MBP.lan>
+ * @author Lawrence Byrd + Richard A. O'Keefe
  * @author : E. Alphonse from code by Joachim Schimpf, Jan Wielemaker, Vitor Santos Costa
- * @date    4 August 1984 and Ken Johnson 11-8-87
+ * @date    4 August 1984 and Ken Johnson 11-8-8711
  *
  * @brief  Macros to apply a predicate to all elements of a list.
  *
@@ -90,19 +88,20 @@ expands_to/3
        scanl(3, +, +, -),
        scanl(4, +, +, +, -),
        scanl(5, +, +, +, +, -),
-       scanl(6, +, +, +, +, +, -).
+vjv       scanl(6, +, +, +, +, +, -).
+
+
+/*
+
+:- use_module(library(charsio), [format_to_chars/3, read_from_chars/2]).
+:- use_module(library(occurs), [sub_term/2]).
+*/
 
 
 :- use_module( library(lists),[append/3]).
 
-/*
-
-:- use[_module(library(charsio), [format_to_chars/3, read_from_chars/2]).
-:- use_module(library(occurs), [sub_term/2]).
-*/
-
 /**
-  * @defgroup maplist Map List and Term Operations
+  * @defgroup YAPMapList Repeat Operations om a List or on Term Arguments
   * @ingroup YAPLibrary
   * @{
   *
@@ -119,34 +118,33 @@ expands_to/3
   * `use_module(library(maplist))` command.
   * Examples:
   * 
-  * ```
-  * plus(X,Y,Z) :- Z is X + Y.
-  * 
-  * plus_if_pos(X,Y,Z) :- Y > 0, Z is X + Y.
-  * 
-  * vars(X, Y, [X|Y]) :- var(X), !.
-  * vars(_, Y, Y).
-  * 
-  * trans(TermIn, TermOut) :-
-  *         nonvar(TermIn),
-  *         TermIn =.. [p|Args],
-  *         TermOut =..[q|Args], !.
-  * trans(X,X).
-  * ~~~~
-  * %success
-  * 
-  *   ?- maplist(plus(1), [1,2,3,4], [2,3,4,5]).
-  * 
-  *   ?- checklist(var, [X,Y,Z]).
-  * 
-  *   ?- selectlist(<(0), [-1,0,1], [1]).
-  * 
-  *   ?- convlist(plus_if_pos(1), [-1,0,1], [2]).
-  * 
-  *   ?- sumlist(plus, [1,2,3,4], 1, 11).
-  * 
-  *   ?- maplist(mapargs(number_atom),[c(1),s(1,2,3)],[c('1'),s('1','2','3')]).
-  * ```
+```
+ plus(X,Y,Z) :- Z is X + Y.
+ 
+ plus_if_pos(X,Y,Z) :- Y > 0, Z is X + Y.
+ 
+ vars(X, Y, [X|Y]) :- var(X), !.
+ vars(_, Y, Y).
+ 
+ trans(TermIn, TermOut) :-
+         nonvar(TermIn),
+         TermIn =.. [p|Args],
+         TermOut =..[q|Args], !.
+ trans(X,X).
+ %success
+ 
+   ?- maplist(plus(1), [1,2,3,4], [2,3,4,5]).
+ 
+   ?- checklist(var, [X,Y,Z]).
+ 
+   ?- selectlist(<(0), [-1,0,1], [1]).
+ 
+   ?- convlist(plus_if_pos(1), [-1,0,1], [2]).
+ 
+   ?- sumlist(plus, [1,2,3,4], 1, 11).
+222111111 
+   ?- maplist(mapargs(number_atom),[c(1),s(1,2,3)],[c('1'),s('1','2','3')]).
+```
   * 
   **/
 
@@ -163,6 +161,7 @@ one(1).
 zero(0).
 
 g(N,Ones)  :- length(N,Ones), maplist(one,Ones).
+
 
 zeros(L) :- maplist(zero,L).
 
@@ -223,9 +222,6 @@ dozip(X,Y,F) :-
 ?- dozip([1,X],[Y,Y],[1-3,2-3]).
 
 ```
-
-
-
  */
 maplist(_, [], [], []).
 maplist(Pred, [H1|List1],[H2|List2], [H3|List3]) :- 
@@ -459,13 +455,13 @@ checklist(Pred, [In|ListIn]) :-
   _Pred_ succeeds.
 
   ROK: convlist(Rewrite, OldList, NewList)
-  is a sort of hybrid of maplist/3 and sublist/3.
+  is a sort of hybrid of maplist/3 and sub_list/3.
   Each element of NewList is the image under Rewrite of some
   element of OldList, and order is preserved, but elements of
   OldList on which Rewrite is undefined (fails) are not represented.
   Thus if foo(X,Y) :- integer(X), Y is X+1.
   then convlist(foo, [1,a,0,joe(99),101], [2,1,102]).
-v*/
+*/
 convlist(_, [], []).
 convlist(Pred, [Old|Olds], NewList) :-
     call(Pred, Old, New),
@@ -553,15 +549,12 @@ sumnodes_body(Pred, Term, A1, A3, N0, Ar) :-
 
 
 /*******************************
-		 *	      FOLDL		*
-		 *******************************/
+*	      FOLDL		*
+*******************************/
 
-%%
-%% @pred foldl(:Goal, +List, +V0, -V, +W0, -WN).
-%
 
 /**
-  @pred oldl(: _Pred_, + _List1_, + _List2_, ? _AccIn_, ? _AccOut_)
+  @pred foldl(: _Pred_, + _List1_, + _List2_, ? _AccIn_, ? _AccOut_)
 
   The foldl family of predicates is defined
 ```
@@ -698,49 +691,42 @@ foldl4(Goal, [H|T], V0, V, W0, W, X0, X, Y0, Y) :-
     call(Goal, H, V0, V1, W0, W1, X0, X1, Y0, Y1),
     foldl4(Goal, T,  V1, V, W1, W, X1, X, Y1, Y).
 
-*-
-+
-+
-
 /*******************************
-		 *	       SCANL		*
-		 *******************************/
+*	       SCANL		*
+*******************************/
 
-%%	scanl(:Goal, +List, +V0, -Values).
-%%	scanl(:Goal, +List1, +List2, +V0, -Values).
-%%	scanl(:Goal, +List1, +List2, +List3, +V0, -Values).
-%%	scanl(:Goal, +List1, +List2, +List3, +List4, +V0, -Values).
+/**
 %
 %	Left scan of  list.  The  scanl   family  of  higher  order list
 %	operations is defined by:
 %
 %
-% ```
-% scanl(P, [X11,...,X1n], ..., [Xm1,...,Xmn], V0, [V0,V1,...,Vn]) :-
-% 		P(X11, ..., Xmn, V0, V1),
-% 		...
-% 	        P(X1n, ..., Xmn, V', Vn).
-% ```
-%
-% Left scan of  list.  The  scanl   family  of  higher  order list
-% operations is defined by:
-%
-% ```
-% scanl(P, [X11,...,X1n], ..., [Xm1,...,Xmn], V0, [V0,V1,...,Vn]) :-
-%       P(X11, ..., Xm1, V0, V1),
-%       ...
-%        P(X1n, ..., Xmn, Vn-1, Vn).
-% ```
-% 
+```
+scanl(P, [X11,...,X1n], ..., [Xm1,...,Xmn], V0, [V0,V1,...,Vn]) :-
+		P(X11, ..., Xmn, V0, V1),
+		...
+	        P(X1n, ..., Xmn, V', Vn).
+```
+
+Left scan of  list.  The  scanl   family  of  higher  order list
+operations is defined by:
+
+```
+scanl(P, [X11,...,X1n], ..., [Xm1,...,Xmn], V0, [V0,V1,...,Vn]) :-
+      P(X11, ..., Xm1, V0, V1),
+      ...
+       P(X1n, ..., Xmn, Vn-1, Vn).
+```
+
 
 scanl(Goal,[H|T], V, [VH|VT]) :-
     call(Goal, H, V, VH),
     scanl(T, Goal, VH, VT).
 
 /**
-  scanl(: _Pred_, + _List1_, + _List2_, ? _V0_, ? _Vs_)
+  @pred scanl(: _Pred_, + _List1_, + _List2_, ? _V0_, ? _Vs_)
 
-Left scan of  list.
+Left scan of  two lists with an accumulator.
  */
 scanl(_, [], [], Out, Out).
 scanl(Goal, [H1|T1], [H2|T2], V, [VH|VT]) :-
@@ -748,9 +734,9 @@ scanl(Goal, [H1|T1], [H2|T2], V, [VH|VT]) :-
     scanl(Goal, T1, T2, VH, VT).
 
 /**
- scanl(: _Pred_, + _List1_, + _List2_, + _List3_, ? _V0_, ? _Vs_)
+ @pred scanl(: _Pred_, + _List1_, + _List2_, + _List3_, ? _V0_, ? _Vs_)
 
-Left scan of  list.
+Left scan of three lists of the same length  with an accumulator.
 */
 scanl(_, [], [], [], V, V).
 scanl(Goal, [H1|T1], [H2|T2], [H3|T3], V, [VH|VT]) :-
@@ -758,7 +744,7 @@ scanl(Goal, [H1|T1], [H2|T2], [H3|T3], V, [VH|VT]) :-
     scanl(Goal, T1, T2, T3, VH, VT).
 
 /**
-  scanl(: _Pred_, + _List1_, + _List2_, + _List3_, + _List4_, ? _V0_, ? _Vs_)
+  @pred scanl(: _Pred_, + _List1_, + _List2_, + _List3_, + _List4_, ? _V0_, ? _Vs_)
 
   Left scan of  list.
 */

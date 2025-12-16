@@ -10,9 +10,12 @@
 
 /**
  * @file atoms.yap
- *
+ * @ operations on text
  */
 
+/**
+  @addtogroup  Predicates_on_Text Predicates on Text
+*/
 :- system_module_( '$_atoms', [
 			      atom_concat/
 			      string_concat/2,
@@ -420,7 +423,7 @@ string_code(I,S,C) :-
      true
     ),
     '$get_string_code'(I,S,C).
-o
+
 
 /**
 @}

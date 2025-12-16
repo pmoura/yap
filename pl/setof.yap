@@ -41,7 +41,7 @@
 
 @{
 
-@brief When there are several solutions to a goal, if the user wants to collect all
+When there are several solutions to a goal, if the user wants to collect all
 the solutions he may be led to use the data base, because backtracking will
 forget previous solutions.
 
@@ -62,7 +62,7 @@ post-process the result of the query in several different ways:
 :- op(50,xfx,same).
 
 
-%% @pred ^(_Var_,_Goal_)
+%% @infixpred _Var_ ^_Goal_
 %
 % The "existential quantifier" symbol is only significant in bagof, setof and similar, where it stops choosing on the quantified variable _Var_.
 %

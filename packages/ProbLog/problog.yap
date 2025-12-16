@@ -230,7 +230,7 @@
 /**
 
 @defgroup YAP_ProbLog1 The Leuven ProbLog1 System
-
+@ingroup YAPPackages
 @{
 
 @brief This document is intended as a user guide for the users of ProbLog. ProbLog is a probabilistic Prolog, a probabilistic logic programming language, which is integrated in YAP-Prolog.

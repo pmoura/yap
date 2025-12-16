@@ -35,7 +35,7 @@
 @ingroup YAPLibrary
 @{
 
-The time_out/3 command relies on the <alarm/3 built-in to
+The time_out/3 command relies on the alarm/4 built-in to
 implement a call with a maximum time of execution. The command is
 available with the `use_module(library(timeout))` command.
 
@@ -46,8 +46,8 @@ available with the `use_module(library(timeout))` command.
 :- meta_predicate time_out(0,+,-).
 
 :- use_module(library(hacks), [
-	virtual_alarm/3,
-	alarm/3
+	virtual_alarm/4,
+	alarm/4
     ]).
 
 %
@@ -72,11 +72,11 @@ throw an exception  _timeout_.
 One should note that time_out/3 is not reentrant, that is, a goal
 called from `time_out` should never itself call
 time_out/3. Moreover, time_out/3 will deactivate any previous
-alarms set by alarm/3 and vice-versa, hence only one of these
+alarms set by alarm/4 and vice-versa, hence only one of these
 calls should be used in a program.
 
 Last, even though the timer is set in milliseconds, the current
-implementation relies on <tt>alarm/3</tt>, and therefore can only offer
+implementation relies on alarm/4, and therefore can only offer
 precision on the scale of seconds.
 
  */

@@ -46,7 +46,6 @@
 
  - Module:put_atts/2
 
- - Module:put_atts/3
 
  - Module:woken_att_do/4
 
@@ -103,10 +102,18 @@ store_new_module(Mod,Ar,ArgPosition) :-
 	functor(AccessTerm,Mod,NOfAtts),
    assertz(attributed_module(Mod,NOfAtts,AccessTerm)).
 
+/**
+ @pred attribute( Name/Arity)
+
+Define a SICStus style constraint of name _Name_ and _Arity_. The constraint is associated to the current module.
+
+*/
+
 :- user_defined_directive(attribute(G), attributes:new_attribute(G)).
 
-/** @pred Module:get_atts( _-Var_, _?ListOfAttributes_)
+/** @pred get_atts( _-Var_, _?ListOfAttributes_)  
 
+Collection of predicates (one per module) that check the status of the variable.
 
 Unify the list  _?ListOfAttributes_ with the attributes for the unbound
 variable  _Var_. Each member of the list must be a bound term of the
@@ -122,11 +129,12 @@ prefix may be dropped). The meaning of <tt>+</tt> and <tt>-</tt> is:
 
 
 */
-user:goal_expansion(get_atts(Var,AccessSpec), Mod, Goal) :-
+goal_expansion(get_atts(Var,AccessSpec), Mod, Goal) :-
 	expand_get_attributes(AccessSpec,Mod,Var,Goal).
 
-/** @pred Module:put_atts( _-Var_, _?ListOfAttributes_)
+/** @pred put_atts( _-Var_, _?ListOfAttributes_)
 
+Collection of predicates (one per module) that check the status of the variable.
 
 Associate with or remove attributes from a variable  _Var_. The
 attributes are given in  _?ListOfAttributes_, and the action depends
@@ -134,14 +142,14 @@ on how they are prefixed:
 
    + +( _Attribute_ )
    Associate  _Var_ with  _Attribute_. A previous value for the
-   attribute is simply replace (like with set_mutable/2).
+   attribute is simply replaced (like with update_mutable/2).
 
    + -( _Attribute_ )
    Remove the attribute with the same name. If no such attribute existed,
    simply succeed.
 
  */
-user:goal_expansion(put_atts(Var,AccessSpec), Mod, Goal) :-
+user:goal_expansion( put_atts(Var,AccessSpec), Mod, Goal) :-
 	expand_put_attributes(AccessSpec, Mod, Var, Goal).
 
 
@@ -232,6 +240,11 @@ expand_put_attributes(Atts,Mod,Var,attributes:put_module_atts(Var,AccessTerm)) :
 expand_put_attributes(Att,Mod,Var,Goal) :-
 	expand_put_attributes([Att],Mod,Var,Goal).
 
+/** @pred woken_att_do( +AttVar, Binding, NGoals, DoNotBind )
+
+Called when a variable is bound,  The DoNotBind parameter allows
+ignoring the binding.
+*/
 attributes:woken_att_do(AttVar, Binding, NGoals, DoNotBind) :-
 	modules_with_attributes(AttVar,Mods0),
 	modules_with_attributes(Mods),
@@ -253,7 +266,7 @@ find_used([M|Mods],Mods0,L0,Lf) :-
 find_used([_|Mods],Mods0,L0,Lf) :-
 	find_used(Mods,Mods0,L0,Lf).
 
-/** @pred Module:verify_attributes( _-Var_,  _+Value_,  _-Goals_)
+/** @pred verify_attributes( _-Var_,  _+Value_,  _-Goals_)
 
 The predicate is called when trying to unify the attributed variable
  _Var_ with the Prolog term  _Value_. Note that  _Value_ may be

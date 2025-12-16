@@ -301,7 +301,7 @@ trl_pred(L,NewLine) :-
     assert(pred_found(M,At,Arity)),
     sub_string(L,0,Bef,_, Prefix),
     encode(Name/Arity,DoxName),
-    string_concat([Prefix,"@class ",DoxName,"\n       ** ",Name,Args," ** ",RL],NewLine).
+    string_concat([Prefix,"@class ",DoxName,"\n       <b>",Name,Args," ",RL],NewLine).
 % arity == 0
 trl_pred(L,NewLine) :-
     (
@@ -320,7 +320,7 @@ trl_pred(L,NewLine) :-
     assert(pred_found(M,At,A)),
     sub_string(L,0,Bef,_, Prefix),
     encode(Name/A,DoxName),
-    string_concat( [Prefix,"@class ",DoxName,"\n       ** ",Name,Args," ** ",RL],NewLine).
+    string_concat( [Prefix,"@class ",DoxName,"\n       <b>",Name,Args,"</b> ",RL],NewLine).
 trl_pred(L,NewLine) :-
     sub_string(L,Bef,10,_After,"@infixpred"),
     A0 is Bef+10,

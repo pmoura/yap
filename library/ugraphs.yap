@@ -603,7 +603,7 @@ NOT USED AFTER ALL
    takes an *ordered* list of verticies and an initial value, and
    makes a very special sort of tree out of them, which represents
    a function sending each vertex to the initial value.  Note that
-   in the third clause for raakau/6 Z can never be 0, this means
+   in the third clause for raakau/3's auxiliary predicate Z can never be 0, this means
    that it doesn't matter *what* "greatest member" is reported for
    empty trees.
 */ 
