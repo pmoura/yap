@@ -782,7 +782,7 @@ static Int continue_atom_functor(USES_REGS1)
 
 
 /**
- * atom_functor(Name, Arity)
+ * @pred atom_functor(Name, Arity)
  *
  * Enumerate all predicate functors for Mod.
 */
@@ -872,7 +872,7 @@ while (npp && !valid_prop((Prop)(npp), task)) {
 
 
 /**
- * module_predicate(+Mod, Name, Arity, Task)
+ * @pred module_predicate(+Mod, Name, Arity, Task)
  *
  * Enumerate all predicates for Mod.
 */

@@ -142,7 +142,7 @@ vjv       scanl(6, +, +, +, +, +, -).
    ?- convlist(plus_if_pos(1), [-1,0,1], [2]).
  
    ?- sumlist(plus, [1,2,3,4], 1, 11).
-222111111 
+
    ?- maplist(mapargs(number_atom),[c(1),s(1,2,3)],[c('1'),s('1','2','3')]).
 ```
   * 
@@ -157,7 +157,7 @@ vjv       scanl(6, +, +, +, +, +, -).
 
 Examples:
 ```
-one(1).
+1one(1).
 zero(0).
 
 g(N,Ones)  :- length(N,Ones), maplist(one,Ones).
@@ -286,7 +286,8 @@ maplist(Pred, [H1|List1],[H2|List2], [H3|List3], [H4|List4], [H5|List5], [H6|Lis
 
 /** @pred maplist(8:Pred,? List1,? List2,? List3, ? List4, ? List5, ? List6, ? List7, ? List8)
 
-Apply  _Pred_ on all successive triples of elements from  _List1_,
+App
+ly  _Pred_ on all successive triples of elements from  _List1_,
  _List2_,  _List3_, _List4_, _List5_, _List6_, _List7_ and _List8_. Fails if  _Pred_ can not be applied to a
 tuple. See maplist/3.
 
