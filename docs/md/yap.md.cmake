@@ -21,7 +21,7 @@ The manual is organised as follows:
 
 1. [YAP Library](group__YAPLibrary.md)  describesextra functionality;
 
-1. [Extensions](group__YapExtensions documents.md) are a number of improvements over the original Prolog language;
+1. [Extensions](group__YapExtensions.md) are a number of improvements over the original Prolog language;
 
 1. [YAP to and from C/C++](group__YAPAPI.md) presents the YAP--C interfaces;
 	

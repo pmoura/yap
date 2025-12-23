@@ -19,6 +19,9 @@ char *bound_strstr(char *heap, char *key, char *bnd)
   return rc;
 }
 
+static const char *openline(bool star)
+{ return star ? "\n" : "\n/// ";}
+
 
 char *bound_strchr(char *heap, int key, char *bnd)
 {
@@ -28,10 +31,30 @@ char *bound_strchr(char *heap, int key, char *bnd)
   return rc;
 }
 
+static int commas(char *ptr, char *end, char * buf) {
+  int arity = 1;
+  while (ptr<end) {
+    int ch = *ptr++;
+    if (ch=='_') continue;
+    if (ch=='*') continue;
+    if (ch==' ') continue;
+    if (ch=='\t') continue;
+    if (ch==',') {
+      *buf++ = ',';
+      *buf++ = ' ';
+      arity++;
+      continue;
+    }
+    *buf++ = ch;
+  }
+  *buf++ = '\0';
+  return arity;
+}
+
 static void OW(char *start, char *end, bool prolog)
 {
   if (prolog)
-    fputs("\n/* new comment */\n",ostream);
+    fputs("\n\n",ostream);
   else
     fwrite(start, 1, (int)(end-start), ostream);
 }
@@ -63,75 +86,134 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
       out[0] = '\0';
       return where;
       }
-      *out++ = 'Z';
+   *out++ = 'Z';
   
-      *out++ = 'A' + '/'/16;
-      *out++ = 'A' + '/'%16;
-      *out++ = '0'+arity;
-      */
+   *out++ = 'A' + '/'/16;
+   *out++ = 'A' + '/'%16;
+   *out++ = '0'+arity;
+   */
   out[0] = '\0';
   //fprintf(stderr,"¨%.*s=>%s\n",(int)sz,where);
   return where;
 }
 
+static char *atomr(char *p) {
+  int ch;
+  while (isalnum((ch= *--p)) || ch=='_') ;
+  return p+1;
+}
 
-static char * pred_indicator(char *pred, char *end, ssize_t sz) {
-  char buf[4096], *aptr, *line;
-  ssize_t arity_extra;
-  do {
-    char *begin = pred;
-    pred = bound_strchr(pred+1, '/',end);
-    // fprintf(ostream, "%*s",  (int)(pred-start),start);
-    
-    if (!pred) {
-      DW(begin,end);
-      return end;
-    }
-    if (pred[1] == '/') {
-      if (!isdigit(pred[2])) {
-	pred++;
-      }
-      arity_extra = 2;
-      aptr =pred+2 ;
-    } else {
-      if (!isdigit(pred[1])) {
-	continue;
-      }
-      arity_extra = 0;
-      aptr =pred+1;
-    }
-    size_t arity = 0;
-    int  ch;
-    char *namep;
-    while (isdigit((ch=*aptr++))) {
+static long int arityf(char **ap)
+{
+  char *p = *ap;
+  int ch;
+  long int arity, arity_extra;
+  if (p[0] == '/') {
+    arity_extra = 1;
+    p++;
+  } else
+    arity_extra = 0;
+  if (!isdigit(*p))
+    return -1;
+  while (isdigit((ch=*p++))) {
     
       arity = arity*10 + ch-'0';
     }
     arity += arity_extra;
-    namep = pred;
-    if (isalnum(namep[-1])){
-      while (isalnum((ch =  *--namep))|| ch== '_');
-      ch = *++namep;
-      line = namep;
-      if (!islower(ch)) {
-	pred = aptr;
-	DW(begin,aptr);
-	continue;
-      } else {
-	char *op = protect_class(buf,
-				 arity, namep, pred-namep);
-	aptr--;
-	DW(begin,line);
-	fprintf(ostream, "%.*s[%.*s][class%s]", 
-		(int)(namep-line),line,
-		(int)(aptr-namep), namep,op);
-      }
-      line = pred = aptr;
-      continue;
-    }
+    *ap =  p;
+    return arity;
+}
+
+typedef enum {
+  STDPRED,
+  STDPRED0,
+  INFIX,
+  PREFIX
+} preds_t;
+
+static char *def(int type, bool star, char *name, ssize_t namel, char *args, ssize_t argsl, char *arg2s, ssize_t arg2sl)
+{
+  char buf[4096];
+  const char *nl = openline(star);
+  char *bf;
+  char *be;
+  char *rc;
+  char *pi;
+  switch (type) {
+  case STDPRED:
+    ssize_t arity = commas(args, args+argsl, buf);
+    bf = protect_class(buf+(strlen(buf)+8), arity, name, (int)namel);
+    be = bf+strlen(bf)+1;
+    sprintf(be, "%.*s%s(%.*s)", (int)namel, name,nl, (int)strlen(buf), buf);
+     pi = be+strlen(be)+8;
+    sprintf(pi,"%.*s/%ld",(int)namel,name,arity);
+   rc= args+(argsl+2);
+   break;
+  case STDPRED0:
+    bf = protect_class(buf, 0, name, (int)namel);
+    be = bf+strlen(bf)+1;
+    sprintf(be, "%.*s", (int)namel, name);
+    pi = be+strlen(be)+8;
+    sprintf(pi,"%.*s/0",(int)namel,name);
+    rc= name+(namel);
+    break;
+  case INFIX:
+    bf = protect_class(buf, 2, name, (int)namel);
+    be = bf+strlen(bf)+1;
+    sprintf(be, "%.*s %.*s", (int)namel, name, (int)argsl, args);
+    pi = be+strlen(be)+8;
+    sprintf(pi,"%.*s/2",(int)namel,name);
+    rc = args + argsl;
+    break;
+  case PREFIX:
+    bf = protect_class(buf, 1, name, (int)namel);
+    be = bf+strlen(bf)+1;
+    sprintf(be, "%.*s %.*s %.*s", (int)argsl, args, (int)namel, name, (int)arg2sl, arg2s);
+    pi = be+strlen(be)+8;
+    sprintf(pi,"%.*s/1",(int)namel,name);
+    rc = arg2s + arg2sl;
+    break;
   }
-  while (true);
-  return NULL;
+
+  fprintf(ostream, "%s@anchor #%s %s @class %s%s%s@brief <b>%s</b> ", 
+	  nl, bf,nl,
+	  bf,nl,nl,
+	  be);
+  return rc;
+}
+
+static char * pred_indicator(char *s0, char *sf, ssize_t sz) {
+  char  buf[4096], *name, *s=s0, *aptr, *pred;
+  long int arity;
+  
+  while(s && s<sf) {
+    do {
+      if (!(pred = bound_strchr(s, '/',sf))) {
+         DW(s0,sf);
+	 return sf;
+      }
+      aptr=pred+1;
+      if ((name=atomr(pred)) && (arity = arityf(&(aptr)) >= 0)) {
+	char *bf = protect_class(buf, arity, name, (int)(pred-name));
+	DW(s0, name);
+	fprintf(ostream,
+		//"[%.*s/%ld][#%s]",
+		"@ref %s \"%.*s/%ld\" ",
+		bf,
+		(int)(pred-name),name,
+		arity);
+	s0 = s = aptr+1; }
+      else {
+	s=pred+1;
+      }
+    
+      
+    } while (true);
+
+  }
+
+      DW(s0,sf);
+      return sf;
 }
 
 
@@ -141,102 +223,56 @@ static char * CW(char *start, char *end)
   return end;
 }
 
-static char *openline(bool star)
-{ return star ? "\n" : "\n/// ";}
-
 
 static char * infixpred_doc(char *pred,   bool star) {
-  char buf[4096];
-  pred += strlen("@prefixpred");
+  pred += strlen("@infixpred");
   while ((isblank(*pred++)));
   char *arg1 = pred;
-  while (!(isblank(*pred++)));
+  while (!(isspace(*pred++)));
   char *arg1f = pred;
   while ((isblank(*pred++)));
   char *op = pred;
-  while (!(isblank(*pred++)));
+  while (!(isspace(*pred++)));
   char *opf = pred;
   while ((isblank(*pred++)));
   char *arg2 = pred;
-  while (!(isblank(*pred++)));
+  while (!(isspace(*pred++)));
   char *arg2f = pred;
-  char *safe_op = protect_class(buf, 2, op, opf-op);
-  fprintf(ostream, "@link%s@endlink%s@class %s%s@brief %.*s1 %.*s %.*s   ", safe_op, openline(star),  safe_op,  openline(star),  (int)(arg1f-arg1), arg1,  (int)(opf-op), op, (int)(arg2f-arg2), arg2);
-  //ne = arg2 + strlen(arg2) + 1;
-  return arg2f;
+  return def(INFIX, star, op, opf-op, arg1, arg1f-arg1, arg2, arg2f-arg2);
 }
 
 static char * prefixpred_doc(char *pred, bool star) {
-  char buf[4096];
   pred += strlen("@prefixpred");
-  while ((isblank(*pred++)));
+  while ((isspace(*pred++)));
   char *op = pred;
-  while (!(isblank(*pred++)));
+  while (!(isspace(*pred++)));
   char *opf = pred;
   while ((isblank(*pred++)));
   char *arg1 = pred;
-  while (!(isblank(*pred++)));
+  while (!(isspace(*pred++)));
   char *arg1f = pred;
-  char *safe_op = protect_class(buf, 1, op, opf-op);
-  fprintf(ostream, "@link%s@endlink%s@class %s%s@brief  %.*s  %.*s  ", safe_op, openline(star),  safe_op,  openline(star),   (int)(opf-op), op, (int)(arg1f-arg1), arg1);
-  //ne = arg2 + strlen(arg2) + 1;
-  return arg1f;
-}
-
-static int commas(char *ptr, char *end, char ** bfp) {
-  int arity = 1;
-  char *buf = *bfp;
-  while (ptr<end) {
-    int ch = *ptr++;
-    if (ch=='_') continue;
-    if (ch=='*') continue;
-    if (ch==' ') continue;
-    if (ch=='\t') continue;
-    if (ch==',') {
-      *buf++ = ',';
-      *buf++ = ' ';
-      arity++;
-      continue;
-    }
-    *buf++ = ch;
-  }
-  *buf++ = '\0';
-  *bfp = buf;
-  return arity;
+  return def(INFIX, star, op, opf-op, arg1, arg1f-arg1, NULL, 0);
 }
 
 static char * pred_doc(char *pred,  bool star) {
   char *name;
-  char buf[4096];
-
   pred += strlen("@pred");
   while ((isblank(*pred++))) {};
   name = -- pred;
-  while (!isblank(*pred) && *pred !=  '(') {
+  while (isalnum(*pred) || *pred=='_') {
     pred++;
   }
-  if (*pred != '(') {
-    char *bf = protect_class(buf, 0, name, (int)(pred-name));
-    fprintf(ostream, "@link #%s @endink%s@class %s%s @brief  %s", bf,
-            openline(star), bf,
-            openline(star), name);
-    
-    return pred;
-  } else {
+  if  (*pred =='(') {
     char *args = pred + 1;
     char *end = strchr(args,')');
-    char *bf0 = buf;
-    int arity = commas(args,end, &bf0);
-    *bf0++ = '\0';
-    char *bf =
-      protect_class(bf0+strlen(bf0)+1, arity, name, (args-1)-(name));
-    //      fprintf(ostream, "@link %s %.*s/%d()[]{ #%s }\n@class %s\n@brief
     //      <b>%.*s(%s)</b>%s",
-    fprintf(ostream,
-	    "@link %s %.*s/%d  @endlink%s@class %s %s@brief<b>%.*s(%s)</b>",
-	    bf, (int)(  (args-1)-name), name, arity,openline(star),
-	    bf,openline(star), (int)(  (args-1)-name), name, bf0);
-    return end+1;
+    /* fprintf(ostream, */
+    /* 	    "", */
+    /* 	    bf, openline(star), */
+    /* 	    bf,openline(star), (int)(  (args-1)-name), name, bf0); */
+    return def(STDPRED, star, name, pred-name, args, end-args, NULL, 0);
+  } else {
+    return def(STDPRED0, star, name, pred-name, NULL, 0, NULL, 0);
   }
 }
 
@@ -279,7 +315,7 @@ static char * slash_star( char *s0, char *sf, bool slash_star) {
       s0=prefixpred_doc(s0,slash_star)+strlen("@prefixpred");
       vs[2]  = bound_strstr(s0,"@prefixpred", sf);
     } else if (lpred == 4) {
-      char *start_vb = s0 = vs[3];
+     char *start_vb = s0 = vs[3];
       int l = strlen("\n```");
       char *end_vb = bound_strstr(s0+l,"\n```", sf)+l;
       vs[3] = end_vb;
@@ -302,82 +338,122 @@ static char * slash_star( char *s0, char *sf, bool slash_star) {
 }
 static      bool prior = false;
 
+bool is_valid(char *s10, char *ref)
+{
+  int i;
+  int l = strlen(ref);
+  if (s10) {
+    for (i=0;i<l-1;i++) {
+      if (s10[i]!=ref[i])
+	return false;
+    }
+    return isspace(s10[i]);
+  }
+  return false;
+}
 
 static char *next_comment(char *s0, char *s_end, bool prolog) {
-  char *s1,*s2, *sf;
-  char *sep_short, *sep_long;
+  char *s1,*s2, *s10,*s20;
+  char *seq_short, *seq_long;
   if (s0[0] == '\0') {
     return NULL;
   }
   // s1 : /* comment
-  s1 = bound_strstr(s0,"/**", s_end );
-  // line comments
-  if (prolog) {
-    sep_short = "\n\% ";
-    sep_long = "\n\%\% ";
-  } else {
-    sep_short = "\n// ";
-    sep_long = "\n/// ";
+    // line comments
+    if (prolog) {
+      seq_short = "\n\% ";
+     seq_long = "\n\%\% ";
+    } else {
+      seq_short = "\n// ";
+      seq_long = "\n/// ";
+    }
+    char * s10o = s10=s0;
+    s10 = bound_strstr(s10,"/*" , s_end);
+  while (!is_valid(s10, "/** ")) {
+    if (!s10) {
+      break;
+    }
+    if (s10==s10o) {
+      s10++;
+      s10o = s10;
+    }
+    s10 = bound_strstr(s10+1,"/*" , s_end);
   }
-  /** line setup */
-  s2 = bound_strstr(s0, sep_long, s_end );
-  char *s2short = bound_strstr(s0, sep_short, s_end );
-  if (s2short && (!s2 || s2short < s2)) {
-    fputs("\n// ",ostream);
-    s2 = s2short+strlen(sep_short)-1;
-  } else if (s2)  {
-    prior = true;
-    s2 += strlen(sep_long)-1;
-    fputs("\n/// ",ostream);
+  s1 = s10;
+  char *s20o=s20=s0;
+  if (prior) {
+    s20 = bound_strstr(s20,seq_short, s_end );
   } else {
     prior = false;
+    s20 = bound_strstr(s20,"/*" , s_end);
+    while (!is_valid(s20, seq_long)) {
+      if (!s20) {
+	break;
+      }
+      if (s20==s20o) {
+	s20++;
+      s20o = s20;
+    }
+      s20 = bound_strstr(s20+1,seq_short, s_end );
+    }
   }
-  prior = true;
+  s2 = s20;
+  if (s1 && (!s2|| s2 > s1))
+    s2= NULL;
+  else
+    s1 = NULL;
   if (s2)  {
-    s2++;
-  } else {
-    prior = false;
-  }
+      s2++;
+    } else {
+      prior = false;
+    }
   // line done
   if (!s1 && !s2) {
-    if (s0)
-    DW(s0,s0+strlen(s0));
-  }
-  char *terminator;
-  if (s1 && (!s2 || s1<s2)) {
-    terminator = "*/";
-    prior = false;
-  } else {
-    terminator = "\n";
-  }
-  if (prolog) {
-    if (!prior)
-      fputs( "\n\n" ,ostream);
-  }else {
-    DW(s0,s1);
-  }
-  s0 = s1 ? s1 :s2;
-  if (s0) {
-    sf = bound_strstr(s0,terminator, s_end);
-    if (!sf) {
-      OW(s0, s0+strlen(s0), prolog);
-    } else if (s0==s1) {
-      DW(sf,sf+2);
-    }
-    if (s2==s0) {
-    }
-    // should be done
-    s0 = slash_star(s0, sf, s0==s1);
-    if (s0 < sf) {
-      DW(s0,sf);
-    }
-    if (s0==s2) fputc('\n',ostream);
-    return sf;
-  } else {
-    if (s0==s1) fputs("*/\n", ostream);
+    OW(s0,s0+strlen(s0),prolog);
     return NULL;
   }
+   char *terminator;
+    if (s1 && (!s2 || s1<s2)) {
+      terminator = "*/";
+      prior = false;
+    } else {
+      terminator = "\n";
+    }
+    if (prolog) {
+      if (!prior)
+	fputs( "\n\n" ,ostream);
+    }else {
+      OW(s0,s1,prolog);
+    }
+    s0 = s1 ? s1 :s2;
+    if (s0) {
+      char *sf = bound_strstr(s0,terminator, s_end);
+      if (!sf) {
+	OW(s0, s0+strlen(s0), prolog);
+	return  NULL;
+      } else  {
+	sf += strlen(terminator);
+      }
+      if (s2==s0) {
+	if (!s1 && !s2) {
+	  if (s0)
+	    OW(s0,s0+strlen(s0), prolog);
+	  return NULL;
+	}
+       }
+      // should be done
+      s0 = slash_star(s0, sf, s0==s1);
+      if (s0 < sf) {
+	OW(s0,sf,prolog);
+      }
+      if (s0==s2) fputc('\n',ostream);
+      return sf;
+    } else {
+  //    if (s0==s1) fputs("*/\n", ostream);
+      }
+      return NULL;
 }
+
 
 static FILE *input( char *inp) {
   {
@@ -404,7 +480,7 @@ int main(int argc, char *argv[]) {
   const char *inp = argv[1];
   if (!inp)
     exit(1);
-  //  fprintf(stderr,"%s\n",inp);
+  fprintf(stderr,"%s\n",inp);
 
   if (strstr(inp, ".yap") || strstr(inp, ".ypp") || strstr(inp, ".pl")) {
     //  char s[2048];
@@ -435,7 +511,7 @@ int main(int argc, char *argv[]) {
   fread(buf+1,  fsize, 1, f);
   p = buf;
   p[0] = '\n';
-   buf[fsize] = 0;
+  buf[fsize] = 0;
   while (p && p<buf+fsize)
     p  = next_comment(p, buf+fsize, prolog);
 }

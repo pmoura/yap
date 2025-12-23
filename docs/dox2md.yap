@@ -27,7 +27,6 @@
 main:-
     unix(argv(Params)),
     main_process(Params).
-%    nav.
 
 main_process([IDir,ODir,_Home]) :-
     %atom_concat(Home,'packages/xml2yap/libYAPxml', LibPath),
@@ -36,6 +35,7 @@ main_process([IDir,ODir,_Home]) :-
     forall(member(F,Fs),group_edge(IDir,F)),
     forall(member(F,Fs),clmember(IDir,F)),
     forall(member(F,Fs),do(IDir,ODir,F)).
+    nav(ODir).
 
 
 group(compound( OAtts,_OProps)) :-
@@ -115,6 +115,8 @@ do(IDir,ODir,F) :-
     % (atom_concat(group__ReadTerm,_) -> spy children2page; true),
     get_xml(IDir,Id, _Atts,Children),
     children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
+
+    !,
     path_concat([ODir,Id],OF),
     atom_concat(OF,'.md',OFile),
     open(OFile,write,O,[]),
@@ -2060,7 +2062,7 @@ ge(IDir,F) :-
 %    writeln(F0:A1),
     fail.
 
-nav :-
+nav(ODir) :-
     path_concat([ODir,'SUMMARY.md'], OFile),
     open(OFile, write,  _, [alias(nav)]),
     Gap = 4,

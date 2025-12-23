@@ -23,8 +23,10 @@ This library imports a XML file as a Prolog term.
 
 :- use_module(library(maplist)).
 
+:- load_foreign_files([],['YAPxml'],libxml_yap_init).
 
-s
+
+
 
 /**
  @pred load_xml(+File, -Term)

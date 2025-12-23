@@ -225,6 +225,9 @@ CACHE_REGS
 
 };
 
+extern "C" {
+
+
 /**
   * @pred load_xml(_XML_,_Graph_)
 
@@ -243,14 +246,13 @@ CACHE_REGS
 
 }
 
-
  void libxml_yap_init () {
    YAPFLIP(xml_load, "c_load_xml", 2);
-   YAPFLIP(xml_load, "xml_load", 2);
+   YAPFLIP(xml_load, "c_xml_load", 2);
    //YAPnewM(xml_load, "xml_load2", 2);
 }
 
-
+}
 
 /// @} 
  

@@ -135,6 +135,7 @@ ${CMAKE_SOURCE_DIR}/C/traced_absmi_insts.h
     */.svn/*
     */.hg/*
     */CMakeFiles/*
+    ${CMAKE_SOURCE_DIR}/C/*_insts.h
     ${CMAKE_SOURCE_DIR}/H/Tags_24*
     ${CMAKE_SOURCE_DIR}/C/Tags_32*
     */_Cpack_Packages/*

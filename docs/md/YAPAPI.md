@@ -16,7 +16,7 @@ most language implementations were linkable to `C`, and the first interface expo
 2. YAP also implements most of the SWI-Prolog foreign language interface.
 This gives portability with a number of SWI-Prolog packages and avoids garbage collection by using @ref slotInterface.
 
-3. A  C++ based interface, @ref supports access to complex data, such as the XML interface, and providees elegant communications with object-oriented languages.	 The classes and methods have been influenced by Singleton's JPL.
+3. A  C++ based interface, [C++](YAP/group__YAPAPI.md) supports access to complex data, such as the XML interface, and providees elegant communications with object-oriented languages.	 The classes and methods have been influenced by Singleton's JPL.
 
 
 
