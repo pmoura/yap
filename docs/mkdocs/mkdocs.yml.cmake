@@ -17,12 +17,11 @@ theme:
 
 plugins:
   - section-index
-  - search:
+  - search
   - autorefs:
       resolve_closest: true
   - literate-nav:
       nav_file: SUMMARY.md
-  #  - awesome-nav
   - mkdoxy:
       # debug: true
       ignore-errors: true

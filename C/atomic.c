@@ -558,8 +558,6 @@ static Int atom_string(USES_REGS1) {
   int l = push_text_stack();
   t1 = Deref(ARG1);
   t2 = Deref(ARG2);
-  Yap_DebugPlWriteln(t1);
-  Yap_DebugPlWriteln(t2);
   v1 = !Yap_IsGroundTerm(t1);
   v2 = !Yap_IsGroundTerm(t2);
   if (v1 && v2)

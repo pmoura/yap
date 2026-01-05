@@ -113,7 +113,7 @@ encode(Pred/A,String) :-
      ;
      A = Arity
     ),
-    string_concat([String0,"/",Arity],String0),
+    string_concat([SPred,"/",Arity],String0),
     pred2safe(String0,String).
 encode(Pred, SPred) :-
     string(Pred),
@@ -173,17 +173,22 @@ fetch_chars([C|Cs]) -->
 fetch_chars(Cs).
 
 
-encode_dox(S,ES) :-
-    string_concat(["class",S],ES).
+encode_dox(S,S) :- !.
+%    string_concat(["class",S],ES).
 
-decode_dox(S,ES) :-
-    string_concat(["class",ES],S),
-    !.
+%decode_dox(S,ES) :-
+%    string_concat(["class",ES],S),
+%    !.
 decode_dox(S,S).
 
 pred(Id) :-
-    sub_atom(Id ,_, 4, 0, Arity),
-    atom_chars(Arity,['Z','C','P',Dig]),
+    string(Id),
+    !,
+    atom_strimg(A,Id),
+    pred(A).
+pred(Id) :-
+    sub_atom(Id ,_, 1, 0, Arity),
+    atom_chars(Arity,[Dig]),
     char_type_digit(Dig).
 
 %dedoxtrl([c,l,a,s,s],[]).

@@ -34,10 +34,7 @@
 @brief YAP provides a C-based implementation of heap-sort for nlogn sorting
 of lists.
 @{
-*/
-
-
-/*  The three sorting routines are all variations of merge-sort, done by
+  The three sorting routines are all variations of merge-sort, done by
     bisecting the list, sorting the nearly equal halves, and merging the
     results.   The half-lists aren't actually constructed, the number of
     elements is counted instead (which is why 'length' is in this file).

@@ -125,7 +125,7 @@ member(Comment, Comments),
 
 
 predicate_definition(N/A,_W) :-
-    defined(N/A),
+%    defined(N/A),
     !.
 predicate_definition(N/A,W) :-
     assert(defined(N/A)),
@@ -185,7 +185,7 @@ simplify(C,Simplified) :-
     !,
     string_list_concat(ListSlashStar, "\n", NC),
     maplist(simplify_slash, ListSlashStar,  S),
-    string_list_concat([ "/**<\n",S, "\n\n"], Simplified).
+    string_list_concat([ "\n",S, "\n\n"], Simplified).
 simplify(C, Simplified) :-
     sub_string(C,0,3,_,"/**"),
     sub_string(C,3,1,_,Space),
@@ -195,7 +195,7 @@ simplify(C, Simplified) :-
     string_list_concat(ListSlashStar, "\n", NC),
     maplist(simplify_slash, ListSlashStar,  S),
     string_list_concat(S,"\n", Simplified0),
-    string_concat(["/**\n", Simplified0,"\n\n"], Simplified).
+    string_concat(["\n", Simplified0,"\n\n"], Simplified).
 
 
 simplify(C,C) :-
@@ -209,7 +209,8 @@ simplify(C,Simplified) :-
     sub_string(C,4,_,0,Slash),
     string_list_concat(ListSlash, "\n", Slash),
     maplist(simplify_slash, ListSlash,  [H0|S]),
-    string_concat("///< ", H0, H),
+    %    string_concat("///< ", H0, H),
+    H = H0,
     string_list_concat([H|S], "\n", Simplified).
 simplify(C,Simplified) :-
     sub_string(C,0,2,_,"%%"),
@@ -219,7 +220,8 @@ simplify(C,Simplified) :-
      sub_string(C,3,_,0,Slash),
     string_list_concat(ListSlash, "\n", Slash),
     maplist(simplify_slash, ListSlash,  S),
-    append(["/** "|S],["*/\n"],HS),
+    %    append(["/** "|S],["*/\n"],HS),
+    S = HS,
     string_list_concat(HS, "\n", Simplified).
 simplify(C, "\n") :-
     sub_string(C,0,1,_,"%"),
@@ -262,8 +264,9 @@ simplify_slash(S, NS) :-
     sub_string(S, 2 ,_,0, IS),
     simplify_slash_star(IS,NS).
 simplify_slash(S, NS) :- 
-    simplify_slash_star(S,NS).
-
+    simplify_slash_star(S,NS),
+    !.
+simplify_slash(S, S).
 
 simplify_slash_star(IS,NS) :-
     trl_pred(IS, NSI),
@@ -281,7 +284,26 @@ sp("\t").
 trl_pred(L,NewLine) :-
     % EL = Bef+"@pred"+After
     (
-      sub_string(L,Bef,5,After,"@pred")
+      sub_string(L,Bef,_5,After,"@defgroup")
+      ->
+      true
+      ;
+      sub_string(L,Bef,_5,After,"@addgroup")
+      ),
+    After1 is After-10,
+
+    sub_string(L,_,1,After1,SP),
+    sp(SP),
+    sub_string(L,_,After1,0,Line0),
+    strip_whitespace(Line0,0,Line),
+   sub_string(Line,_,1,Tit," "),
+   sub_string(Line,_,Tit,0,NewLine),
+   !.
+% arity == 0
+trl_pred(L,NewLine) :-
+    % EL = Bef+"@pred"+After
+    (
+      sub_string(L,Bef,_,After,"@pred")
       ->
       true
       ;
@@ -300,8 +322,7 @@ trl_pred(L,NewLine) :-
     defines_module(M),
     assert(pred_found(M,At,Arity)),
     sub_string(L,0,Bef,_, Prefix),
-    encode(Name/Arity,DoxName),
-    string_concat([Prefix,"@class ",DoxName,"\n       <b>",Name,Args," ",RL],NewLine).
+    string_concat([Prefix,"##       <b>",Name,Args,"</b> ",RL],NewLine).
 % arity == 0
 trl_pred(L,NewLine) :-
     (
@@ -319,8 +340,8 @@ trl_pred(L,NewLine) :-
     defines_module(M),
     assert(pred_found(M,At,A)),
     sub_string(L,0,Bef,_, Prefix),
-    encode(Name/A,DoxName),
-    string_concat( [Prefix,"@class ",DoxName,"\n       <b>",Name,Args,"</b> ",RL],NewLine).
+    %encode(Name/A,DoxName),
+    string_concat( [Prefix,"##       <b>",Name ,"</b> ",RL],NewLine).
 trl_pred(L,NewLine) :-
     sub_string(L,Bef,10,_After,"@infixpred"),
     A0 is Bef+10,
@@ -339,12 +360,12 @@ trl_pred(L,NewLine) :-
 			    sub_string(L,A2,L2,_,Name),
 			    sub_string(L,A1,L1,_,NameArgs),
 			    sub_string(L,B3,_,0,RL),
-			    encode(Name/2,DoxName),
+		%	    encode(Name/2,DoxName),
 			    atom_string( At, Name),
 			    defines_module(Mod),
 			    assert(pred_found(Mod,At,2)),
 			    sub_string(L,0,Bef,_, Prefix),
-			    string_concat([Prefix,"@class ",DoxName,"\n       ",NameArgs," ",RL],NewLine).
+			    string_concat([Prefix,"##       ",NameArgs," ",RL],NewLine).
 trl_pred(L,NewLine) :-
     sub_string(L,Bef,Sz,_After,"@prefixpred"),
     A0 is Bef+Sz,
@@ -359,14 +380,14 @@ trl_pred(L,NewLine) :-
 			    L1 is B2-A1,
 			    sub_string(L,A1,L2,_,Name),
 			    sub_string(L,A1,L1,_,NameArgs),
-					    sub_string(L,B2,_,0,RL),
-	    encode(Name/1,DoxName),
+			    sub_string(L,B2,_,0,RL),
+  			    %ncode(Name/1,DoxName),
 			    atom_string( At, Name),
 			    defines_module(Mod),
 			    assert(pred_found(Mod,At,1)),
 			    sub_string(L,0,Bef,_, Prefix),
-			    string_concat([Prefix,"@class ",DoxName,"\n       ",NameArgs," ",RL],NewLine).
-trl_pred(L,L).
+			    string_concat([Prefix,"## "   ",NameArgs," ",RL],NewLine).
+rl_pred(L,L).
 
     strip_whitespace(Line0,I0,Line) :-
     sub_string(Line0,I0,1,_,SP),
@@ -470,12 +491,12 @@ trl_pi(L,NewLine) :-
     sub_string(L,0,NPrefix,_,Prefix),
     ExtraP1 is Extra+1,
     sub_string(L,NPrefix,_,ExtraP1,Name),
-    encode(Name/Arity,DoxName0),
-    encode_dox(DoxName0,DoxName),
+%    encode(Name/Arity,DoxName0),
+%    encode_dox(DoxName0,DoxName),
     Right is Extra-1,
     sub_string(L,_,Right,0,RightLine),
     trl_pi(RightLine,More),
-    format(string(NewLine), "~s@ref [~s/~d][class~s] ~s", [Prefix,Name,Arity,DoxName,More]).
+    format(string(NewLine), "~s [~s/~d][#class~s] ~s", [Prefix,Name,Arity,DoxName,More]).
 trl_pi(S,S).
     
 alphanum(A) :-

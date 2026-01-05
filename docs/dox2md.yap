@@ -35,7 +35,7 @@ main_process([IDir,ODir,_Home]) :-
     forall(member(F,Fs),group_edge(IDir,F)),
     forall(member(F,Fs),clmember(IDir,F)),
     forall(member(F,Fs),do(IDir,ODir,F)).
-    nav(ODir).
+
 
 
 group(compound( OAtts,_OProps)) :-
@@ -196,9 +196,10 @@ process_all(State,Op,S0s,SFs) :-
     add2strings(Op,String,S0s,SFs),
     !.
 process_all(State,Op,S0s,SFs):-
-    spy process_all,
     writeln(failed:Op:State),
-    (process_all(State,Op,S0s,SFs)),
+    spy process_all,
+
+   ( process_all(State,Op,S0s,SFs) ; halt),
     !,
     S0s=SFs.
 
@@ -326,8 +327,8 @@ xtract_label(Label,Label).
 
 innerclass(Status,Atts,AllLabel) -->
     ["\n* "], 
-    {key_in(refid(Ref),Atts),
-     string_concat("class", _, Ref)
+    {key_in(refid(Ref),Atts)
+     %string_concat("class", _, Ref)
     },
     !,
     {
@@ -606,16 +607,22 @@ description(title([],S)) -->
       encode_text(S,T) },
     !,
     [T].
-description(sect1([id(Id)],[sect2(Parms,Data)])) -->
-!,
-    anchor([id(Id)],[]),
+description(sect1([id(Id)|Props],Fields)) -->
+		   anchor(Id,Props,Fields),
+		   {
+		   member(sect2(Parms,Data),Fields)
+		   },
+    !,
     description(sect2(Parms,Data)).
 description(sect1(Parms,S)) -->
 !,
     sect(Parms,S,"### ").
-description(sect2([id(Id)],[sect3(Parms,Data)])) -->
-!,
-    anchor([id(Id)],[]),
+description(sect2([id(Id)|Props],Fields)) -->
+		   anchor(Id,Props,Fields),
+		   {
+		   member(sect3(Parms,Data),Fields)
+		   },
+    !,
     description(sect3(Parms,Data)).
 description(sect2(Parms,S)) -->
 !,
@@ -736,7 +743,6 @@ decode(Title, PredTitle).
 bd(blockquote,"\n~~~\n").
 bd(bold,"**").
 bd(cstrike, "~~").
-bd(computeroutput, "\`").
 bd(emphasis, "__").
 bd(quot, "\`").
 bd(verbatim, "\`").
@@ -745,6 +751,25 @@ bd(s, "~~").
 	       bd(ref,"\"").
 bd(underline, "<ins>").
 
+para(verbatim([],[Tex])) -->
+    {string(Tex) },
+    { string_concat("[",_,Tex) },
+    !,
+    [Tex].
+para(verbatim([],Tex)) -->
+    { string(Tex) },
+    !,
+    [Tex].
+para(verbatim(_,Text)) -->
+    !,
+    ["\`"],
+    description(Text),
+    ["\`"].
+para(computeroutput(_Args,Text)) -->
+    !,
+    ["<tt>"],
+    description(Text),
+    ["</tt>"].
 para(ulink([url(URL)],[Title|_])) -->
     ref(Title , URL),
     !.
@@ -1351,8 +1376,8 @@ para(msc([],_Text)) -->
     []. % docDotMscType
 para(plantuml([],_Text)) -->
     []. % docPlantumlType
-para(anchor(Parms,Children))-->
-anchor(Parms,Children).
+para(anchor([id(Id)|Parms],Children))-->
+    anchor(Id,Parms,Children).
 
 para([]) --> !.
 para(ref(Atts,[Name])) -->
@@ -1881,41 +1906,42 @@ short_ref(Ref,Short) :-
     !.
 short_ref(Ref,Ref).
 
-/*
 %% ref(+Link,+Name)0
 % -translate a ref to mkdocs
 %
+% ref(S,W) -->
+%     {	   sub_string(S,0,_,_,"class"),
+%     atom_to_string(A,S),
+%     g(A,Group) },
+%     !,
+%     {
+%       decode_dox(W,L0),
+%       decode(L0,L),
+%       format(string(Str),'[~s](~s#~s})' ,[L,Group,A]) ,
+%     writeln(0:Str)},
+%     [Str].
+
 ref(S,W) -->
-    {      writeln(S:W),
-	   sub_string(S,0,_,_,"class"),
-    atom_to_string(A,S),
-    g(A,Group) },
-    !,
     {
-      decode_dox(W,L0),
-      decode(L0,L),
-      format(string(Str),'[~s](~s#~s})' ,[L,Group,A]) ,
-    writeln(0:Str)},
+      string_concat("#class",B,S)
+    },
+    !,
+    { format(string(Str),'[~s][#class~s]' ,[W,B]) },
     [Str].
-  */  
 ref(S,W) -->
 %     {writeln(S:W)},
     {
-	   sub_string(S,0,_,_,"class"),
-           unix(argv([D|_])),
-    path_concat([D,S], IFile),
-    atom_concat(IFile, '.xml', Wx),
-    exists(Wx)
+      string_concat("class",B,S),
+      !,
+      format(string(Str),'[~s][#class~s]' ,[W,B])
     },
-    !,
+    [Str].
+ref(S,W) -->
+%     {writeln(S:W)},
     {
-    decode_dox(W,L0),
-    decode(L0,L)
-    },
-    !,
-    {
-%      format(string(Str),'[~s]({{~s}})' ,[L,S]),
-      format(string(Str),'[~s][~s]' ,[L,S])
+      string_concat("#",B,S),
+      !,
+      format(string(Str),'[~s][#class~s]' ,[W,B])
     },
     [Str].
 ref(S,W)-->
@@ -1995,8 +2021,24 @@ get_name(Children,Name) :-
     !.
 
 
-anchor([id(Ref)],[]) -->
-  ["[](){#",Ref,"}\n"].
+anchor(Ref,_,_) -->
+    {string_concat("#class",Ref0,Ref)},
+    !,
+    ["\n[](){ #class",Ref0,"}\n"].
+anchor(Ref,_,_) -->
+    {string_concat("class",Ref0,Ref)},
+    !,
+    ["\n[](){ #class",Ref0,"}\n"].
+anchor(Ref,_,Props) -->
+    { member(title([],[Title]),Props) },
+    !,
+    ["[",Title,"](",Ref,")"].
+anchor(Ref,_,Props) -->
+    { member(name([],[Title]),Props) },
+    !,
+    ["[",Title,"](",Ref,")"].
+anchor(Ref,_,_) -->
+    ["[",Ref,"]( ",Ref," )"].
 
 gengroup(Ref0) :-
     abolish(visited/1),
@@ -2063,21 +2105,35 @@ ge(IDir,F) :-
     fail.
 
 nav(ODir) :-
-    path_concat([ODir,'SUMMARY.md'], OFile),
-    open(OFile, write,  _, [alias(nav)]),
-    Gap = 4,
-    C is " ",
     root(Index),
-    title(Index,Title),
-    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,Title,Index]),
-    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,'Installing YAP','INSTALL']),
-    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,'Calling and Executing  YAP Programs','CALLING_YAP']),
-    edge(Index,E),
-    subtree(E,C,Gap,Gap),
+    path_concat([ODir,'.nav.yml'], OFile),
+    open(OFile, write,  _, [alias(nav)]),
+    Gap = 2,
+    C is " ",
+%    format(nav, "~*c* [~s](~s.md)~n",[Gap,C,'Installing YAP','INSTALL']),
+%    format(nav, "~*c* [~s](~s.md)~n",[Gap,C,'Calling and Executing  YAP Programs','CALLING_YAP']),
+    root(Index),
+    format(nav,"nav~n",[]),
+    mknav(Index,C,Gap,Gap),
     fail.
-   nav(ODir)  :-
-    close(nav),
-    told.
+nav(_ODir) :-
+    close(nav).
+
+mknav(Index,C,Gap, Gap0) :-
+    title(Index,Title),
+    edge(Index, _),
+    !,
+    GapN  is Gap+Gap0,
+    format(nav, "~*c- ~s~n",[Gap0,C,Title]),
+%    format(nav, "~*c ~s: ~s.md~n",[GapN,C,Title,Index]),
+   edge(Index, Node),
+   mknav(Node,C,Gap,GapN).
+
+nknav(Index,C,_,Gap) :-
+    title(Index,Title),
+    format(nav, "~*c ~s: ~s.md~n",[Gap,C,Title,Index]).
+
+
 
 root(Index) :-
     edge(Index,_),
@@ -2090,5 +2146,3 @@ subtree(E,C,Gap,CurrentGap) :-
     format(nav,"q~n~*c* [~s](~s.md)~n",[CurrentGap,C,Title,E]),
     edge(E,NE),
     subtree(NE,C,Gap,TotalGap).
-
-

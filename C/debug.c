@@ -213,11 +213,11 @@ CACHE_REGS
 }
 
 static Int p_creep(USES_REGS1) {
-  LOCAL_DebEvent = true;
-  return true;
+  return Yap_may_creep(true);
 }
 
 static Int creepfail(USES_REGS1) {
+  return Yap_may_creep(false);
   return true;
 }
 

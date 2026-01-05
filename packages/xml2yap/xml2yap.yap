@@ -44,6 +44,7 @@ xml_load(Inp,Out) :-
     load_xml(Inp, Out).
 
 
+
 /**
  @pred xml_pretty_print(+Stream)
 

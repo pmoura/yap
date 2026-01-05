@@ -140,8 +140,9 @@ spy Spec :-
     '$init_debugger',
 	 prolog:debug_action_hook(spy(Spec)), !.
 spy L :-
-    '$current_module'(M),
-    '$u_spy'(L, spy, M), fail.
+    current_source_module(M,M),
+    '$u_spy'(L, spy, M),
+    fail.
 spy _ :-
     debug.
 
@@ -157,7 +158,7 @@ nospy Spec :-
     '$init_debugger',
 	 prolog:debug_action_hook(nospy(Spec)), !.
 nospy L :-
-    '$current_module'(M),
+    current_source_module(M),
     '$u_spy'(L, nospy, M), fail.
 nospy _.
 
@@ -176,7 +177,7 @@ nospyall.
  % debug mode -> debug flag = 1
 /** @pred debug
 
-Enables the Prolof debugging. Notice that tracing is disabled, even if it was active.
+Enables  Prolog debugging. Tracing is disabled.
 */
 debug :-
     ( '__NB_getval__'('$spy_gn',_, fail) -> true ; '__NB_setval__'('$spy_gn',1) ),
@@ -211,7 +212,8 @@ trace :-
     '$init_debugger',
     set_prolog_flag(debug,true),
     set_prolog_flag(trace,true),
-    nb_setval(creep,creep).
+    nb_setval(creep,creep),
+    '$creep'.
 
 
 /** @pred notrace
@@ -220,8 +222,8 @@ trace :-
 Ends tracing and exits the debugger. This is the same as
 nodebug/0.
  */
-notrace :
-    set_prolog_flag(trace,false),
+notrace :-
+    set_prolog_flag(trace,false), 
     print_message(informational,debug(off)).
 
 /*-----------------------------------------------------------------------------
@@ -381,9 +383,13 @@ notrace(G) :-
 '$init_debugger_trace' :-
     current_prolog_flag( trace,true),
     !,
-    nb_setval(creep,creep).
+    nb_setval(creep,creep),
+    '$creep'.
 '$init_debugger_trace' :-
-    nb_setval(creep,zip).
+    debug,
+    set_prolog_flag( trace,true),
+    nb_setval(creep,creep),
+    '$creep'.
 
 
 
