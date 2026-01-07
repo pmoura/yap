@@ -66,7 +66,6 @@
 :- use_system_module( '$_boot', ['$call'/4,
         '$disable_debugging'/0,
         '$do_live'/0,
-        '$enable_debugging'/0,
         '$system_catch'/4,
         '$version'/0]).
 
@@ -612,8 +611,7 @@ version(T) :-
 	nb_setval('$spy_target',SPYTarget),
 	nb_setval(creep,Creep),
 	set_prolog_flag(debug, Debug),
-	set_prolog_flag(trace, Trace),
- 	'$enable_debugging'.
+	set_prolog_flag(trace, Trace).
 
 /** @pred  break
 

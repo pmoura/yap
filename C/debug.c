@@ -196,8 +196,7 @@ bool Yap_may_creep(bool creep_on_forward)
 CACHE_REGS
   Atom at;
   PredEntry *pred;
-  if (  LOCAL_DebEvent) {
-    LOCAL_DebEvent = false;
+  if (trueLocalPrologFlag(TRACE_FLAG)) {
     if (creep_on_forward) {
       at = AtomCreep;
     } else {
@@ -206,10 +205,8 @@ CACHE_REGS
     pred = RepPredProp(PredPropByFunc(Yap_MkFunctor(at, 1), 0));
     CreepCode = pred;
     Yap_signal( YAP_CREEP_SIGNAL);
-    return true;
   }
-  Yap_SetGlobalVal(AtomCreep, TermZip);
-  return false;
+  return true;
 }
 
 static Int p_creep(USES_REGS1) {

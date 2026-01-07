@@ -186,8 +186,7 @@ AVs = [],
 '$query'([],_Vs,_Port) :-
     !.
 '$query'(G0,_Vs,Port) :-
-    current_prolog_flag(debug,true),
-   current_prolog_flag(trace,true),
+    current_prolog_flag(trace,true),
     !,
     expand_goal(G0,G),
     nb_setval(creep,creep),
@@ -201,7 +200,6 @@ AVs = [],
     Port = answer
     ).
 '$query'(G0,_,Port) :-
-    nb_setval(creep,zip),
     catch(
 	gated_call(
 	    expand_goal(G0,G),
@@ -268,19 +266,18 @@ true
 
 % enable creeping
 '$enable_debugging':-
-current_prolog_flag(debug, false), !.
-'$enable_debugging' :-
-    current_prolog_flag(trace,true),
-    !,
-    nb_setval(creep,creep),
-    	       nb_setval('$spy_on',stop),
+    current_prolog_flag(debug, true),
+    nb_setval('$spy_on',stop),
     nb_setval('$spy_target',0),
-    '$creep'.
-'$enable_debugging' :-
-    nb_setval(creep,zip),
-            nb_setval(creep,creep),
-    	       nb_setval('$spy_on',stop),
-    nb_setval('$spy_target',0).
+    (
+      current_prolog_flag(trace,true)
+     ->
+      nb_setval(creep,creep),
+      '$creep'
+      ;
+      nb_setval(creep,zip)
+    ).
+
 
 
 '$call'(V, _CP, _G0, _M) :-
@@ -510,13 +507,14 @@ live__ :-
 % reset alarms when entering top-level.
     alarm(0, 0, _, _),
     '$top_level',
+    '$init_debugger',
     nb_setval(creep,zip),
     '$clean_up_dead_clauses',
     get_value('$top_level_goal',GA),
     (
 	GA \= []
     ->
-    set_Value('$top_level_goal',[]),
+    set_value('$top_level_goal',[]),
     ignore('$run_atom_goal'(GA))
     ;
     true
@@ -535,7 +533,6 @@ live__ :-
     ;
     nb_setval('$spy_gn',0),
     % stop at spy-points if debugging is on.
-    '$init_debugger_trace',
     catch('$goal'(Goal,Bindings,Pos),_Error,error_handler),
     fail
     ), 

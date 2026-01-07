@@ -113,7 +113,7 @@ encode(Pred/A,String) :-
      ;
      A = Arity
     ),
-    string_concat([SPred,"/",Arity],String0),
+    string_concat([SPred,Arity],String0),
     pred2safe(String0,String).
 encode(Pred, SPred) :-
     string(Pred),
@@ -199,7 +199,7 @@ dedoxtrl([C|L],[C|NL]) :-
 
 is_pi(S) :-
     string_chars(S,Cs),
-    append(_Prefix,['/'|Pos],Cs),
+    append(_Prefix,[Pos],Cs),
     maplist(char_type_xdigit, Pos).
 
 

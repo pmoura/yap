@@ -27,6 +27,7 @@
 main:-
     unix(argv(Params)),
     main_process(Params).
+%    nav.
 
 main_process([IDir,ODir,_Home]) :-
     %atom_concat(Home,'packages/xml2yap/libYAPxml', LibPath),
@@ -35,7 +36,6 @@ main_process([IDir,ODir,_Home]) :-
     forall(member(F,Fs),group_edge(IDir,F)),
     forall(member(F,Fs),clmember(IDir,F)),
     forall(member(F,Fs),do(IDir,ODir,F)).
-
 
 
 group(compound( OAtts,_OProps)) :-
@@ -63,8 +63,8 @@ clmember(IDir,F) :-
     member(innerclass(Atts,_),Children),
     key_in(refid(Ref),Atts),
     atom_string(R,Ref),
-    assert_static(g(R,Id)),
-    !.
+    assert(edge(R,Id)),
+    fail.
 clmember(_,_).
 
 
@@ -105,8 +105,8 @@ do(_IDir,_ODir,F) :-
 do(_IDir,_ODir,F) :-
     atom_concat(Id, '.xml',F),
     atom_string(Id,S),
-    sub_string(S ,_, 2, 0, Arity),
-    string_chars(Arity,['_',Dig]),
+    sub_string(S ,_, 1, 0, Arity),
+    string_chars(Arity,[Dig]),
     char_type_digit(Dig),
     !.
 do(IDir,ODir,F) :-
@@ -115,8 +115,6 @@ do(IDir,ODir,F) :-
     % (atom_concat(group__ReadTerm,_) -> spy children2page; true),
     get_xml(IDir,Id, _Atts,Children),
     children2page([idir=IDir,odir=ODir,kind="group"],Children,All),
-
-    !,
     path_concat([ODir,Id],OF),
     atom_concat(OF,'.md',OFile),
     open(OFile,write,O,[]),
@@ -143,8 +141,9 @@ sub_do(IDir,Id,All) :-
     get_xml(IDir,Id, Atts,Children),
     key_in(kind("class"),Atts),
     !,
+
     pred2page(Id,[idir=IDir,kind="class"],Children,All).
-sub_do(_,_,[]).
+sub_do(_,_,"").
  
 get_xml(IDir,Id,Atts,Children) :-
     path_concat([IDir,Id], XFile),
@@ -196,10 +195,9 @@ process_all(State,Op,S0s,SFs) :-
     add2strings(Op,String,S0s,SFs),
     !.
 process_all(State,Op,S0s,SFs):-
-    writeln(failed:Op:State),
     spy process_all,
-
-   ( process_all(State,Op,S0s,SFs) ; halt),
+    writeln(failed:Op:State),
+    (process_all(State,Op,S0s,SFs)),
     !,
     S0s=SFs.
 
@@ -284,6 +282,7 @@ process(State,innerpage(Atts,Children)) -->
     innerpage([kind="page"|State],Atts,Children).
 process(State,innergroup(Atts,Children)) -->
     !,
+    writeln(Atts),
     innergroup([kind="group"|State],Atts,Children).
 % ignoreseq(NState,qualifier(_,_),Innergroup,Qualifier),
 % ignoreseq(NState,templateparamlist(_,_),Qualifier,Templateparamlist),
@@ -327,8 +326,8 @@ xtract_label(Label,Label).
 
 innerclass(Status,Atts,AllLabel) -->
     ["\n* "], 
-    {key_in(refid(Ref),Atts)
-     %string_concat("class", _, Ref)
+    {key_in(refid(Ref),Atts),
+     string_concat("class", _, Ref)
     },
     !,
     {
@@ -607,22 +606,16 @@ description(title([],S)) -->
       encode_text(S,T) },
     !,
     [T].
-description(sect1([id(Id)|Props],Fields)) -->
-		   anchor(Id,Props,Fields),
-		   {
-		   member(sect2(Parms,Data),Fields)
-		   },
-    !,
+description(sect1([id(Id)],[sect2(Parms,Data)])) -->
+!,
+    anchor([id(Id)],[]),
     description(sect2(Parms,Data)).
 description(sect1(Parms,S)) -->
 !,
     sect(Parms,S,"### ").
-description(sect2([id(Id)|Props],Fields)) -->
-		   anchor(Id,Props,Fields),
-		   {
-		   member(sect3(Parms,Data),Fields)
-		   },
-    !,
+description(sect2([id(Id)],[sect3(Parms,Data)])) -->
+!,
+    anchor([id(Id)],[]),
     description(sect3(Parms,Data)).
 description(sect2(Parms,S)) -->
 !,
@@ -743,6 +736,7 @@ decode(Title, PredTitle).
 bd(blockquote,"\n~~~\n").
 bd(bold,"**").
 bd(cstrike, "~~").
+bd(computeroutput, "\`").
 bd(emphasis, "__").
 bd(quot, "\`").
 bd(verbatim, "\`").
@@ -751,25 +745,14 @@ bd(s, "~~").
 	       bd(ref,"\"").
 bd(underline, "<ins>").
 
-para(verbatim([],[Tex])) -->
-    {string(Tex) },
-    { string_concat("[",_,Tex) },
+para(verbatim(_,[Link])) -->
+{
+string(Link),
+string_concat(["[",_, "]"],Link)
+},
+
     !,
-    [Tex].
-para(verbatim([],Tex)) -->
-    { string(Tex) },
-    !,
-    [Tex].
-para(verbatim(_,Text)) -->
-    !,
-    ["\`"],
-    description(Text),
-    ["\`"].
-para(computeroutput(_Args,Text)) -->
-    !,
-    ["<tt>"],
-    description(Text),
-    ["</tt>"].
+[Link].
 para(ulink([url(URL)],[Title|_])) -->
     ref(Title , URL),
     !.
@@ -1376,8 +1359,8 @@ para(msc([],_Text)) -->
     []. % docDotMscType
 para(plantuml([],_Text)) -->
     []. % docPlantumlType
-para(anchor([id(Id)|Parms],Children))-->
-    anchor(Id,Parms,Children).
+para(anchor(Parms,Children))-->
+anchor(Parms,Children).
 
 para([]) --> !.
 para(ref(Atts,[Name])) -->
@@ -1906,42 +1889,32 @@ short_ref(Ref,Short) :-
     !.
 short_ref(Ref,Ref).
 
+/*
 %% ref(+Link,+Name)0
 % -translate a ref to mkdocs
 %
-% ref(S,W) -->
-%     {	   sub_string(S,0,_,_,"class"),
-%     atom_to_string(A,S),
-%     g(A,Group) },
-%     !,
-%     {
-%       decode_dox(W,L0),
-%       decode(L0,L),
-%       format(string(Str),'[~s](~s#~s})' ,[L,Group,A]) ,
-%     writeln(0:Str)},
-%     [Str].
-
 ref(S,W) -->
+    {      writeln(S:W),
+	   sub_string(S,0,_,_,"class"),
+    atom_to_string(A,S),
+    g(A,Group) },
+    !,
     {
-      string_concat("#class",B,S)
+      decode_dox(W,L0),
+      decode(L0,L),
+      format(string(Str),'[~s](~s#~s})' ,[L,Group,A]) ,
+    writeln(0:Str)},
+    [Str].
+  */  
+ref(S,W) -->
+%     {writeln(S:W)},
+    {
+	   sub_string(W,0,_,_,"class")
     },
     !,
-    { format(string(Str),'[~s][#class~s]' ,[W,B]) },
-    [Str].
-ref(S,W) -->
-%     {writeln(S:W)},
     {
-      string_concat("class",B,S),
-      !,
-      format(string(Str),'[~s][#class~s]' ,[W,B])
-    },
-    [Str].
-ref(S,W) -->
-%     {writeln(S:W)},
-    {
-      string_concat("#",B,S),
-      !,
-      format(string(Str),'[~s][#class~s]' ,[W,B])
+%      format(string(Str),'[~s]({{~s}})' ,[L,S]),
+      format(string(Str),' [~s][#~s]' ,[S,W])
     },
     [Str].
 ref(S,W)-->
@@ -2021,34 +1994,16 @@ get_name(Children,Name) :-
     !.
 
 
-anchor(Ref,_,_) -->
-    {string_concat("#class",Ref0,Ref)},
-    !,
-    ["\n[](){ #class",Ref0,"}\n"].
-anchor(Ref,_,_) -->
-    {string_concat("class",Ref0,Ref)},
-    !,
-    ["\n[](){ #class",Ref0,"}\n"].
-anchor(Ref,_,Props) -->
-    { member(title([],[Title]),Props) },
-    !,
-    ["[",Title,"](",Ref,")"].
-anchor(Ref,_,Props) -->
-    { member(name([],[Title]),Props) },
-    !,
-    ["[",Title,"](",Ref,")"].
-anchor(Ref,_,_) -->
-    ["[",Ref,"]( ",Ref," )"].
+anchor([id(Ref)],[]) -->
+  ["[](){#",Ref,"}\n"].
 
 gengroup(Ref0) :-
-    abolish(visited/1),
     string_concat("/group__",Ref0,Ref),
     Kind="group",
     unix(argv([IDir,ODir,_])),
     trl(compound([refid(Ref),kind(Kind)],[]),IDir,ODir).
 
 genclass(Ref0) :-
-    abolish(visited/1),
     Kind="class",
     unix(argv([IDir,ODir,_])),
     trl(compound([refid(Ref0),kind(Kind)],[]),IDir,ODir).
@@ -2105,35 +2060,21 @@ ge(IDir,F) :-
     fail.
 
 nav(ODir) :-
-    root(Index),
-    path_concat([ODir,'.nav.yml'], OFile),
+    path_concat([ODir,'SUMMARY.md'], OFile),
     open(OFile, write,  _, [alias(nav)]),
-    Gap = 2,
+    Gap = 4,
     C is " ",
-%    format(nav, "~*c* [~s](~s.md)~n",[Gap,C,'Installing YAP','INSTALL']),
-%    format(nav, "~*c* [~s](~s.md)~n",[Gap,C,'Calling and Executing  YAP Programs','CALLING_YAP']),
     root(Index),
-    format(nav,"nav~n",[]),
-    mknav(Index,C,Gap,Gap),
+    title(Index,Title),
+    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,Title,Index]),
+    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,'Installing YAP','INSTALL']),
+    format(nav, "q~n~*c* [~s](~s.md)~n",[Gap,C,'Calling and Executing  YAP Programs','CALLING_YAP']),
+    edge(Index,E),
+    subtree(E,C,Gap,Gap),
     fail.
-nav(_ODir) :-
-    close(nav).
-
-mknav(Index,C,Gap, Gap0) :-
-    title(Index,Title),
-    edge(Index, _),
-    !,
-    GapN  is Gap+Gap0,
-    format(nav, "~*c- ~s~n",[Gap0,C,Title]),
-%    format(nav, "~*c ~s: ~s.md~n",[GapN,C,Title,Index]),
-   edge(Index, Node),
-   mknav(Node,C,Gap,GapN).
-
-nknav(Index,C,_,Gap) :-
-    title(Index,Title),
-    format(nav, "~*c ~s: ~s.md~n",[Gap,C,Title,Index]).
-
-
+   nav(_ODir)  :-
+    close(nav),
+    told.
 
 root(Index) :-
     edge(Index,_),
@@ -2146,3 +2087,5 @@ subtree(E,C,Gap,CurrentGap) :-
     format(nav,"q~n~*c* [~s](~s.md)~n",[CurrentGap,C,Title,E]),
     edge(E,NE),
     subtree(NE,C,Gap,TotalGap).
+
+

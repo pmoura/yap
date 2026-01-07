@@ -378,18 +378,9 @@ notrace(G) :-
 
 '$init_debugger_trace' :-
     nb_setval('$spy_on',stop),
-    nb_setval('$spy_target',0),
-    fail.
-'$init_debugger_trace' :-
-    current_prolog_flag( trace,true),
-    !,
-    nb_setval(creep,creep),
-    '$creep'.
-'$init_debugger_trace' :-
-    debug,
-    set_prolog_flag( trace,true),
-    nb_setval(creep,creep),
-    '$creep'.
+    nb_setval('$spy_target',0).
+
+
 
 
 

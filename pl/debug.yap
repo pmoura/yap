@@ -45,7 +45,6 @@ procedure. Each one of these points is named a port:
 ---------> +  descendant(X,Y) :- offspring(X,Y).  + --------->
            |                                      |
            |  descendant(X,Z) :-                  |
-<--------- +     offspring(X,Y), descendant(Y,Z). + <---------
    Fail    |                                      |    Redo
            *--------------------------------------*
 ```
@@ -294,7 +293,7 @@ be lost.
 '$continue_debugging'(_,inner) :-
     !.
 '$continue_debugging'(_,_) :-
-    '$off_debugger',
+    set_prolog_flag(debug, true),
     nb_getval(creep,zip),
     !.
 '$continue_debugging'(exit,_) :-
@@ -331,7 +330,6 @@ a  *
 %    trace_goal(G,M, inner, _GoalNumberN, _CP0).
 yap_hacks:trace(MG, Ctx) :-
     strip_module(MG,M,G),
-    '$on_debugger',
     nb_setval(creep,creep),
     nb_setval('$spy_on',stop),
     nb_setval('$spy_target',0),
@@ -429,14 +427,13 @@ true
     '$debug_goal'(G, M,  Ctx, GN, CP0).
 '$debug_goal'( '$cleanup_on_exit'(CP0, TaskF), _, _Ctx, _, _CP) :-
     !,
-    %'$off_debugger',
     '$cleanup_on_exit'(CP0, TaskF).
 '$debug_goal'( '$top_level', _, _Ctx, _, _) :-
     !,
     nb_setval(creep,zip).
 '$debug_goal'('$drop_exception'(V,J), _, _, _, _) :-
     !,
-    '$off_debugger',
+    set_prolog_flag(debug, true),
     '$drop_exception'(V,J).
 '$debug_goal'(expand_goal(V,J), _, _, _, _) :-
     !,
@@ -536,8 +533,10 @@ true
 '$step'(   system_procedure,MG,GoalNumber) :-
     !,
     gated_call(
-   '$meta_hook'(MG,NMG),'$execute_non_stop'(NMG),Port,
-%  '$off_debugger'
+   '$meta_hook'(MG,NMG),
+'$execute_non_stop'(NMG),
+Port,
+set_prolog_flag(debug, true),
          '$interact'(Port, NMG, GoalNumber)
     ).
 '$step'(   exo_procedure,MG,GoalNumber) :-
@@ -562,7 +561,7 @@ true
     current_choice_point(CP),
     gated_call(   
 ('$meta_hook'(MG,NM:NG),
-    '$off_debugger'
+set_prolog_flag(debug, true)
     ),
     (
       predicate_property(NM:NG, number_of_clauses(NCl),
@@ -654,6 +653,7 @@ fetch_nth_clause(I,NM:NG,_,Ref),'$creep_clause'( NG, NM, Ref, CP )),
 
 
 '$enter_trace'(Id, Module:G, Deterministic) :-
+    current_prolog_flag(deug,true0),
     '$id_goal'(Id),        /* get goal no.	*/
     /* get goal list		*/
     '__NB_getval__'('$spy_glist',History,History=[]),
@@ -1184,7 +1184,5 @@ watch_goal(G) :-
 trace(G) :-
     yap_hacks:trace(G,outer).
 
-'$off_debugger' :- nb_setval(running_debugger_code, false  ).
-'$on_debugger' :- nb_setval(running_debugger_code, true  ).
 '$debugging' :- nb_getval(running_debugger_code, true  ).
 %% @}

@@ -88,19 +88,18 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
       out[2] = 'A' + ch % 16;
       out += 3;
     }
-    out[0] = '0'+arity;
+    //out[0] = '0'+arity;
   }
   /*  if (isdigit(what[i-1]) && what[i-2] == '/'  	)
       {
       out[0] = '\0';
       return where;
       }
-   *out++ = 'Z';
-  
-   *out++ = 'A' + '/'/16;
-   *out++ = 'A' + '/'%16;
+      */
+//   *out++ = 'Z';
+//   *out++ = 'A' + '/'/16;
+//   *out++ = 'A' + '/'%16;
    *out++ = '0'+arity;
-   */
   out[0] = '\0';
   //fprintf(stderr,"¨%.*s=>%s\n",(int)sz,where);
   return where;
@@ -218,11 +217,13 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
 	  DW(s0, name);
 	  fprintf(ostream,
 
-		  "@ref class%.*s", 
+		  
+		  "@verbatim [%.*s/%ld ][#class%s]@Endverbatim", 
 		  //"@ref #%.*s% "
-		  (int)strlen(bf)+1, bf
-	  );
-	  s0 = s = aptr+1;
+		  (int)(pred-name),name,arity,
+		  bf
+		  );
+	  s0 = s = aptr;
 	}
 	s=aptr;
       }
@@ -431,7 +432,7 @@ static char *next_comment(char *s0, char *s_end, bool prolog) {
     }
   // line done
   if (!s1 && !s2) {
-    OW(s0,s0+strlen(s0),prolog);
+    OW(s0,s_end,prolog);
     return NULL;
   }
    char *terminator;

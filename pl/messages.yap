@@ -43,14 +43,14 @@
 The interaction between YAP and the user relies on YAP's ability to
 portray messages. These messages range from prompts to error
 information. All message processing is performed through the builtin
-print_message/2, in two steps:
+prolog:print_message/2, in two steps:
 
 + The message is processed into a list of commands
 + The commands in the list are sent to the `format/3` builtin
 in sequence.
 
 
-The first argument to print_message/2 specifies the importance of
+The first argument to prolog:print_message/2 specifies the importance of
 the message. The options are:
 
 + `error`
@@ -108,9 +108,9 @@ e
 
 
 Hook predicate that may be define in the module `user` to intercept
-messages from print_message/2.  _Term_ and  _Kind_ are the
-same as passed to print_message/2.  _Lines_ is a list of
-format statements as described with print_message_lines/3.
+messages from prolog:print_message/2.  _Term_ and  _Kind_ are the
+same as passed to prolog:print_message/2.  _Lines_ is a list of
+format statements as described with prolog:print_message_lines/3.
 
 This predicate should be defined dynamic and multifile to allow other
 modules defining clauses for it too.
@@ -1376,7 +1376,7 @@ query_exception(K,M ,V) :-
     throw(error(type_error(exception,M),query_exception(K,M ,V))).
 
 
-print_message_(Severity, Msg) :-
+prolog:print_message_(Severity, Msg) :-
     (
 	var(Severity)
     ->
@@ -1391,47 +1391,47 @@ print_message_(Severity, Msg) :-
     Severity = silent
     ),
     !.
-print_message_(Severity, Msg) :-
+prolog:print_message_(Severity, Msg) :-
     user:portray_message(Severity, Msg),
     !.
-print_message_(Level, _Msg) :-
+prolog:print_message_(Level, _Msg) :-
     current_prolog_flag(compiling, true),
     current_prolog_flag(verbose_load, false),
     Level \= error,
     Level \= warning,
     !.
-print_message_(Level, _Msg) :-
+prolog:print_message_(Level, _Msg) :-
     current_prolog_flag(verbose, silent),
     Level \= error,
     Level \= warning,
     !.
-print_message_(_, _Msg) :-
+prolog:print_message_(_, _Msg) :-
     % first step at hook processing
     '$conditional_compilation_skip'(true),
     !.
-print_message_(force(_Severity), Msg) :- !,
+prolog:print_message_(force(_Severity), Msg) :- !,
     print(user_error,Msg).
 % This predicate has more hooks than a pirate ship!
-print_message_(Severity, Term) :-
+prolog:print_message_(Severity, Term) :-
     Lines = [begin(Severity, Id)| Lines0],
     Linesf = [ end(Id)],
     build_message( Term, Lines0, Linesf),
     ignore(    	user:message_hook(Term, Severity, Lines) ),
     prefix_( Severity, Prefix_ ),
-    prolog:print_message_lines(user_error, Prefix_, Lines),
+    prolog:prolog:print_message_lines(user_error, Prefix_, Lines),
     !.
-print_message_(_Severity, _Term) :-
+prolog:print_message_(_Severity, _Term) :-
     format(user_error,'failed to print ~w: ~q~n'  ,[ _Severity, _Term]).
 
 
 build_message( Term, Lines0, Linesf) :- 
     translate_message( Term,Lines0, Linesf).
 
-prolog:print_message(Severity, Msg) :-
-%    writeln(print_message_(Severity, Msg)),
-	print_message_(Severity, Msg),
+prolog:prolog:print_message(Severity, Msg) :-
+%    writeln(prolog:print_message_(Severity, Msg)),
+	prolog:prolog:print_message_(Severity, Msg),
 	fail.
-prolog:print_message(_Severity, _Msg).
+prolog:prolog:print_message(_Severity, _Msg).
 
 is_exception_descriptor(exception(Address)) :-
     integer(Address). 
@@ -1442,8 +1442,7 @@ is_exception_descriptor(List) :-
 %% @pred print_warning( +Msg )
 %%
 prolog:print_warning( Msg) :-
-	print_message_(warning, Msg),
-	fail.
-prolog:print_warning(_Msg).
+    prolog:print_message_(warning, Msg),
+    !.
 
 /** @} */
