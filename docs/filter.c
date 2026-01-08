@@ -166,6 +166,7 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
     sprintf(be, "%.*s(%.*s)", (int)namel, name, (int)strlen(buf), buf);
     sprintf(pi,"%.*s/%ld",(int)namel,name,arity);
    rc= args+(argsl+2);
+    DW(rc-2,rc);
    break;
   case STDPRED0:
     bf = protect_class(bf0, 0, name, (int)namel);
@@ -205,7 +206,7 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
   long int arity;
   
   while(s && s<sf) {
-      if (!(pred = bound_strchr(s, '/',sf))) {
+      if ( !(pred = bound_strchr(s, '/',sf))) {
          DW(s0,sf);
 	 return sf;
       } else {
@@ -217,15 +218,15 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
 	  DW(s0, name);
 	  fprintf(ostream,
 
-		  
-		  "@verbatim [%.*s/%ld ][#class%s]@Endverbatim", 
-		  //"@ref #%.*s% "
+		  "@verbatim[%.*s/%ld][#class%s]@endverbatim", 
+		  //		  "@ref %s%ld ",
 		  (int)(pred-name),name,arity,
 		  bf
 		  );
 	  s0 = s = aptr;
+	} else {
+	  s0 = s=aptr;
 	}
-	s=aptr;
       }
  
   }

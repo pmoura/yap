@@ -282,7 +282,6 @@ process(State,innerpage(Atts,Children)) -->
     innerpage([kind="page"|State],Atts,Children).
 process(State,innergroup(Atts,Children)) -->
     !,
-    writeln(Atts),
     innergroup([kind="group"|State],Atts,Children).
 % ignoreseq(NState,qualifier(_,_),Innergroup,Qualifier),
 % ignoreseq(NState,templateparamlist(_,_),Qualifier,Templateparamlist),
@@ -480,7 +479,6 @@ highlight(highlight(_,Line)) -->
 rawt(Text) -->
     {string(Text) },
     !,
-    [" "],
     [Text].
 rawt(ref([refid(Id)|_],[Info])) -->
     !,
@@ -748,10 +746,9 @@ bd(underline, "<ins>").
 para(verbatim(_,[Link])) -->
 {
 string(Link),
-string_concat(["[",_, "]"],Link)
+string_concat([_A,"[",_B,"][",_C,"]",_D],Link)
 },
-
-    !,
+!,
 [Link].
 para(ulink([url(URL)],[Title|_])) -->
     ref(Title , URL),
