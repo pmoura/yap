@@ -536,7 +536,6 @@ true
    '$meta_hook'(MG,NMG),
 '$execute_non_stop'(NMG),
 Port,
-set_prolog_flag(debug, true),
          '$interact'(Port, NMG, GoalNumber)
     ).
 '$step'(   exo_procedure,MG,GoalNumber) :-
@@ -621,6 +620,7 @@ fetch_nth_clause(I,NM:NG,_,Ref),'$creep_clause'( NG, NM, Ref, CP )),
 */
 '$interact'(P, Module:G, L) :-
     '$stop_creeping'(_),
+    set_prolog_flag(debug, false),
     nb_getval(creep,leap),
     !,
     ('$deterministic_port'(P) -> Deterministic = '?' ; Deterministic = ' '),

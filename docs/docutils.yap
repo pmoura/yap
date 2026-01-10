@@ -113,7 +113,7 @@ encode(Pred/A,String) :-
      ;
      A = Arity
     ),
-    string_concat([SPred,Arity],String0),
+    string_concat([SPred,"/",Arity],String0),
     pred2safe(String0,String).
 encode(Pred, SPred) :-
     string(Pred),
@@ -130,6 +130,21 @@ ncode(Pred, Pred).
 		 !,
      safe2pred(S,SF).
 decode(P,P).
+
+    
+back(0,_L,0) :-
+    !.
+back(I0,S,I0) :-
+    I is I0-1,
+    sub_string(S,I,1,_,SP),
+    sp(SP),    !.
+    back(I0,S,P) :-
+     I is I0-1,
+    back(I,S,P).
+
+sp(" ").
+sp("\t").
+sp("\n").
 
 
 pred2safe(Pred, String) :-
@@ -181,12 +196,14 @@ encode_dox(S,S) :- !.
 %    !.
 decode_dox(S,S).
 
+
 pred(Id) :-
     string(Id),
     !,
-    atom_strimg(A,Id),
+    atom_string(A,Id),
     pred(A).
 pred(Id) :-
+    atom_concat(class,_,Id),
     sub_atom(Id ,_, 1, 0, Arity),
     atom_chars(Arity,[Dig]),
     char_type_digit(Dig).
@@ -200,6 +217,6 @@ dedoxtrl([C|L],[C|NL]) :-
 is_pi(S) :-
     string_chars(S,Cs),
     append(_Prefix,[Pos],Cs),
-    maplist(char_type_xdigit, Pos).
+    maplist(char_type_digit, Pos).
 
 

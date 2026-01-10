@@ -379,24 +379,24 @@ static Int atom_concat3(USES_REGS1) {
  * an atom.
  *
  * Examples:
-~~~{.prolog}
+```{.prolog}
 string_to_atomic("yap",L).
-~~~
+```
 will return:
 
-~~~{.prolog}
+```{.prolog}
 L = yap.
-~~~
+```
 and
 
-~~~{.prolog}
+```{.prolog}
 name("3",L).
-~~~
+```
 will return:
 
-~~~{.prolog}
+```{.prolog}
 L = 3.
-~~~ 
+``` 
 
  *
  * */
@@ -656,7 +656,7 @@ static Int atom_chars(USES_REGS1) {
 /**
  * @pred atom_codes(?Atom, ?Codes)
  *
-~~~
+```
  ?-  atom_codes( a, Cs ).
 Cs = [97].
  ?- atom_codes( `a`, Cs ).
@@ -674,7 +674,7 @@ yes
 yes
 ?- atom_codes( X, [51] ).
 X = '3'.
-~~~
+```
  *
  */
 static Int atom_codes(USES_REGS1) {
@@ -725,7 +725,7 @@ static Int string_concat3(USES_REGS1) {
 /**
  * @pred string_codes(?Atom, ?Codes)
  *
-~~~
+```
  ?-  string_codes( a, Cs ).
 Cs = [97].
  ?- string_codes( `a`, Cs ).
@@ -743,7 +743,7 @@ yes
 yes
 ?- string_codes( X, [51] ).
 X = '3'.
-~~~
+```
  *
  */
 static Int string_codes(USES_REGS1) {
@@ -789,7 +789,7 @@ static Int string_codes(USES_REGS1) {
  * @pred string_chars(?Atom, ?Codes)
  *
  * similar to spring_codes/2, it outputs to character lists.
-~~~
+```
  ?-  string_chars( a, Cs ).
 Cs = [a].
  ?- string_chars( `a`, Cs ).
@@ -799,7 +799,7 @@ no
 A = `hello`.
 ?- string_chars( 3.3, Cs ).
 Cs = ['3','.','3'].
-~~~
+```
  *
  */
 static Int string_chars(USES_REGS1) {

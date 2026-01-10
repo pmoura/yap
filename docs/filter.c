@@ -96,9 +96,9 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
       return where;
       }
       */
-//   *out++ = 'Z';
-//   *out++ = 'A' + '/'/16;
-//   *out++ = 'A' + '/'%16;
+   *out++ = 'Z';
+   *out++ = 'A' + '/'/16;
+   *out++ = 'A' + '/'%16;
    *out++ = '0'+arity;
   out[0] = '\0';
   //fprintf(stderr,"¨%.*s=>%s\n",(int)sz,where);
@@ -166,7 +166,7 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
     sprintf(be, "%.*s(%.*s)", (int)namel, name, (int)strlen(buf), buf);
     sprintf(pi,"%.*s/%ld",(int)namel,name,arity);
    rc= args+(argsl+2);
-    DW(rc-2,rc);
+    DW(rc-1,rc);
    break;
   case STDPRED0:
     bf = protect_class(bf0, 0, name, (int)namel);
@@ -193,8 +193,8 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
 	  nl, be,nl,
 	  bf);
 */
-fprintf(ostream, "@class  %s%s@brief <b>%s</b> ", 
-	//nl, bf,nl,
+fprintf(ostream, "@anchor class%s%s@class  %s%s@brief <b>%s</b> ", 
+	 bf,nl,
 	  bf,nl,
 	  be);
 
@@ -205,7 +205,7 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
   char  *name, *s=s0, *aptr, *pred;
   long int arity;
   
-  while(s && s<sf) {
+  while(false && s && s<sf) {
       if ( !(pred = bound_strchr(s, '/',sf))) {
          DW(s0,sf);
 	 return sf;
@@ -219,7 +219,7 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
 	  fprintf(ostream,
 
 		  "@verbatim[%.*s/%ld][#class%s]@endverbatim", 
-		  //		  "@ref %s%ld ",
+		  //		  "@ref #%s%ld ",
 		  (int)(pred-name),name,arity,
 		  bf
 		  );

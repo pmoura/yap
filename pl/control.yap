@@ -745,10 +745,12 @@ N=2 ;
 N=3
 ```
  * when _N is bound:
+
 ```
 ?- call_nth(between(1,6,X),3).
 X=3
 ```
+
  */
 call_nth(Goal_0, Nth) :-
    (

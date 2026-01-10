@@ -452,7 +452,7 @@ notrace(G) :-
    %   current_prolog_flag( trace,true),
     nb_getval(creep,creep),
     !,
-    '$creep'.
+    '$creep'. 
 '$continue_debugging'(_).
 
 
