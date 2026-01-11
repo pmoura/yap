@@ -1,9 +1,8 @@
 site_name: YAP Prolog Reference Manual
-
+site_url: https://www.dcc.fc.up.pt/YAP
 use_directory_urls: false
 theme:
   name: 'readthedocs'
-#  name: 'spacelab'
   highlightjs: true
   hljs_languages:
     - prolog
@@ -16,18 +15,15 @@ theme:
   logo: 'img/favicon.ico'
 
 plugins:
-  - section-index
   - search
   - autorefs:
       resolve_closest: true
-  - literate-nav:
-      nav_file: SUMMARY.md
   - mkdoxy:
       # debug: true
       ignore-errors: true
       projects:
         YAP:
-          src-dirs:       ${CMAKE_SOURCE_DIR}/CXX  
+          src-dirs:       ${CMAKE_SOURCE_DIR}/
           full-doc: True
           doxy-cfg-file: ${CMAKE_BINARY_DIR}/Doxyfile.dox
 
@@ -39,3 +35,6 @@ markdown_extensions:
   - admonition
   - markdown.extensions.md_in_html
 
+nav:
+   - Home: index.md
+   

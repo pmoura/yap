@@ -11,21 +11,21 @@ information on version @YAP_FULL_VERSION@ of YAP (<em>Yet Another
 
 The manual is organised as follows:
 
-1. [Installing YAP](INSTALL.md) describes how to compile YAP and its packages;
+1. [Installing YAP](YAP/INSTALL.md) describes how to compile YAP and its packages;
 
-2. [Calling YAP](CALLING_YAP.md) explains how YAP cam be called from an Unix command prompt;
+2. [Calling YAP](YAP/CALLING_YAP.md) explains how YAP cam be called from an Unix command prompt;
 
-1. [Core Builtins](group__Builtins.md) provides information on the core system;
+1. @ref Builtins provides information on the core system;
 
-1. [Programming Features](group__YAPProgramming.md)  concentrates on how to write programs in YAP;
+1. @ref YAPProgramming  concentrates on how to write programs in YAP;
 
-1. [YAP Library](group__YAPLibrary.md)  describesextra functionality;
+1. @ref YAPLibrary  describesextra functionality;
 
-1. [Extensions](group__YapExtensions.md) are a number of improvements over the original Prolog language;
+1. @ref YapExtensions are a number of improvements over the original Prolog lang
 
-1. [YAP to and from C/C++](group__YAPAPI.md) presents the YAP--C interfaces;
+1. @ref YAPAPI presents the YAP--C interfaces;
 	
-1.  [Packages](group__YAPPackages.md)  describes more complex libraries.
+1. @ref  YAPPackages  describes more complex libraries.
 	
 	
 NOTE: this version of YAP is still experimental, documentation may be missing or out of date.
