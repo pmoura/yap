@@ -1,3 +1,12 @@
+/**
+  @defgroup BTree B*Tree support in YAP
+  @ingroup YAPUdi
+@{
+
+Use B* trees to search for keys that have an order.
+
+*/
+
 :- load_foreign_files(['libudi_b+tree'],[],udi_btree_init).
 
 :- op(700,fx,max).

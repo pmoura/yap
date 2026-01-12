@@ -70,8 +70,8 @@ We have introduced relevant syntax which allows for easy transition between prol
 Prolog constructs are converted by the library as follows:
 
 
-* =|..|= within atoms  ->  =|.|= (ex. =| as..integer(c(1,2,3)) ->  as.integer(c(1,2,3))|= )
-* =|^[]|=  after atoms -> =|[]|= (ex. =|a^[2] -> a[2] |=)
+*`=|..|=`within atoms      =|.|= (ex. =| as..integer(c(1,2,3)) ->  as.integer(c(1,2,3))|= )
+* =|^[]|=  after atoms -  =|[]|= (ex. =|a^[2] -> a[2] |=)
 * =|(.)|= at the end of atoms that are known R functions -> =|()|=  (ex. =|dev..off(.) -> dev.off()|= )
 * =|[]|= -> c() (which equal to R's NULL value)
 * ( f(x) :-  (..))   -> f(x) (...)
@@ -240,8 +240,8 @@ YAP includes a development version of real, designed to experiment
 with the internals of the implementation of R. It includes major
 changes and is likely to be much less stable than the version
 maintained by Nicos ANgelopoulos. We refer to the version herein as
-'realC' and describe the main novelties vs the version described
-in~\cite . Their major differences:
+`realC `and describe the main novelties vs the version described
+in @cite . Their major differences:
 
    - Most of realC is written in `C`, instead of aa a Prolog string
    generator. The `C` code respects the SWI-Prolog fli interface and

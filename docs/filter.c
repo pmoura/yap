@@ -78,7 +78,7 @@ static void DW
 static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
   ssize_t i;
   char *out = where;
-  //*out++ = 'Y';
+  *out++ = 'Y';
   for (i = 0; i < sz; i++) {
     int ch = what[i];
     if (isalnum(ch) && ch!='Z') {
@@ -97,9 +97,9 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
       return where;
       }
       */
-   *out++ = 'Z';
-   *out++ = 'A' + '/'/16;
-   *out++ = 'A' + '/'%16;
+   *out++ = '_';
+//   *out++ = 'A' + '/'/16;
+//   *out++ = 'A' + '/'%16;
    *out++ = '0'+arity;
   out[0] = '\0';
   //fprintf(stderr,"¨%.*s=>%s\n",(int)sz,where);
@@ -195,7 +195,6 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
 	  bf);
 */
 fprintf(ostream, "@class  %s%s@brief <b>%s</b> ", 
-//	 bf,nl,
 	  bf,nl,
 	  be);
 

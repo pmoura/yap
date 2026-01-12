@@ -126,6 +126,8 @@ configure_file( docs/md/yap.md.cmake ${CMAKE_BINARY_DIR}/index.md)
     ${CMAKE_SOURCE_DIR}/packages/swig
     ${CMAKE_SOURCE_DIR}/packages/python/yapkernel
     ${CMAKE_SOURCE_DIR}/include/SWI-Prolog.h
+    ${CMAKE_SOURCE_DIR}/packages/real
+    ${CMAKE_SOURCE_DIR}/packages/udi
     ${CMAKE_SOURCE_DIR}/C/absmi_insts.i
 ${CMAKE_SOURCE_DIR}/C/traced_absmi_insts.h	
     )
@@ -180,22 +182,23 @@ set (DOXYGEN_FILE_PATTERNS *.pl *.yap *.ypp *.c *.cc *.cxx *.cpp *.c++
     add_custom_target(doc_build
     COMMAND ${CMAKE_COMMAND} -E rm -fr  ${CMAKE_BINARY_DIR}/mkdocs/site
       COMMAND ${CMAKE_COMMAND} -E make_directory  mkdocs/docs/javascripts
+      COMMAND ${CMAKE_COMMAND} -E make_directory  mkdocs/docs/YAP
       COMMAND ${CMAKE_COMMAND} -E make_directory  mkdocs/docs/img
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/index.md  ${CMAKE_BINARY_DIR}/mkdocs/docs
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/INSTALL.md  ${CMAKE_BINARY_DIR}/mkdocs/docs
-     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/docs/md/CALLING_YAP.md  ${CMAKE_BINARY_DIR}/mkdocs/docs
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/index.md  ${CMAKE_BINARY_DIR}/mkdocs/docs/YAP
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/INSTALL.md  ${CMAKE_BINARY_DIR}/mkdocs/docs/YAP
+     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/docs/md/CALLING_YAP.md  ${CMAKE_BINARY_DIR}/mkdocs/docs/yAP
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/docs/images/yap_256x256x32.png ${CMAKE_BINARY_DIR}/mkdocs/docs/img/yap_256x256x32.png
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/docs/images/favicon_32x32.ico ${CMAKE_BINARY_DIR}/mkdocs/docs/img/favicon.ico
-      COMMAND yap-bin startup.yss -L ${CMAKE_SOURCE_DIR}/docs/dox2md.yap  -- ${CMAKE_BINARY_DIR}/xml ${CMAKE_BINARY_DIR}/mkdocs/docs ${CMAKE_BINARY_DIR}
+#      COMMAND yap-bin startup.yss -L ${CMAKE_SOURCE_DIR}/docs/dox2md.yap  -- ${CMAKE_BINARY_DIR}/xml ${CMAKE_BINARY_DIR}/mkdocs/docs ${CMAKE_BINARY_DIR}
        
-     DEPENDS STARTUP filter-bin mkdocs/mkdocs.yml ${MD_TARGETS} dox ${CMAKE_SOURCE_DIR}/docs/dox2md.yap dox 
+     DEPENDS STARTUP filter-bin mkdocs/mkdocs.yml ${MD_TARGETS}  ${CMAKE_SOURCE_DIR}/docs/dox2md.yap dox 
   )
 		
 
 add_custom_target(mkdocs
     COMMAND mkdocs build
   WORKING_DIRECTORY mkdocs
-    DEPENDS doc_build dox
+    DEPENDS doc_build
     )
 
 endif()
