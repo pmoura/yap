@@ -78,6 +78,7 @@ static void DW
 static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
   ssize_t i;
   char *out = where;
+  *out++ = 'Y';
   for (i = 0; i < sz; i++) {
     int ch = what[i];
     if (isalnum(ch) && ch!='Z') {
@@ -96,9 +97,9 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
       return where;
       }
       */
-   *out++ = 'Z';
-   *out++ = 'A' + '/'/16;
-   *out++ = 'A' + '/'%16;
+   *out++ = '_';
+//   *out++ = 'A' + '/'/16;
+//   *out++ = 'A' + '/'%16;
    *out++ = '0'+arity;
   out[0] = '\0';
   //fprintf(stderr,"¨%.*s=>%s\n",(int)sz,where);
@@ -193,8 +194,7 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
 	  nl, be,nl,
 	  bf);
 */
-fprintf(ostream, "@anchor class%s%s@class  %s%s@brief <b>%s</b> ", 
-	 bf,nl,
+fprintf(ostream, "@class  %s%s@brief <b>%s</b> ", 
 	  bf,nl,
 	  be);
 
@@ -218,7 +218,7 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
 	  DW(s0, name);
 	  fprintf(ostream,
 
-		  "@verbatim[%.*s/%ld][#class%s]@endverbatim", 
+		  "@verbatim[%.*s/%ld][class%s]@endverbatim", 
 		  //		  "@ref #%s%ld ",
 		  (int)(pred-name),name,arity,
 		  bf
@@ -339,7 +339,7 @@ static char * slash_star( char *s0, char *sf, bool slash_star) {
     } else if (lpred == 4) {
 
       CW(slash_star,s0, vs[3]);
-char *start_vb = s0 = vs[3];
+      char *start_vb = s0 = vs[3];
       int l = strlen("\n```");
       char *end_vb = bound_strstr(s0+l,"\n```", sf)+l;
       vs[3] = end_vb;

@@ -314,7 +314,7 @@ yap_hacks:trace(MG, Ctx) :-
     nb_setval('$spy_on',stop),
     nb_setval('$spy_target',0),
     current_choice_point(CP0),
-    trace_goal(G, M, Ctx, _, CP0).
+    '$debug_goal'(G, M, Ctx, _, CP0).
 /*
 yap_hacks:trace(M:G, Ctx) :- % system
     '$id_goal'(GoalNumberN),
@@ -386,7 +386,7 @@ true
 
 
 '$trace_meta_call'( G, CP, GN, M ) :-
-    yap_hacks:trace_goal(G, M, outer, GN, CP ).
+    '$debug_goal'(G, M, outer, GN, CP ).
 
 %% @pred '$debug_goal'( +G, +M, +Status, +GoalNumber, +CP)
 %
