@@ -120,7 +120,8 @@ F() :-
  * evaluate F as a Python exress and match the result to _V_.
  *
  */
-V := F :-
+    V := F :-
+    writeln((V:=F)),
     python:python_assign(F, V).
 
 /*

@@ -27,7 +27,7 @@ plugins:
       ignore-errors: true
       projects:
         YAP:
-          src-dirs:       ${CMAKE_SOURCE_DIR}/CXX  
+          src-dirs:       ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR}
           full-doc: True
           doxy-cfg-file: ${CMAKE_BINARY_DIR}/Doxyfile.dox
 

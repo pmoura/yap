@@ -58,7 +58,7 @@ yap_hacks:exception_property(Q,E,V) :-
  * If _Term_ describes an exception, _List_ will be unfied with the
  * fiekds storing error information.
  *
- * _List_ shpi;d be unbound, as YAP does not fuarantee an irder for the resulting _List_.
+ * _List_ should be unbound, as YAP does not guarantee an order for the resulting _List_.
  */
 yap_hacks:yap_error_descriptor(Inf,Des) :-
    '$messages': error_descriptor(Inf,Des).

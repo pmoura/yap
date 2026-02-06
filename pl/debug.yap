@@ -269,7 +269,7 @@ be lost.
    *	| spy_status	| step	 	 	| creep	| creep,leap,skip
    *	| ...	|  	| stop at goal	 	| -1	| Integer >= 1
    *	| ...	| 	| stop at spy-points	| stop	| stop,
-   *
+   *    | '$within_debugger'| | | |
    *
    *
  */
@@ -288,27 +288,6 @@ be lost.
 '$spy'(M:G,Ctx) :-
     yap_hacks:trace(M:G,Ctx). 
 
-
-
-'$continue_debugging'(_,inner) :-
-    !.
-'$continue_debugging'(_,_) :-
-    set_prolog_flag(debug, true),
-    nb_getval(creep,zip),
-    !.
-'$continue_debugging'(exit,_) :-
-    !,
-    '$creep'.
-'$continue_debugging'(answer,_) :-
-    !,
-    '$creep'.
-'$continue_debugging'(fail,_) :-
-    !,
-    '$creep'.
-'$continue_debugging'(redo,_) :-
-    !,
-    '$creep'.
-'$continue_debugging'(_,_).
 '$creep'(true) :-
     !.
 '$creep'(ModG) :-
@@ -329,6 +308,7 @@ a  *
 %%! The first case matches system_predicates or zip
 %    trace_goal(G,M, inner, _GoalNumberN, _CP0).
 yap_hacks:trace(MG, Ctx) :-
+    '$start_debugger',
     strip_module(MG,M,G),
     nb_setval(creep,creep),
     nb_setval('$spy_on',stop),
@@ -413,7 +393,8 @@ true
 %  debug a complex query
 %
 '$debug_goal'(V, M, _, _, _) :-
-    (
+    '$start_debugger',    
+    writeln(0),    (
       var(V)
       ->
       throw_error(instantiation_error,call(M:V))
@@ -433,7 +414,6 @@ true
     nb_setval(creep,zip).
 '$debug_goal'('$drop_exception'(V,J), _, _, _, _) :-
     !,
-    set_prolog_flag(debug, true),
     '$drop_exception'(V,J).
 '$debug_goal'(expand_goal(V,J), _, _, _, _) :-
     !,
@@ -452,7 +432,9 @@ true
     !.
 '$debug_goal'(query_to_answer(G,Vs,Port, Bindings,GF,Goals),_, _, _, _) :-
     !,
-    query_to_answer(G, Vs,Port, Bindings,GF,Goals).
+    '$start_debugger',    
+    query_to_answer(G, Vs,Port, Bindings,GF,Goals),
+        '$stop_debugger'.
 '$debug_goal'(cut_by(M), _, _, _,  _) :-
     !,
     cut_by(M).
@@ -483,16 +465,20 @@ true
     ('$debug_goal'(A, M, Ctx, GN0, CP);
      '$debug_goal'(B, M, Ctx, GN0, CP)).
 '$debug_goal'(G, M, _Ctx, GN, _CP) :-
+    writeln(1),
     '$zip_at_port'(call,GN,M:G),
+    writeln(2),
     !,
-    '$stop_creeping'(_),
+    '$stop_debugger',
     '$execute'(M:G).    
 '$debug_goal'(G, M, Ctx, GN, CP) :-
+    writeln(3),
     '$id_goal'(GoalNumber),
 %    '$interact'(call, M:G, GoalNumber), 
     (
       '$zip_at_port'(call,GoalNumber,M:G)
       ->
+      '$stop_debugger',
       '$execute'(M:G)
       ;
       
@@ -512,7 +498,7 @@ true
     '$interact'(call, M:G, GoalNumber), 
     '$zip_at_port'(call,GoalNumber,M:G),
     !,
-    '$stop_creeping'(_),
+    '$stop_debugger',
     '$execute'( M:G).
 '$step_goal'(G,M, GoalNumber) :-
     '$predicate_type'(G,M,T),
@@ -534,7 +520,10 @@ true
     !,
     gated_call(
    '$meta_hook'(MG,NMG),
-'$execute_non_stop'(NMG),
+    (
+      '$stop_debugger',
+      '$execute_non_stop'(NMG)
+    ),
 Port,
          '$interact'(Port, NMG, GoalNumber)
     ).
@@ -558,17 +547,17 @@ Port,
     '$debug_goal'(NewG, NM,  inner,GoalNumber).
 '$step'(   static_procedure,MG,GoalNumber) :-
     current_choice_point(CP),
-    gated_call(   
-('$meta_hook'(MG,NM:NG),
-set_prolog_flag(debug, true)
-    ),
+    gated_call(
+'$meta_hook'(MG,NM:NG),
     (
-      predicate_property(NM:NG, number_of_clauses(NCl),
-between(1,NCl, I),
-fetch_nth_clause(I,NM:NG,_,Ref),'$creep_clause'( NG, NM, Ref, CP )),
-      Port,	
-      '$interact'(Port, NM:NG, GoalNumber)
-    )
+      predicate_property(NM:NG, number_of_clauses(NCl)),
+      between(1,NCl, I),
+      fetch_nth_clause(I,NM:NG,_,Ref),
+      '$stop_debugger',
+      '$creep_clause'( NG, NM, Ref, CP )
+    ),
+    Port,	
+    '$interact'(Port, NM:NG, GoalNumber)
     ).
 
 
@@ -604,23 +593,12 @@ fetch_nth_clause(I,NM:NG,_,Ref),'$creep_clause'( NG, NM, Ref, CP )),
     !.
 '$meta_hook'(MG,MG).
 
-/**
- * @Pred '$enter_trace'(+L, 0:G, +Module, +Info)
- *
- * call goal: prelims
- *
- * @parameter _Module_:_G_
- * @parameter _L_ is the list of active goals
- * @parameter _Info_ describes the goal
- *
- */
 /*'$interact'(P, MG, GoalNumber) :-
     '$zip_at_port'(P,GoalNumber,MG),
     !.
 */
 '$interact'(P, Module:G, L) :-
-    '$stop_creeping'(_),
-    set_prolog_flag(debug, false),
+    '$start_debugger',
     nb_getval(creep,leap),
     !,
     ('$deterministic_port'(P) -> Deterministic = '?' ; Deterministic = ' '),
@@ -652,8 +630,17 @@ fetch_nth_clause(I,NM:NG,_,Ref),'$creep_clause'( NG, NM, Ref, CP )),
     !.
 
 
+/**
+ * @Pred '$enter_trace'(+L, 0:G, +Module, +Info)
+ *
+ * call goal: prelims
+ *
+ * @parameter _Module_:_G_
+ * @parameter _L_ is the list of active goals
+ * @parameter _Info_ describes the goal
+ *
+ */
 '$enter_trace'(Id, Module:G, Deterministic) :-
-    current_prolog_flag(deug,true0),
     '$id_goal'(Id),        /* get goal no.	*/
     /* get goal list		*/
     '__NB_getval__'('$spy_glist',History,History=[]),
@@ -753,7 +740,7 @@ trace_error(Event,_,_,_,_,_) :-
 % Just fail here, don't really need toc all debugger, the user knows what he
 % wants to do
 '$loop_fail'(_GoalNumber, _G, _Module, _Creep) :-
-    current_prolog_flag(debug, true),
+    '$stop_debugger',
     fail.
 
 %
@@ -917,6 +904,7 @@ trace_error(Event,_,_,_,_,_) :-
     nb_setval(creep,creep),
     nb_setval('$spy_on',ignore),
     nb_setval('$spy_target',Goal),
+    '$stop_debugger' ,
     throw(error(debugger_event(redo,Goal),[])).
 '$action'(s,P,CallNumber,_,_,_) :-
     !,		% 's		skip

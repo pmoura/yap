@@ -437,23 +437,25 @@ notrace(G) :-
 
 
 '$run_deb'(_Port,Ctx,_GN) :-
-    '$continue_debugging'(Ctx).
+'$run_deb'(_Port,Ctx,_GN) :-
+    '$continue_debugging'.
 
 
 '$exit_goal'(Ctx, _GN):-
     '$continue_debugging'(Ctx).
 
-'$continue_debugging'(_) :-
-    current_prolog_flag(debug, false),
-    !,
-    '$off_debugging'.
-'$continue_debugging'(outer) :-
-    '$off_debugging',
-   %   current_prolog_flag( trace,true),
-    nb_getval(creep,creep),
-    !,
-    '$creep'. 
-'$continue_debugging'(_).
+
+/**
+What to do after we finish or fail a goal?
+*/
+'$continue_debugging' :-
+    current_prolog_flag(debug, true),
+    (
+      '$running_the_debugger'
+      ;
+      current_prolog_flag( trace,true)
+    ),
+    '$creep'.
 
 
 '$restart_debugging':-

@@ -196,7 +196,9 @@ bool Yap_may_creep(bool creep_on_forward)
 CACHE_REGS
   Atom at;
   PredEntry *pred;
-  if (trueLocalPrologFlag(TRACE_FLAG)) {
+  if (LOCAL_DebEvent)
+    return false;
+  if (trueLocalPrologFlag(DEBUG_FLAG)) {
     if (creep_on_forward) {
       at = AtomCreep;
     } else {
@@ -205,40 +207,73 @@ CACHE_REGS
     pred = RepPredProp(PredPropByFunc(Yap_MkFunctor(at, 1), 0));
     CreepCode = pred;
     Yap_signal( YAP_CREEP_SIGNAL);
+    // `xLOCAL_IsDebugging =false;
   }
   return true;
 }
 
 static Int p_creep(USES_REGS1) {
+
+  LOCAL_DebEvent = false;
   return Yap_may_creep(true);
 }
 
 static Int creepfail(USES_REGS1) {
+  LOCAL_DebEvent = false;
   return Yap_may_creep(false);
-  return true;
 }
 
 static Int stop_creeping(USES_REGS1) {
   Yap_get_signal(YAP_CREEP_SIGNAL);
+  LOCAL_DebEvent = false;
     return Yap_unify(ARG1, TermTrue);
 }
 
 static Int disable_debugging(USES_REGS1) {
   Yap_get_signal(YAP_CREEP_SIGNAL);
+  LOCAL_DebEvent = false;
   return true;
 }
 
 static Int creep_allowed(USES_REGS1) {
-  if (PP != NULL) {
+  if (!LOCAL_DebEvent && PP != NULL) {
     Yap_get_signal(YAP_CREEP_SIGNAL);
     return true;
   }
   return false;
 }
 
+
+static Int start_debugger(USES_REGS1) {
+  if (LOCAL_DebEvent) {
+    fprintf(stderr,"Debugger already on\n");	     
+  }
+  if (trueLocalPrologFlag(DEBUG_FLAG)) {
+  LOCAL_DebEvent = true;
+  }
+  return true;
+}
+
+static Int stop_debugger(USES_REGS1) {
+  #if DEBUG
+  if (!LOCAL_DebEvent) {
+    fprintf(stderr,"Debugger already off\n");	     
+  }
+  #endif
+  LOCAL_DebEvent = false;
+  return true;
+}
+
+static Int in_debugger(USES_REGS1) {
+  return   LOCAL_DebEvent;
+}
+
 void Yap_InitDebugFs(void) {
     Yap_InitCPred("creep", 0, p_creep, SafePredFlag);
    Yap_InitCPred("$creep", 0, p_creep, SafePredFlag);
+  Yap_InitCPred("$start_debugger", 0, start_debugger, SafePredFlag);
+  Yap_InitCPred("$stop_debugger", 0, stop_debugger, SafePredFlag);
+  Yap_InitCPred("$running_the_debugger", 0,	in_debugger, SafePredFlag);
   Yap_InitCPred("$creep_fail", 0, creepfail, SafePredFlag);
   Yap_InitCPred("$stop_creeping", 1, stop_creeping,
                 NoTracePredFlag | HiddenPredFlag | SafePredFlag);

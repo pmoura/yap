@@ -797,7 +797,7 @@ expand_rule1(sumlist).
 
 goal_expansion(Call0, M0:NG) :-
     prolog_load_context(source,_),
- %   current_prolog_flag( goal_expansion_allowed, true ),
+    current_prolog_flag( goal_expansion_allowed, true ),
     strip_module(Call0,M0,Call),
     Call =.. [Meta,M0Goal|LinkArgs],
     expand_rule1(Meta),
