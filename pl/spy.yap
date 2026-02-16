@@ -436,8 +436,7 @@ notrace(G) :-
       
 
 
-'$run_deb'(_Port,Ctx,_GN) :-
-'$run_deb'(_Port,Ctx,_GN) :-
+'$run_deb'(_Port,_Ctx,_GN) :-
     '$continue_debugging'.
 
 
@@ -456,7 +455,6 @@ What to do after we finish or fail a goal?
       current_prolog_flag( trace,true)
     ),
     '$creep'.
-
 
 '$restart_debugging':-
     nb_setval('$spy_on',stop),

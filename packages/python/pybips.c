@@ -27,7 +27,7 @@ static PyObject *read_symbol( PyObject *ctx, const char *s) {
   #endif
       if( PyModule_Check(ctx)) {
          ctx = PyModule_GetDict(ctx);
-     }                                                                                                                                                                                                                                 if ( PyDict_Check(ctx)) {
+      }                                                                                                                                                                                                                               if ( PyDict_Check(ctx)) {
       if ((out = PyDict_GetItemString(ctx, s))) {
     Py_INCREF(out);
 	return out;
@@ -718,6 +718,74 @@ static PyObject *bip_int(term_t t) {
 
 #endif // BIPS
 
+static PyObject *op(const char *s, PyObject *pArgs) {
+  if (!strcmp("+",s)) {
+    if (PySequence_Check(PySequence_GetItem(pArgs,0)))
+      return Lookup(py_Ops,"concat");
+    else
+      return  Lookup(py_Ops, "add");
+    }
+    if (!strcmp("in",s)) {
+      return  Lookup(py_Ops, "contains");
+    }
+    if (!strcmp("/",s)) {
+      return  Lookup(py_Ops, "truediv");
+    }
+    if (!strcmp("//",s)) {
+	   return  Lookup(py_Ops, "floordiv");
+	 }
+		     
+ 	 if (!strcmp("&",s)) {
+	   return  Lookup(py_Ops, "and_");
+	 }
+ 	 if (!strcmp("^",s)) {
+	   return  Lookup(py_Ops, "xor");
+	 }
+  	 if (!strcmp("~",s)) {
+	   return  Lookup(py_Ops, "xor");
+	 }
+  	 if (!strcmp("|",s)) {
+	   return  Lookup(py_Ops, "or_");
+	 }
+  	 if (!strcmp("**",s)) {
+	   return  Lookup(py_Ops, "pow");
+	 }
+  	 if (!strcmp("is",s)) {
+	   return  Lookup(py_Ops, "is_");
+	 }
+  	 if (!strcmp("*",s)) {
+	   return  Lookup(py_Ops, "mul");
+	 }
+  	 if (!strcmp("@",s)) {
+	   return  Lookup(py_Ops, "matmul");
+	 }
+  	 if (!strcmp("-",s)) {
+	   return  Lookup(py_Ops, "neg");
+	 }
+  	 if (!strcmp(">>",s)) {
+	   return  Lookup(py_Ops, "rshift");
+	 }
+  	 if (!strcmp("%",s)) {
+	   return  Lookup(py_Ops, "mod");
+	 }
+  	 if (!strcmp("<",s)) {
+	   return  Lookup(py_Ops, "lt");
+	 }
+  	 if (!strcmp("==",s)) {
+	   return  Lookup(py_Ops, "eq");
+	 }
+  	 if (!strcmp("!=",s)) {
+	   return  Lookup(py_Ops, "ne");
+	 }
+  	 if (!strcmp(">=",s)) {
+	   return  Lookup(py_Ops, "ge");
+	 }
+  	 if (!strcmp(">",s)) {
+	   return  Lookup(py_Ops, "gt");
+	 }
+	 return NULL;
+}
+
 
 	PyObject *compound_to_pytree(YAP_Term t, PyObject *context, bool cvt) {
 	  PyObject *o = py_Main;
@@ -882,7 +950,7 @@ static PyObject *bip_int(term_t t) {
 	    PyObject *
 		ys = PythonLookup(s, context);
 	    if (!ys)  ys =PyUnicode_FromString(s);
-		  if ( ys && PyCallable_Check(ys)) {
+	    if ( ys && (PyCallable_Check(ys) || (ys=op(s,pArgs)))) {
 		    if (!pArgs)
 		      pArgs = PyTuple_New(0);
 		    CHECK_CALL(ys, pArgs, pyDict);
@@ -910,3 +978,4 @@ static PyObject *bip_int(term_t t) {
 	
            
 	/** @} */
+

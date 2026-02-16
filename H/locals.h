@@ -316,7 +316,7 @@ LOCAL(DBTerm *,Ball);
 LOCAL_INIT(struct swi_mutex *, Mutexes, NULL);
 
 LOCAL_INIT(Term, SourceModule, 0);
-LOCAL_INIT(Term, Including, TermNil);
+LOCAL_INIT(int, Including, -1);
 
 LOCAL_INIT(size_t, MAX_SIZE, 1024L);
 

@@ -143,8 +143,8 @@ static foreign_t prolog_list_to_python_list(YAP_Term plist, YAP_Term pyt, YAP_Te
 }
 
 install_t install_pl2pl(void) {
-  PL_register_foreign("array_to_python_list", 4, array_to_python_list, 0);
-  PL_register_foreign("array_to_python_tuple", 4, array_to_python_tuple, 0);
-  PL_register_foreign("array_to_python_view", 5, array_to_python_view, 0);
-  PL_register_foreign("prolog_list_to_python_list", 3, prolog_list_to_python_list, 0);
+  PL_register_foreign_in_module("python", "array_to_python_list", 4, array_to_python_list, 0);
+  PL_register_foreign_in_module("python", "array_to_python_tuple", 4, array_to_python_tuple, 0);
+  PL_register_foreign_in_module("python", "array_to_python_view", 5, array_to_python_view, 0);
+  PL_register_foreign_in_module("python", "prolog_list_to_python_list", 3, prolog_list_to_python_list, 0);
 }

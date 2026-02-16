@@ -1607,7 +1607,7 @@ bool Yap_multiple(PredEntry *ap, Term mode USES_REGS) {
    }
    return  ap->cs.p_code.NOfClauses > 0 && ap->src.OwnerFile != AtomNil &&
      Yap_source_file_name() != ap->src.OwnerFile &&
-           LOCAL_Including != MkAtomTerm(ap->src.OwnerFile);
+           GLOBAL_Stream[LOCAL_Including].name != (ap->src.OwnerFile);
 }
 
 static int is_fact(Term t) {
@@ -1623,10 +1623,16 @@ static int is_fact(Term t) {
   return FALSE;
 }
 
-Int Yap_source_line_no(void) {
-      int sno;
+static int Yap_source_stream(void) {
+  int sno;
+  if (!GLOBAL_Stream) {
+    return -1;
+  }
+  if (LOCAL_Including >= 0) {
+    return LOCAL_Including;
+  }
   if ((sno = Yap_CheckAlias(AtomLoopStream)) >= 0) {
-    return GLOBAL_Stream[sno].linecount;
+    return sno;
   }
   if ((sno = Yap_CheckAlias(AtomUserIn)) >= 0) {
     return GLOBAL_Stream[sno].linecount;
@@ -1636,67 +1642,42 @@ Int Yap_source_line_no(void) {
   } else {
     return 1;
   }
+
 }
 
+Int Yap_source_line_no(void) {
+  int sno = Yap_source_stream();
+  if (sno >= 0)
+    return GLOBAL_Stream[sno].linecount;
+  return -1;
+}
+
+
 Int Yap_source_line_pos(void) {
-  int sno;
-  if ((sno = Yap_CheckAlias(AtomLoopStream)) >= 0) {
-    //    if(sno ==0)
-    //  return(AtomUserIn);
+  int sno = Yap_source_stream();
+  if (sno >= 0) {
     return GLOBAL_Stream[sno].charcount+1-GLOBAL_Stream[sno].linestart;
-  }
-   if ((sno = Yap_CheckAlias(AtomUserIn)) >= 0) {
-    //    if(sno ==0)
-    //  return(AtomUserIn);
-    return GLOBAL_Stream[sno].charcount+1-GLOBAL_Stream[sno].linestart;
-  }
-  if (Yap_GetGlobal(AtomConsultingFile) == TermNil) {
-    return GLOBAL_Stream[0].charcount+1-GLOBAL_Stream[0].linestart;
-  } else {
-    return GLOBAL_Stream[sno].charcount+1-GLOBAL_Stream[sno].linestart;
-  }
+}
+return -1;
 }
 
 
 Int Yap_source_pos(void) {
-      int sno;
-  if ((sno = Yap_CheckAlias(AtomLoopStream)) >= 0) {
+  int sno = Yap_source_stream();
+  if (sno >= 0) {
     //    if(sno ==0)
     //  return(AtomUserIn);
     return GLOBAL_Stream[sno].charcount;
   }
-  if ((sno = Yap_CheckAlias(AtomUserIn)) >= 0) {
-    //    if(sno ==0)
-    //  return(AtomUserIn);
-    return GLOBAL_Stream[sno].charcount;
-  }
-  if ((Yap_GetGlobal(AtomConsultingFile)) == TermNil) {
-    return GLOBAL_Stream[0].charcount;
-  } else {
-    return 1;
-  }
-
+    return -1;
 }
 
 Atom Yap_source_file_name(void) {
-      int sno;
-  if (!GLOBAL_Stream)
-    return AtomEmpty;
-  if ((sno = Yap_CheckAlias(AtomLoopStream)) >= 0) {
-    //    if(sno ==0)
-    //  return(AtomUserIn);
+  int sno = Yap_source_stream();
+  if (sno >= 0) {
     return GLOBAL_Stream[sno].name;
   }
-  if ((sno = Yap_CheckAlias(AtomUserIn)) >= 0) {
-    //    if(sno ==0)
-    //  return(AtomUserIn);
-    return GLOBAL_Stream[sno].name;
-  }
-  if (Yap_GetGlobal(AtomConsultingFile) == TermNil) {
-    return GLOBAL_Stream[0].name;
-  } else {
     return AtomEmpty;
-  }
 
 }
 
@@ -4371,7 +4352,7 @@ static Int p_nth_instance(USES_REGS1) {
 }
 
 static Int including(USES_REGS1) {
-  bool rc = Yap_unify(ARG1, LOCAL_Including);
+  bool rc = Yap_unify(ARG1, Yap_MkStream(LOCAL_Including));
   if (!rc)
     return FALSE;
   LOCAL_Including = Deref(ARG2);

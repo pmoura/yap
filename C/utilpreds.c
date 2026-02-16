@@ -44,8 +44,6 @@ typedef struct {
 
 
 static CELL  vars_in_complex_term(CELL *, CELL *, Term CACHE_TYPE);
-static Int   p_non_singletons_in_term( USES_REGS1);
-static CELL  non_singletons_in_complex_term(CELL *, CELL * CACHE_TYPE);
 static Int   p_variables_in_term( USES_REGS1 );
 static Int   p_ground( USES_REGS1 );
 
@@ -2341,13 +2339,12 @@ static Term bind_vars_in_complex_term(register CELL *pt0, register CELL *pt0_end
 #endif
 
 
-static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt0_end USES_REGS)
+static Term singletons_in_complex_term(register CELL *pt0, register CELL *pt0_end, bool singletons USES_REGS)
 {
 
   register CELL **tovisit0, **tovisit = (CELL **)Yap_PreAllocCodeSpace();
   register tr_fr_ptr TR0 = TR;
   CELL *InitialH = HR;
-  CELL output = AbsPair(HR);
 
   tovisit0 = tovisit;
  loop:
@@ -2444,15 +2441,24 @@ static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt
     goto loop;
   }
 
-  clean_tr(TR0 PASS_REGS);
-  if (HR != InitialH) {
-    /* close the list */
-    RESET_VARIABLE(HR-1);
-    Yap_unify((CELL)(HR-1),ARG2);
-    return output;
-  } else {
-    return ARG2;
+  Term tail = TermNil;
+  tr_fr_ptr pt;
+  for (pt=TR0; pt < TR; pt++) {
+    Term v = (TrailTerm(pt));
+    if  (Deref(v) == TermFoundVar && singletons) {
+      *HR++ = v;
+      *HR++ = tail;
+      tail = AbsPair(HR-2);
+    }
+    else if  (Deref(v) == TermRefoundVar && !singletons) {
+      *HR++ = v;
+      *HR++ = tail;
+      tail = AbsPair(HR-2);
+    }
+    RESET_VARIABLE((CELL*)TrailTerm(pt));
   }
+  TR = TR0;
+  return tail;
 
  aux_overflow:
 #ifdef RATIONAL_TREES
@@ -2471,7 +2477,7 @@ static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt
 }
 
 static Int
-p_non_singletons_in_term( USES_REGS1 )	/* non_singletons in term t		 */
+non_singletons_in_term( USES_REGS1 )	/* non_singletons in term t		 */
 {
   Term t;
   Term out;
@@ -2479,19 +2485,59 @@ p_non_singletons_in_term( USES_REGS1 )	/* non_singletons in term t		 */
   while (TRUE) {
     t = Deref(ARG1);
     if (IsVarTerm(t)) {
-      out = MkPairTerm(t,ARG2);
+      out = TermNil;
     }  else if (IsPrimitiveTerm(t)) {
-      out = ARG2;
+      out = TermNil;
+
     } else if (IsPairTerm(t)) {
-      out = non_singletons_in_complex_term(RepPair(t)-1,
-					   RepPair(t)+1 PASS_REGS);
+      out = singletons_in_complex_term(RepPair(t)-1,
+				       RepPair(t)+1,
+				       false PASS_REGS);
     } else {
-      out = non_singletons_in_complex_term(RepAppl(t),
-					   RepAppl(t)+
-					   ArityOfFunctor(FunctorOfTerm(t)) PASS_REGS);
+      out = singletons_in_complex_term(RepAppl(t),
+				       RepAppl(t)+
+				       ArityOfFunctor(FunctorOfTerm(t)
+						      ), false PASS_REGS);
     }
     if (out != 0L) {
-      return Yap_unify(ARG3,out);
+      return Yap_unify(ARG2,out);
+    } else {
+      if (!Yap_ExpandPreAllocCodeSpace(0, NULL, TRUE)) {
+	Yap_ThrowError(RESOURCE_ERROR_AUXILIARY_STACK, ARG1, "overflow in singletons");
+	return FALSE;
+      }
+    }
+  }
+}
+
+/** @pred term_singletons( +T , ?L)
+
+The list collects all singleton variables in term T
+*/
+static Int
+term_singletons( USES_REGS1 )	
+{
+  Term t;
+  Term out;
+
+  while (TRUE) {
+    t = Deref(ARG1);
+    if (IsVarTerm(t)) {
+      out = MkPairTerm(t,TermNil);
+    }  else if (IsPrimitiveTerm(t)) {
+      out = TermNil;
+    } else if (IsPairTerm(t)) {
+      out = singletons_in_complex_term(RepPair(t)-1,
+				       RepPair(t)+1,
+				       true PASS_REGS);
+    } else {
+      out = singletons_in_complex_term(RepAppl(t),
+				       RepAppl(t)+
+				       ArityOfFunctor(FunctorOfTerm(t)
+						      ), true PASS_REGS);
+    }
+    if (out != 0L) {
+      return Yap_unify(ARG2,out);
     } else {
       if (!Yap_ExpandPreAllocCodeSpace(0, NULL, TRUE)) {
 	Yap_ThrowError(RESOURCE_ERROR_AUXILIARY_STACK, ARG1, "overflow in singletons");
@@ -4492,7 +4538,8 @@ void Yap_InitUtilCPreds(void)
   Yap_InitCPred("_ground", 1, p_ground, SafePredFlag);
   Yap_InitCPred("$_variables_in_term", 3, p_variables_in_term, 0);
   //Yap_InitCPred("$free_variables_in_term", 3, p_free_variables_in_term, 0);
-  Yap_InitCPred("$non_singletons_in_term", 3, p_non_singletons_in_term, 0);
+  Yap_InitCPred("$non_singletons_in_term", 2, non_singletons_in_term, 0);
+  Yap_InitCPred("term_singletons", 2, term_singletons, 0);
   //Yap_InitCPred("term_variables", 2, p_term_variables, 0);
 /** @pred  term_variables(? _Term_, - _Variables_) is iso
 

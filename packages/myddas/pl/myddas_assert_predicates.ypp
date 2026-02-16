@@ -134,14 +134,15 @@ att_names_([(R:Name)|Names]) -->
 bindings([],'') :-
     !.
 bindings(L,FieldNames) :-
-    bindings_(L,LF,[]),
+    foldl(binding,L,LF,[]),
     atom_list_concat(['where '|LF], FieldNames).
 
-bindings_(L,FieldNames) :-
-    bindings_(L,LF,[]),
-    atom_number(A,Value)},
-   [R,'.',Name,' = ', A].
-bindings_(Name,R,Value) -->
+binding(R:Name=Value) -->
+    {
+	catch(atom_number(A,Value),_,fail)
+    },
+    [R,'.',Name,' = ', A].
+binding(R:Name=Value) -->
 	[R,'.',Name,' = \'', Value,'\''].
 
 joins(Eqs,Code) :-
@@ -295,11 +296,11 @@ table_access_predicate( mysql, Con, Arity, P, LA, M,
 			( P :-  '$copy_term_nv'(P,[],G,_),
 				  translate(M:G,M:G,Code),
 				  queries_atom(Code,FinalSQL),
-				  db_my_result_set(Mode),
+				  mysql_result_set(Mode),
 				  myddas_util_predicates:'$write_or_not'(FinalSQL),
-				  c_db_my_query(FinalSQL,ResultSet,Con,Mode,_),
+				  c_mysql_query(FinalSQL,ResultSet,Con,Mode,_),
 				  !,
-				  c_db_my_row(ResultSet,Arity,LA)
+				  c_mysql_row(ResultSet,Arity,LA)
 			  )).
 #endif
 #if MYDDAS_POSTGRES
@@ -344,9 +345,9 @@ table_insert( mysql, Con, RelationName, TypesList, Predicate, LA,
 	      ( Predicate :- myddas_assert_predicates:
 	      ( '$get_values_for_insert'(TypesList,LA,ValuesList),
 		'$make_atom'(['INSERT INTO `',RelationName,'` VALUES ('|ValuesList],SQL),
-		db_my_result_set(Mode),
+		mysql_result_set(Mode),
 		'$write_or_not'(SQL),
-		c_db_my_query(SQL,_,Con,Mode,_)))
+		c_mysql_query(SQL,_,Con,Mode,_)))
 	    ).
 #endif
 #if MYDDAS_POSTGRES
@@ -385,11 +386,11 @@ table_view( mysql, Con, CopyView, CopyGoal, Arity, LA, M,
               '$copy_term_nv'(CopyGoal,Dic,NG,_),
               translate(ProjT,NG,Code),
               queries_atom(Code,FinalSQL),
-              db_my_result_set(Mode),
+              mysql_result_set(Mode),
               '$write_or_not'(FinalSQL),
-              c_db_my_query(FinalSQL,ResultSet,Con,Mode,_),
+              c_mysql_query(FinalSQL,ResultSet,Con,Mode,_),
               !,
-              c_db_my_row(ResultSet,Arity,LA) ))).
+              c_mysql_row(ResultSet,Arity,LA) ))).
 #endif
 #if MYDDAS_POSTGRES
 table_view( postgres, Con, CopyView, CopyGoal, Arity, LA, M,
@@ -398,7 +399,7 @@ table_view( postgres, Con, CopyView, CopyGoal, Arity, LA, M,
                 '$copy_term_nv'(CopyGoal,Dic,NG,_),
                 translate(ProjT,NG,Code),
                 queries_atom(Code,FinalSQL),
-                db_my_result_set(Mode),
+                db_mysql_result_set(Mode),
                 '$write_or_not'(FinalSQL),
                 c_postgres_query(FinalSQL,ResultSet,Con,Mode,_),
                 !,
@@ -449,8 +450,8 @@ db_assert(Connection,PredName):-
 	c_db_connection_type(Con,ConType),
 	'$write_or_not'(SQL),
 	( ConType == mysql ->
-	  myddas_top_level:db_my_result_set(Mode),
-	  c_db_my_query(SQL,_,Con,Mode,_)
+	  myddas_top_level:db_mysql_result_set(Mode),
+	  c_mysql_query(SQL,_,Con,Mode,_)
 	;ConType == postgres ->
 	  postgres_result_set(Mode),
 	  c_postgres_query(SQL,_,Con,Mode,_)
@@ -496,10 +497,10 @@ db_update(Connection,WherePred-SetPred):-
 	get_value(Connection,Con),
 	c_db_connection_type(Con,ConType),
 	( ConType == mysql ->
-	myddas_top_level:db_my_result_set(Mode),
-	  c_db_my_query(SQL,_,Conn,Mode,_)
+	myddas_top_level:db_mysql_result_set(Mode),
+	  c_mysql_query(SQL,_,Conn,Mode,_)
 	;
-	  ConType == mysql ->
+	  ConType == postgres ->
 	postgres_result_set(Mode),
 	  c_postgres_query(SQL,_,Conn,Mode,_)
 	;

@@ -8,8 +8,6 @@ UInt myddas_util_get_total_multi_queries_number(MYDDAS_UTIL_CONNECTION con);
 void myddas_util_set_total_multi_queries_number(MYDDAS_UTIL_CONNECTION con,
                                                 UInt number);
 
-//void myddas_util_table_write(MYSQL_RES *res_set);
-
 void *myddas_util_get_pred_next(void *pointer);
 
 MyddasInt myddas_util_get_pred_arity(void *pointer);
