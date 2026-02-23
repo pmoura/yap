@@ -157,7 +157,7 @@ initialize_prolog :-
 
 :- c_compile('lf.yap').
 :- c_compile('consult.yap').
- %:- start_low_level_trace.
+%:- start_low_level_trace.
 :- compile('error.yap').
 %:- stop_Low_level_trace.
 
@@ -223,7 +223,7 @@ initialize_prolog :-
 
 
 /** @pred  user"goal_expansion(+ _G_,+ _M_,- _NG_)
-
+vvvvvvvvv                              
 also available: Module:goal_expansion(+ _G_,+ _M_,- _NG_)
 
 
@@ -257,8 +257,6 @@ sub-goal  _NG_ will replace  _G_ and will be processed in the same
 
 :- use_module('messages.yap').
 
-
-:- ['undefined.yap'].
 
 export_from_prolog([]).
 export_from_prolog([P|Ps]) :-

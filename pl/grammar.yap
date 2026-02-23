@@ -67,8 +67,9 @@ right hand side of a grammar rule
 Grammar related built-in predicates:
 
 */
-:- module_( '$_grammar', []).
 /*
+:- module( '$_grammar',
+[
 !/2,
          (',')/4,
          (->)/4,
@@ -81,7 +82,7 @@ Grammar related built-in predicates:
         phrase/2,
         phrase/3,
         {}/3,
-        ('|')/4]. [throw_error/2,
+        ('|')/4], [throw_error/2,
 t_body/6]).
 */
 

@@ -627,7 +627,7 @@ static PredEntry * interrupt_cut(USES_REGS1) {
 static PredEntry * interrupt_cut_t(USES_REGS1) {
   DEBUG_INTERRUPTS();
   return interrupt_main(_cut_t, P PASS_REGS);
-}
+}                                  
 
 
 static PredEntry * interrupt_cut_e(USES_REGS1) {
@@ -710,7 +710,6 @@ static void undef_goal(PredEntry *pe USES_REGS) {
   //  PP = NULL;
 #endif
   CalculateStackGap(PASS_REGS1);
-  LOCAL_DoingUndefp = true;
   PredEntry *hook;
   Term tg = save_goal(pe PASS_REGS);
 

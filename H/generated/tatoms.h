@@ -216,6 +216,7 @@ X_API EXTERNAL Atom AtomIgnoreOps; X_API EXTERNAL Term TermIgnoreOps;
 X_API EXTERNAL Atom AtomImmediate; X_API EXTERNAL Term TermImmediate;
 X_API EXTERNAL Atom AtomImport; X_API EXTERNAL Term TermImport;
 X_API EXTERNAL Atom AtomInStackExpansion; X_API EXTERNAL Term TermInStackExpansion;
+X_API EXTERNAL Atom AtomIncludeStream; X_API EXTERNAL Term TermIncludeStream;
 X_API EXTERNAL Atom AtomInf; X_API EXTERNAL Term TermInf;
 X_API EXTERNAL Atom AtomInfinity; X_API EXTERNAL Term TermInfinity;
 X_API EXTERNAL Atom AtomInfo; X_API EXTERNAL Term TermInfo;

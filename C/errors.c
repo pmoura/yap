@@ -878,7 +878,7 @@ bool Yap_MkErrorRecord(yap_error_descriptor_t *r, const char *file,
     r->errorMsg = NULL;
 }
   if (type != SYNTAX_ERROR) {
-    const char *s =  RepAtom(Yap_source_file_name())->StrOfAE;
+    const char *s =  RepAtom(Yap_source_name())->StrOfAE;
      r->parserFile = strcpy(malloc(strlen(s)+1),s);
      r->parserLine = r->parserFirstLine = LOCAL_StartLineCount;
     r->parserLastLine = Yap_source_line_no();

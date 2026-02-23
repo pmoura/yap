@@ -2951,7 +2951,7 @@ static yamop *do_pass(int pass_no, yamop **entry_codep, int assembling,
           cl_u->sc.ClFlags |= HasCutMask;
         cl_u->sc.ClNext = NULL;
 	        cl_u->sc.ClSize = size;
-		cl_u->sc.ClOwner = Yap_source_file_name();
+		cl_u->sc.ClOwner = Yap_source_name();
         cl_u->sc.usc.ClLine = cip->pos;
         cl_u->sc.usc.ClSource = NULL;
         if (*clause_has_blobsp) {
@@ -3833,7 +3833,7 @@ yamop *Yap_assemble(int mode, Term t, PredEntry *ap, int is_fact,
     cl->ClFlags |= SrcMask;
     x->ag.line_number =  Yap_source_line_no();
     cl->ClSize = osize;
-    cl->ClOwner = Yap_source_file_name();
+    cl->ClOwner = Yap_source_name();
     cip->code_addr = (yamop *)cl;
   } else if (mode == ASSEMBLING_CLAUSE &&
 	     ap->PredFlags &  SourcePredFlag  &&

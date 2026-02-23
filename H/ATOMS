@@ -223,6 +223,7 @@ A	IgnoreOps		N	"ignore_ops"
 A	Immediate		N	"immediate"
 A	Import			N	"import"
 A	InStackExpansion	N	"in stack expansion"
+A	IncludeStream		N	"include_stream"
 A	Inf			N	"inf"
 A	Infinity		N	"infinity"
 A	Info    		N	"info"
@@ -571,7 +572,7 @@ F	Complex			Complex		2
 F	Context2		Context		2
 F	ConsistencyError	ConsistencyError	1
 F	Creep			Creep		1
-F	Csult			Csult		2
+F	Csult			Csult		1
 F	CurrentModule		CurrentModule	1
 F	Curly			Curly		1
 F	CurrentChoicePoint	CurrentChoicePoint 1

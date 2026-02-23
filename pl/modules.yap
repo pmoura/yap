@@ -330,6 +330,7 @@ current_module(Mod,TFN) :-
 system_module(Mod) :-
     ( atom(Mod) -> true ; '$all_current_modules'(Mod) ),
     '$is_system_module'(Mod).
+'$declare_system_module'(_,_,_,_,_,_).
 
 '$trace_module'(X) :-
     open('P0:debug', append, S),

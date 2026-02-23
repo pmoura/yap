@@ -245,7 +245,7 @@ static Term Singletons(VarEntry *p, bool var_only, Term l USES_REGS) {
 	    t[0] = MkAtomTerm(p->VarRep);
 	  } else {
           t[0] = MkPairTerm(MkAtomTerm(p->VarRep),MkPairTerm(MkIntTerm(p->lineno),MkPairTerm(MkIntTerm(p->linepos ),
-											     MkPairTerm(MkAtomTerm(LOCAL_SourceFileName),TermNil))));
+											     MkPairTerm(MkAtomTerm(Yap_source_name()),TermNil))));
 	  }
           t[1] = p->VarAdr;
           o = Yap_MkApplTerm(FunctorEq, 2, t);

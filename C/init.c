@@ -510,7 +510,7 @@ void Yap_InitCPredInModule(const char *Name, arity_t Arity, CPredicate code,
   pe->CodeOfPred = p_code;
   pe->ModuleOfPred = mod;
   pe->PredFlags = flags | StandardPredFlag | CPredFlag;
-  pe->src.OwnerFile = Yap_source_file_name();
+  pe->src.OwnerFile = Yap_source_stream_name();
   pe->cs.f_code = code;
   if (!(flags & SafePredFlag)) {
     p_code->opc = Yap_opcode(_allocate);
@@ -1245,7 +1245,7 @@ static void InitCodes(struct yap_boot_params *yapi)
 #endif /* THREADS */
   Yap_InitFirstWorkerThreadHandle();
   /* make sure no one else can use these two atoms */
-  LOCAL_SourceModule = CurrentModule = 0;
+ CurrentModule = 0;
   Yap_ReleaseAtom(AtomOfTerm(TermRefoundVar));
   /* flags require atom table done, but must be done as soon as possible,
      definitely before any predicate initialization */
