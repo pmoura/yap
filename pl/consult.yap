@@ -255,16 +255,16 @@ db_files(Fs) :-
     load_files(Fs, [consult(db), if(not_loaded)]).
 
 
-'$csult'(Fs, _M) :-
+'$csult'(Fs) :-
 	 skip_list(_, Fs ,L),
 	 L \== [],
 	 !,
 	 python:python_proc( Fs ) .
-'$csult'(Fs, M) :-
+'$csult'(Fs) :-
 	'$extract_minus'(Fs, MFs), !,
-	load_files(M:MFs,[]).
-'$csult'(Fs, M) :-
-	load_files(M:Fs,[consult(consult)]).
+	load_files(MFs,[]).
+'$csult'(Fs) :-
+	load_files(Fs,[consult(consult)]).
 
 
 '$csult_in_mod'(M, -F ) :- load_files(M:F,[]).
@@ -466,13 +466,13 @@ source_file_property( F, load_context(M,OldF:Line,Opts)) :-
   Full name for the file currently being read in, which may be consulted,
   reconsulted, or included
 
-2  + `stream`  (prolog_load_context/2 option)
+  + `stream`  (prolog_load_context/2 option)
 
   Stream currently being read in.
 
   + `term_position`  (prolog_load_context/2 option)
 
-q  Stream position at the stream currently being read in. For SWI
+  Stream position at the stream currently being read in. For SWI
   compatibility, it is a term of the form
   '$stream_position'(0,Line,0,0).
 

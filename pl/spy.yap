@@ -88,14 +88,14 @@ mode and the existing spy-points, when the debugger is on.
 '$u_spy_name'(A0,Command,M0) :-
     strip_module(M0:A0,M,A),
  	(
-      '$spy_gen'(M,A,S,N)
+	  '$spy_gen'(M,A,_S,N)
 	*->
 	'$u_spy'(A/N,Command,M),
 	fail
     ;
-    Error =..[S,M:A],
+    Error =..[M:A],
     print_message(warning,no_match(Error))
-    ).
+	).
 
 '$spy_gen'(M,A,S,N) :-
     atom(A),
@@ -103,9 +103,9 @@ mode and the existing spy-points, when the debugger is on.
     current_predicate(A,M:S),
     functor(S,A,N).
 
- %
- % protect against evil arguments.
- %
+%
+    % protect against evil arguments.
+    %
 '$do_u_spy'(spy,A,N,T,M) :-
     recorded('$spy','$spy'(T,M),_),
     !,
@@ -195,18 +195,18 @@ nodebug :-
     print_message(informational,debug(off)).
 
 %
-% remove any debugging info after an abort.
-%
+    % remove any debugging info after an abort.
+    %
 
 
-/** @pred trace
+    /** @pred trace
 
 
 Switches on the debugger and enters tracing mode.
 
 
 */
-trace :-
+    trace :-
     ( '__NB_getval__'('$spy_gn',_, fail) -> true ; '__NB_setval__'('$spy_gn',1) ),
     print_message(informational,debug(trace)),
     '$init_debugger',
@@ -436,8 +436,7 @@ notrace(G) :-
       
 
 
-'$run_deb'(_Port,Ctx,_GN) :-
-'$run_deb'(_Port,Ctx,_GN) :-
+'$run_deb'(_Port,_Ctx,_GN) :-
     '$continue_debugging'.
 
 
@@ -457,13 +456,12 @@ What to do after we finish or fail a goal?
     ),
     '$creep'.
 
-
 '$restart_debugging':-
     nb_setval('$spy_on',stop),
     nb_setval('$spy_target',0),
     fail.
 '$restart_debugging':-
-     nb_getval(creep,creep), 
+    nb_getval(creep,creep), 
     !,
     '$creep'.
 '$restart_debugging'.

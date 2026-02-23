@@ -78,7 +78,7 @@ static void DW
 static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
   ssize_t i;
   char *out = where;
-  *out++ = 'Y';
+  //*out++ = 'Y';
   for (i = 0; i < sz; i++) {
     int ch = what[i];
     if (isalnum(ch) && ch!='Z') {
@@ -97,10 +97,10 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
       return where;
       }
       */
-   *out++ = '_';
+ //  *out++ = '_';
 //   *out++ = 'A' + '/'/16;
 //   *out++ = 'A' + '/'%16;
-   *out++ = '0'+arity;
+//   *out++ = '0'+arity;
   out[0] = '\0';
   //fprintf(stderr,"¨%.*s=>%s\n",(int)sz,where);
   return where;
@@ -152,6 +152,9 @@ typedef enum {
 
 static char *def(int type, bool star, char *name, ssize_t namel, char *args, size_t argsl, char *arg2s, ssize_t arg2sl)
 {
+  char oname[1024];
+  strcpy(name, oname);
+  ssize_t arity;
   const char *nl = openline(star);
   char *b0 = buf;
   b0[0]= '\0';
@@ -166,8 +169,7 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
    bf =  protect_class(  bf0, arity, name, (int)namel);
     sprintf(be, "%.*s(%.*s)", (int)namel, name, (int)strlen(buf), buf);
     sprintf(pi,"%.*s/%ld",(int)namel,name,arity);
-   rc= args+(argsl+2);
-    DW(rc-1,rc);
+   rc= args+(argsl);
    break;
   case STDPRED0:
     bf = protect_class(bf0, 0, name, (int)namel);
@@ -175,16 +177,16 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
     sprintf(pi,"%.*s/0",(int)namel,name);
     rc= name+(namel);
     break;
-  case INFIX:
-    bf = protect_class(buf, 2, name, (int)namel);
+  case PREFIX:
+    bf = protect_class(buf, 1, name, (int)namel);
     sprintf(be, "%.*s %.*s", (int)namel, name, (int)argsl, args);
     sprintf(pi,"%.*s/2",(int)namel,name);
     rc = args + argsl;
     break;
-  case PREFIX:
-    bf = protect_class(buf, 1, name, (int)namel);
+  case INFIX:
     sprintf(be, "%.*s %.*s %.*s", (int)argsl, args, (int)namel, name, (int)arg2sl, arg2s);
-    sprintf(pi,"%.*s/1",(int)namel,name);
+    sprintf(pi,"%.*s/2",(int)namel,name);
+    bf = protect_class(bf0, 2, name, (int)namel);
     rc = arg2s + arg2sl;
     break;
   }
@@ -194,10 +196,10 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
 	  nl, be,nl,
 	  bf);
 */
-fprintf(ostream, "@class  %s%s@brief <b>%s</b> ", 
-	  bf,nl,
-	  be);
-
+/* fprintf(ostream, "@class  %s/%s@brief <b>%s</b> ",  */
+/* 	  bf,nl, */
+/* 	  be); */
+fprintf(ostream, "@class %s/%ld%s", oname, arity, nl);
 return rc;
 }
 
@@ -205,7 +207,7 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
   char  *name, *s=s0, *aptr, *pred;
   long int arity;
   
-  while(false && s && s<sf) {
+  while( s && s<sf) {
       if ( !(pred = bound_strchr(s, '/',sf))) {
          DW(s0,sf);
 	 return sf;
@@ -215,13 +217,11 @@ static char * pred_indicator(char *s0, char *sf, bool star) {
 	name = atomr(pred);
 	if (arity >= 0 && name ) {
 	  char *bf = protect_class(buf, arity, name, (int)(pred-name));
-	  DW(s0, name);
 	  fprintf(ostream,
-
-		  "@verbatim[%.*s/%ld][class%s]@endverbatim", 
+		  "%s", 
 		  //		  "@ref #%s%ld ",
-		  (int)(pred-name),name,arity,
-		  bf
+		  bf //,
+		  //(int)(pred-name),name,arity
 		  );
 	  s0 = s = aptr;
 	} else {
@@ -248,31 +248,33 @@ static char * CW(bool star, char *start, char *end)
 static char * infixpred_doc(char *pred,   bool star) {
   pred += strlen("@infixpred");
   while ((isblank(*pred++)));
-  char *arg1 = pred;
+  char *arg1 = pred-1;
   while (!(isspace(*pred++)));
-  char *arg1f = pred;
+  char *arg1f = pred-1;
   while ((isblank(*pred++)));
-  char *op = pred;
+  char *op = pred-1;
   while (!(isspace(*pred++)));
-  char *opf = pred;
+  char *opf = pred-1;
   while ((isblank(*pred++)));
-  char *arg2 = pred;
+  char *arg2 = pred-1;
   while (!(isspace(*pred++)));
-  char *arg2f = pred;
-  return def(INFIX, star, op, opf-op, arg1, arg1f-arg1, arg2, arg2f-arg2);
+  char *arg2f = pred-1;
+  def(INFIX, star, op, opf-op, arg1, arg1f-arg1, arg2, arg2f-arg2);
+  return arg2f;
 }
 
 static char * prefixpred_doc(char *pred, bool star) {
   pred += strlen("@prefixpred");
   while ((isspace(*pred++)));
-  char *op = pred;
+  char *op = pred-1;
   while (!(isspace(*pred++)));
-  char *opf = pred;
+  char *opf = pred-1;
   while ((isblank(*pred++)));
-  char *arg1 = pred;
+  char *arg1 = pred-1;
   while (!(isspace(*pred++)));
-  char *arg1f = pred;
-  return def(INFIX, star, op, opf-op, arg1, arg1f-arg1, NULL, 0);
+  char *arg1f = pred-1;
+  def(PREFIX, star, op, opf-op, arg1, arg1f-arg1, NULL, 0);
+  return arg1f;
 }
 
 static char * pred_doc(char *pred,  bool star) {
@@ -326,15 +328,15 @@ static char * slash_star( char *s0, char *sf, bool slash_star) {
   while ((lpred=minall(sf))) {
     if (lpred==1) {
       CW(slash_star, s0, vs[0]);
-      s0= pred_doc(vs[0],slash_star)+strlen("@pred");
+      s0= pred_doc(vs[0],slash_star);
       vs[0]  = bound_strstr(s0,"@pred",sf); // need?
     } else if (lpred == 2) {
       CW(slash_star,s0, vs[1]);
-      s0 =infixpred_doc(s0,slash_star)+strlen("@infixpred");
+      s0 =infixpred_doc(vs[1],slash_star);
       vs[1]  = bound_strstr(s0,"@infixpred", sf);
     } else if (lpred == 3) {
       CW(slash_star,s0, vs[2]);
-      s0=prefixpred_doc(s0,slash_star)+strlen("@prefixpred");
+      s0=prefixpred_doc(vs[2],slash_star);
       vs[2]  = bound_strstr(s0,"@prefixpred", sf);
     } else if (lpred == 4) {
 
@@ -506,7 +508,7 @@ int main(int argc, char *argv[]) {
     exit(1);
   fprintf(stderr,"%s\n",inp);
 
-  if (strstr(inp, ".yap") || strstr(inp, ".ypp") || strstr(inp, ".pl")) {
+  if (strstr(inp, ".yapeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee2222222222222222222") || strstr(inp, ".ypp") || strstr(inp, ".pl")) {
     //  char s[2048];
     //      execl(YAPBIN, "-L",  PLFILTER, "--", inp, NULL);
     //  snprintf(s, 2047, "%s %s -L %s -- %s", YAPBIN, YAPSTARTUP, PLFILTER, inp);

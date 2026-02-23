@@ -21,10 +21,8 @@
 #include <mysql.h>
 #include <myddas_util.h>
 
-#ifdef MYDDAS_MYSQL
 /* Auxilary function to table_write*/
 static void n_print(Int, char);
-#endif
 
 /* Auxilary function to table_write*/
 static void n_print(Int n, char c) {
@@ -32,7 +30,7 @@ static void n_print(Int n, char c) {
     printf("%c", c);
 }
 
-void myddas_util_table_write(MYSQL_RES *res_set) {
+void myddas_mysql_table_write(MYSQL_RES *res_set) {
 
   MYSQL_ROW row;
   MYSQL_FIELD *fields;

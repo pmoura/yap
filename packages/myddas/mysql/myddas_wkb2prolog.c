@@ -1,5 +1,3 @@
-#if defined MYDDAS_MYSQL
-
 #include <stdio.h>
 #include <stdlib.h>
 #include "Yap.h"
@@ -379,4 +377,4 @@ static Term get_geometry(uint32 type){
   return MkAtomTerm(Yap_LookupAtom("[]"));
 }
 
-#endif /*MYDDAS_MYSQL*/
+

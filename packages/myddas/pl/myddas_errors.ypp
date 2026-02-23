@@ -87,7 +87,7 @@
         % equal to the number of attributes
 	myddas_core:c_db_connection_type(Con,ConType),
 	( ConType == mysql ->
-	    myddas_mysql:c_db_my_number_of_fields(Relation,Con,Arity)
+	    myddas_mysql:c_mysql_number_of_fields(Relation,Con,Arity)
 	; ConType == sqlite3 ->
 	    myddas_sqlite3:c_sqlite3_number_of_fields(Relation,Con,Arity)
 	;
@@ -97,7 +97,7 @@
 	% All fields must be Instanciated ( FALTA POR O NULL )
 	'$make_a_list'(Arity,FieldsProperties),
 	( ConType == mysql ->
-	    myddas_mysql:c_db_my_get_fields_properties(Relation,Con,FieldsProperties)
+	    myddas_mysql:c_mysql_get_fields_properties(Relation,Con,FieldsProperties)
 	;ConType == sqlite3 ->
 	    myddas_sqlite3:c_sqlite3_get_fields_properties(Relation,Con,FieldsProperties)
 	;

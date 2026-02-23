@@ -1349,7 +1349,7 @@ static Int enter_undefp(USES_REGS1) {
 }
 
 static Int exit_undefp(USES_REGS1) {
-    LOCAL_DoingUndefp = FALSE;
+    LOCAL_DoingUndefp = false;
     return true;
 }
 

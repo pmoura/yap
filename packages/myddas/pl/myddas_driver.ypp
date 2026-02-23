@@ -45,8 +45,8 @@
 #if MYDDAS_MYSQL
 #define LOAD 1
 #endif
-#define DBMS(x) my_##x
-#define c_DBMS(x) c_db_my_##x
+#define DBMS(x) mysql_##x
+#define c_DBMS(x) c_mysql_##x
 #define NAME() 'YAPmysql'
 #define MODULE() myddas_mysql
 #define INIT() init_mysql
@@ -61,14 +61,14 @@
 			  c_DBMS(query)/5,
 			  c_DBMS(number_of_fields)/3,
 #ifdef mysql
-			  c_DBMS(call_procedure)/3,
-			  c_DBMS(call_procedure)/4,
+%			  c_DBMS(call_procedure)/3,
+%			  c_DBMS(call_procedure)/4,
 			  c_DBMS(get_next_result_set)/2,
 			  c_DBMS(connect)/7,
 #endif
 #ifdef odbc
 			  c_DBMS(connect)/4,
-			  c_DBMS(connect)/7,
+%%			  c_DBMS(connect)/7,
 			  c_DBMS(number_of_fields_in_query)/3,
 #endif
 #ifdef sqlite3
@@ -242,20 +242,20 @@ DBMS(change_database)(Connection,Database) :-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #ifdef MYDDAS_MYSQL
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% DBMS(call_procedure)/4
-% DBMS(call_procedure)/3
-% DBMS(call_procedure)(+,+,+,?)
-% Only support in MySQL 5.0 an above
-% Called procedure must return results via MySQL result set
-DBMS(call_procedure)(Procedure,Args,Result) :-
-	DBMS(call_procedure)(myddas,Procedure,Args,Result).
-DBMS(call_procedure)(Connection,Procedure,Args,LA) :-
-	'$error_checks'(DBMS(call_procedure)(Connection,Procedure,Args,LA)),
-	'$make_atom_args'(Args,ArgsSQL),
-	'$make_atom'(['CALL ',Procedure,'(',ArgsSQL,')'],SQL),
-	DBMS(sql)(Connection,SQL,LA).
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % DBMS(call_procedure)/4
+% % DBMS(call_procedure)/3
+% % DBMS(call_procedure)(+,+,+,?)
+% % Only support in MySQL 5.0 an above
+% % Called procedure must return results via MySQL result set
+% DBMS(call_procedure)(Procedure,Args,Result) :-
+% 	DBMS(call_procedure)(myddas,Procedure,Args,Result).
+% DBMS(call_procedure)(Connection,Procedure,Args,LA) :-
+% 	'$error_checks'(DBMS(call_procedure)(Connection,Procedure,Args,LA)),
+% 	'$make_atom_args'(Args,ArgsSQL),
+% 	'$make_atom'(['CALL ',Procedure,'(',ArgsSQL,')'],SQL),
+% 	DBMS(sql)(Connection,SQL,LA).
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #endif
 
 DBMS(row)(ResultSet,Arity,Args) :-
@@ -287,8 +287,8 @@ c_DBMS(get_next_result_set)(A,B,C) :- throw(error(stub_call,get_next_result_set(
 c_DBMS(query)(A,B,C,D,E) :- throw(error(stub_call,query(A,B,C,D,E))).
 c_DBMS(number_of_fields)(A,B,C) :- throw(error(stub_call,number_of_fields(A,B,C))).
 DBMS(describe)(A,B,C) :- throw(error(stub_call,describe(A,B,C))).
-c_DBMS(call_procedure)(A,B,C) :- throw(error(stub_call,call_procedure(A,B,C))).
-c_DBMS(call_procedure)(A,B,C,D) :- throw(error(stub_call,call_procedure(A,B,C,D))).
+%c_DBMS(call_procedure)(A,B,C) :- throw(error(stub_call,call_procedure(A,B,C))).
+%c_DBMS(call_procedure)(A,B,C,D) :- throw(error(stub_call,call_procedure(A,B,C,D))).
 DBMS(result_set)(A) :- throw(error(stub_call,result_set(A))).
 DBMS(show_tables)(A,B) :- throw(error(stub_call,show_tables(A,B))).
 DBMS(row)(A,B,C) :- throw(error(stub_call,row(A,B,C))).

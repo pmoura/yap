@@ -319,7 +319,6 @@ yap_hacks:trace(MG, Ctx) :-
 yap_hacks:trace(M:G, Ctx) :- % system
     '$id_goal'(GoalNumberN),
     '$meta_hook'(M:G,MNG),
-catch(
     (current_choice_point(CP0),
     '$execute_non_stop'(MNG),
     current_choice_point(CPF)),
@@ -393,8 +392,7 @@ true
 %  debug a complex query
 %
 '$debug_goal'(V, M, _, _, _) :-
-    '$start_debugger',    
-    writeln(0),    (
+		   writeln(0),    (
       var(V)
       ->
       throw_error(instantiation_error,call(M:V))
@@ -432,9 +430,9 @@ true
     !.
 '$debug_goal'(query_to_answer(G,Vs,Port, Bindings,GF,Goals),_, _, _, _) :-
     !,
-    '$start_debugger',    
+    '$stop_debugger',    
     query_to_answer(G, Vs,Port, Bindings,GF,Goals),
-        '$stop_debugger'.
+        '$start_debugger'.
 '$debug_goal'(cut_by(M), _, _, _,  _) :-
     !,
     cut_by(M).

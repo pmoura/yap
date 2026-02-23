@@ -1,7 +1,6 @@
 /* MYDDAS */
 
 #ifdef USE_MYDDAS
-
 /* myddas_initialization.c */
 X_API extern MYDDAS_GLOBAL myddas_init_initialize_myddas(void);
 X_API extern MYDDAS_UTIL_CONNECTION
@@ -22,8 +21,8 @@ X_API extern void myddas_stats_delete_stats_list(MYDDAS_STATS_STRUCT);
 #ifdef MYDDAS_MYSQL
 /* myddas_util.c */
 X_API extern void init_mysq( void );
-X_API extern void myddas_util_table_write(MYSQL_RES *);
-X_API extern myddas_util_add_connection(void *, void *, MYDDAS_API);
+//X_API extern void myddas_util_table_write(MYSQL_RES *);
+//X_API extern myddas_util_add_connection(void *, void *, MYDDAS_API);
 #endif
 X_API extern MYDDAS_UTIL_CONNECTION myddas_util_add_connection(void *con, void *enviromment, MYDDAS_API api);
 X_API extern MYDDAS_UTIL_CONNECTION myddas_util_search_connection(void *con);

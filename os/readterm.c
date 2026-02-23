@@ -392,6 +392,14 @@ static Int scan_stream(USES_REGS1) {
 	t = t->TokNext;
 	continue;
       }
+      if (t->Tok == eot_tok) {
+  LOCAL_tokptr = NULL;
+  LOCAL_ErrorMessage = "YAP scanner found an empty token (most likely a single \'.\')";
+     if ((st->status & Past_Eof_Stream_f)==0) {
+      post_process_eof(st);
+    }
+      return YAP_SCANNING_ERROR;
+	}
       Term tt = tokToPair(t);
       if (tout == TermNil) {
 	tout = tt;
@@ -408,7 +416,7 @@ static Int scan_stream(USES_REGS1) {
     *VarOfTerm(end) = TermNil;
 
   LOCAL_tokptr = NULL;
-     LOCAL_ErrorMessage = "trying to scan after end of input";
+  LOCAL_ErrorMessage = "trying to scan after end of input";
      if ((st->status & Past_Eof_Stream_f)==0) {
       post_process_eof(st);
       return YAP_SCANNING_ERROR;
@@ -531,7 +539,7 @@ R  offset_t opos;
     if ((nt = Yap_StreamUserName(sno))==0) {
       e->parserFile = "<<<"; //
     } else {
-    const char *s =  RepAtom(Yap_source_file_name())->StrOfAE;
+    const char *s =  RepAtom(Yap_source_name())->StrOfAE;
      e->parserFile = strcpy(malloc(strlen(s)+1),s);
 
 
@@ -1152,7 +1160,6 @@ static parser_state_t initparser(Term opts, FEnv *fe, REnv *re, int inp_stream,
 
   fe->top_stream = inp_stream+1;
   LOCAL_Error_TYPE = YAP_NO_ERROR;
-  LOCAL_SourceFileName = AtomOfTerm(fe->user_file_name);
   LOCAL_eot_before_eof = false;
   if (clause) {
     fe->args = setClauseReadEnv(opts, fe, re, inp_stream);
@@ -1558,7 +1565,7 @@ static xarg *setClauseReadEnv(Term opts, FEnv *fe, struct renv *re, int sno) {
   if (args && args[READ_MODULE].used) {
     fe->cmod = args[READ_MODULE].tvalue;
   } else {
-    fe->cmod = LOCAL_SourceModule;
+    fe->cmod = CurrentModule;
     if (fe->cmod == TermProlog)
       fe->cmod = PROLOG_MODULE;
   }
@@ -1738,8 +1745,8 @@ Yap_CloseHandles(y0);
  * @note SWI-Prolog built-in.
  */
 static Int source_location(USES_REGS1) {
-  return Yap_unify(ARG1, MkAtomTerm(LOCAL_SourceFileName)) &&
-         Yap_unify(ARG2, MkIntegerTerm(LOCAL_SourceFileLineno));
+  return Yap_unify(ARG1, MkAtomTerm(Yap_source_name())) &&
+         Yap_unify(ARG2, MkIntegerTerm(Yap_source_line_no()));
 }
 
 /**
@@ -2081,7 +2088,7 @@ static Int atomic_to_term(USES_REGS1) {
   int l = push_text_stack();
   Term cm = CurrentModule;
   if (IsApplTerm(t1)) {
-    Term tmod = LOCAL_SourceModule;
+    Term tmod = CurrentModule;
     t1 = Yap_YapStripModule(t1, &tmod);
     CurrentModule = tmod;
   }

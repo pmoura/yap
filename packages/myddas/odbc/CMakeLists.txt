@@ -1,5 +1,6 @@
-if (WITH_ODBC)
 
+
+find_package(ODBC)
 
 if (ODBC_FOUND)
   set( YAPODBC_SOURCES
@@ -10,6 +11,11 @@ if (ODBC_FOUND)
     # ODBC_INCLUDE_DIRS, where to find sql.h
     # ODBC_LIBRARIES, the libraries to link against to use ODBC
     # ODBC_FOUND.  If false, you cannot build anything that requires Odbc.
+  list (APPEND MYDDAS_FLAGS -DMYDDAS_ODBC=1)
+    set (MYDDAS_FLAGS ${MYDDAS_FLAGS} ON PARENT_SCOPE)
+    set_property(GLOBAL APPEND PROPERTY COMPILE_DEFINITIONS
+      -DMYDDAS_ODBC=1)
+
 set_property(DIRECTORY
         APPEND PROPERTY
 	INCLUDE_DIRECTORIES  ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/)
@@ -20,7 +26,7 @@ set_property(DIRECTORY
       POSITION_INDEPENDENT_CODE ON
       PREFIX ""
       )
-
+  
     install(TARGETS  YAPodbc
       LIBRARY DESTINATION ${YAP_INSTALL_LIBDIR}
       RUNTIME DESTINATION ${YAP_INSTALL_LIBDIR}
@@ -29,4 +35,4 @@ set_property(DIRECTORY
 
   endif (ODBC_FOUND)
 
-endif()
+

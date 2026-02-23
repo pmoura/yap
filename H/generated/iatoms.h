@@ -216,6 +216,7 @@
   AtomImmediate = Yap_LookupAtom("immediate"); TermImmediate = MkAtomTerm(AtomImmediate);
   AtomImport = Yap_LookupAtom("import"); TermImport = MkAtomTerm(AtomImport);
   AtomInStackExpansion = Yap_LookupAtom("in stack expansion"); TermInStackExpansion = MkAtomTerm(AtomInStackExpansion);
+  AtomIncludeStream = Yap_LookupAtom("include_stream"); TermIncludeStream = MkAtomTerm(AtomIncludeStream);
   AtomInf = Yap_LookupAtom("inf"); TermInf = MkAtomTerm(AtomInf);
   AtomInfinity = Yap_LookupAtom("infinity"); TermInfinity = MkAtomTerm(AtomInfinity);
   AtomInfo = Yap_LookupAtom("info"); TermInfo = MkAtomTerm(AtomInfo);
@@ -563,7 +564,7 @@
   FunctorContext2 = Yap_MkFunctor(AtomContext,2);
   FunctorConsistencyError = Yap_MkFunctor(AtomConsistencyError,1);
   FunctorCreep = Yap_MkFunctor(AtomCreep,1);
-  FunctorCsult = Yap_MkFunctor(AtomCsult,2);
+  FunctorCsult = Yap_MkFunctor(AtomCsult,1);
   FunctorCurrentModule = Yap_MkFunctor(AtomCurrentModule,1);
   FunctorCurly = Yap_MkFunctor(AtomCurly,1);
   FunctorCurrentChoicePoint = Yap_MkFunctor(AtomCurrentChoicePoint,1);

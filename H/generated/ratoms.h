@@ -216,6 +216,7 @@
   AtomImmediate = AtomAdjust(AtomImmediate); TermImmediate = MkAtomTerm(AtomImmediate);
   AtomImport = AtomAdjust(AtomImport); TermImport = MkAtomTerm(AtomImport);
   AtomInStackExpansion = AtomAdjust(AtomInStackExpansion); TermInStackExpansion = MkAtomTerm(AtomInStackExpansion);
+  AtomIncludeStream = AtomAdjust(AtomIncludeStream); TermIncludeStream = MkAtomTerm(AtomIncludeStream);
   AtomInf = AtomAdjust(AtomInf); TermInf = MkAtomTerm(AtomInf);
   AtomInfinity = AtomAdjust(AtomInfinity); TermInfinity = MkAtomTerm(AtomInfinity);
   AtomInfo = AtomAdjust(AtomInfo); TermInfo = MkAtomTerm(AtomInfo);
