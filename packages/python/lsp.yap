@@ -126,7 +126,7 @@ user:pred_refs(Ob,URI,Line,Ch) :-
 
 
 user:complete(Self,_Line,_Pos,Prefix) :-
-    completions(Prefi,FCs),
+    completions(Prefix,FCs),
     ( var(Self)-> Self = FCs ; Self.items := FCs ).
 
     user:add_dir(Self,URI):-
@@ -204,7 +204,7 @@ q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), S, L0,C0, Siz) :-
     exception_property(parserLinePos, Desc, C0),
     exception_property(parserSize, Desc, Siz),
     S = "discontiguous.~n".
-q_msg(_error, error(syntax_error(_Msg), Desc), "syntax error",L0,C0, Siz) :-
+q_msg(_error, error(syntax_error(_Msg), Desc), "syntax error",L0,C0, _Siz) :-
     !,	    
     exception_property(parserLine, Desc, L1),
     L0 is L1-1,
@@ -254,17 +254,15 @@ highlight_and_convert_stream(Self,Stream) :-
     ).
 
 user:portray_message(A,B):-
-    writeln(B),
     my(Self,URI),
     q_msg(A,B,S,Line,Column, Size),
     !,
-    (var(Self)
-    ->
-     writeln(URI/t(S,Line,Column,Size))
+    (
+var(Self)
+->
+writeln(URI/t(S,Line,Column,Size))
     ;
     % assertz(lsp(URI,t(A,S,Line,Column)),
-    Self.errors[URI].append(t(A,S,Line,Column,Size)),
-    !,			     
-    fail.
+    Self.errors[URI].append(t(A,S,Line,Column,Size))
+    ).
 
-:- writeln(ok).

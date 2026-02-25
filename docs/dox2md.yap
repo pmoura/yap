@@ -41,11 +41,11 @@ main_process([IDir,ODir,_Home]) :-
 group(compound( OAtts,_OProps)) :-
     key_in(kind(Kind),OAtts),
     (
-	Kind == "group"
-    ->
-    true
-    ;
-    Kind == "page"
+      Kind == "group"
+      ->
+      true
+      ;
+      Kind == "page"
     
     ).
 
@@ -63,7 +63,7 @@ get_xml(IDir,Id,Atts,Children) :-
     !.
 
  parents(Id,ODir,O) :-
-   edge(Id, P),
+    edge(Id, P),
     !,
     parents(P,ODir, PPath),
     path_concat([PPath,Id],O),
@@ -88,9 +88,9 @@ clmember(IDir,ODir,F) :-
     atom_concat(group,_,F),
     atom_string(F,Id),
     get_xml(IDir,Id, _Atts,Children),
-       get_name(Children,Name),
-       as_title(Name,Children,Title),
-       assert(title(Id,Title)),
+    get_name(Children,Name),
+    as_title(Name,Children,Title),
+    assert(title(Id,Title)),
     foldl(process_all(IDir),Children,t([],[],[],[],[],[],[],[],[]),t(AllRaw,Briefs,Details,Pages,Groups,Predicates,XPreds,Infs,Locations)),
     foldl(add_text,[Briefs,Pages,Groups,Details,Predicates,XPreds,Infs,AllRaw,Locations],Text, []),
     !,
@@ -105,10 +105,10 @@ clmember(_IDir,_F,_).
 pred2page(Id,Idir,Children,All) :-
     get_name(Children,Name),
     as_title(Name,Children,Title),
-%(Title="term_hash_E" -> spy process_all ; true ),
+    %(Title="term_hash_E" -> spy process_all ; true ),
     foldl(process_all(Idir),Children,t([],[],[],[],[],[],[],[],[]),t(_AllRaw,Briefs,Details,Pages,Groups,Predicates,XPreds,_Infs,_Locations)),
-   foldl(add_text,[Briefs,Pages,Groups,Predicates,Details,XPreds],Text,[]),   
-   string_concat(["[](){ #",Id, "}\n## ",Title,"\n"|Text], All).
+    foldl(add_text,[Briefs,Pages,Groups,Predicates,Details,XPreds],Text,[]),   
+    string_concat(["[](){ #",Id, "}\n## ",Title,"\n"|Text], All).
 
 add_text([]) --> !.
 add_text(H)  --> {string_concat(H, S)}, [S].
@@ -140,7 +140,7 @@ process_all(IDir,Op,S0s,SFs):-
 
 
 add2strings(_,[], Target, Target) :-
-   !.
+    !.
 add2strings(_, "", Target, Target) :-
     !.
 add2strings(_,[""], Target, Target) :-
@@ -187,9 +187,9 @@ add2strings(_,Strings,Source, Target) :-
     NS=[Strings|S].
 
 process(_,compoundname(_Atts,_Children)) -->
-!.
+    !.
 process(_,title(_Atts,_Children)) -->
-!.
+    !.
 process(IDir,basecompoundref(Atts,Children)) -->
     !,
     seq(IDir,basecompoundref(Atts,Children)).
@@ -317,17 +317,17 @@ sectdef(header([],[Text]))-->
     ["\n",PText,"\n"].
 sectdef(member(Atts,Children))-->
     { key_in(refid(Ref),Atts) },
-	(
-	 {   key_in(defname(_,[Name] ),Children) }
-	->
-	true
-	;
-	{ key_in(name(_,[Name] ),Children) }
-	->
-	true
-	;
-	Name = "" %writeln(Children)
-	),
+    (
+      {   key_in(defname(_,[Name] ),Children) }
+      ->
+      true
+      ;
+      { key_in(name(_,[Name] ),Children) }
+      ->
+      true
+      ;
+      Name = "" %writeln(Children)
+    ),
     ["%- " ],
     {decode(Name,PName)},
     ref(Ref,PName).
@@ -338,15 +338,15 @@ sectdef(memberdef(Atts,Children))-->
       { Kind == "enum" }
       ->
       (
-      { Children=[name(_,[Name])|Extra] }
-                                                                           ->
-      [" case ",Name,":\n\n"]
-      ;
-      {Extra=Children}
+	{ Children=[name(_,[Name])|Extra] }
+        ->
+	[" case ",Name,":\n\n"]
+	;
+	{Extra=Children}
       ),
       foldl(enumvalue,Extra)
       ;
-    []
+      []
     ).
 
 /* ignore for now */
@@ -422,15 +422,15 @@ rawl([A|Text]) -->
     foldl(raw,[A|Text]).
 
 raw(ref([refid(Id)|_],[Info])) -->
-!,
-ref(Id,Info).
+    !,
+    ref(Id,Info).
 raw(highlight(_,Text)) -->
     !,
     rawl( Text).
 
 raw(L) -->
     {
-    string(L),
+      string(L),
       sub_string(L,Left,1,Extra,"/"),
       Left > 0,
       Extra > 0,
@@ -438,68 +438,68 @@ raw(L) -->
       Left2 is Left+2,
       get_string_code(Left2,L,D),
       code_type_digit(D),
-    back(Left,L,NPrefix),
-    NPrefix \= Left,
-    !,
-    sub_string(L,NPrefix,_,Extra1,Name),
+      back(Left,L,NPrefix),
+      NPrefix \= Left,
+      !,
+      sub_string(L,NPrefix,_,Extra1,Name),
       sub_string(L,0,NPrefix,_,Prefix),
       sub_string(L,Left2,_,0,RightLine),
       Arity is D-"0",
-    number_string(Arity,AS),
+      number_string(Arity,AS),
       encode(Name/Arity,DoxName)
-      %    encode_dox(DoxName0,DoxName),
+    %    encode_dox(DoxName0,DoxName),
     },
     [Prefix,"[",Name,"/" ,AS,"][class",DoxName,"]"],
     raw(RightLine).
 raw(Text) -->
-{string(Text) },
-!,
-[Text].
+    {string(Text) },
+    !,
+    [Text].
 
 
 %  foldl(para).
 
 parlist(_Pars,Items) -->
-["\n"],
+    ["\n"],
     foldl(paritem,Items).
 
 paritem(parameteritem(_,List)) -->
-foldl(parameternamelist,List).
+    foldl(parameternamelist,List).
 
 parameternamelist(parameternamelist(_,Args))  -->
-  foldl(parameterargs, Args).
+    foldl(parameterargs, Args).
 parameternamelist(parameterdescription(_,Args))  -->
-  foldl(parameterargs, Args).
+    foldl(parameterargs, Args).
 
 parameterargs(parametername(_,[Name])) -->
- ["  ",Name].
+    ["  ",Name].
 parameterargs(parameterdescription(_,Para)) -->
-  foldl(description,Para),
-["\n"].
+    foldl(description,Para),
+    ["\n"].
 parameterargs(para(_,Para)) -->
-  foldl(description,Para),
-["\n"].
+    foldl(description,Para),
+    ["\n"].
 
 
 doxolist(_Pars,Items) -->
-["\n"],
+    ["\n"],
     foldl(item("1"),Items).
 
 itemlist(_Pars,Items) -->
-["\n\n"],
+    ["\n\n"],
     foldl(item("i"),Items).
 
 varlist(_Pars,Items) -->
 
-["\n"],
+    ["\n"],
     foldl(varentry,Items).
 
 varentry(varlistentry(_,Terms)) -->
     [ "\n"],
-maplist(term,Terms).
+    maplist(term,Terms).
 
 term(term(_,[S|_])) -->
-[S].
+    [S].
 
 item(Type,listitem(_,Para)) -->
     typel(Type),
@@ -520,31 +520,31 @@ typel("I") -->
 
 sect( Parms, Args, _Level) -->
     (
-	{  key_in(id(Id),Parms)  }
-    ->
-    [Id],["\n"]
-    ;
-[]
+      {  key_in(id(Id),Parms)  }
+      ->
+      [Id],["\n"]
+	   ;
+	   []
     ),
     (
-	{ Args = [title([],[T])|Body] }
-    ->
-     {encode_text(T,TT)},
-    [TT],["\n"]
-    ;
-{Body = Args},
-    ["\n"]
+      { Args = [title([],[T])|Body] }
+      ->
+      {encode_text(T,TT)},
+      [TT],["\n"]
+	   ;
+	   {Body = Args},
+	   ["\n"]
     )
-,
+    ,
     description(Body).
 
 description(para([],S)) -->
     !,
     description(S),
- ["\n\n"].
+    ["\n\n"].
 description(ref([refid(Id)|_],[Info])) -->
-!,
-ref(Id,Info).
+    !,
+    ref(Id,Info).
 description(S) -->
     { string(S) },
     !,
@@ -555,24 +555,24 @@ description(title([],S)) -->
     !,
     [T].
 description(sect1([id(Id)],[sect2(Parms,Data)])) -->
-!,
+    !,
     anchor([id(Id)],[]),
     description(sect2(Parms,Data)).
 description(sect1(Parms,S)) -->
-!,
+    !,
     sect(Parms,S,"### ").
 description(sect2([id(Id)],[sect3(Parms,Data)])) -->
-!,
+    !,
     anchor([id(Id)],[]),
     description(sect3(Parms,Data)).
 description(sect2(Parms,S)) -->
-!,
+    !,
     sect(Parms,S,"#### ").
 description(sect3(Parms,S)) -->
-!,
+    !,
     sect(Parms,S,"##### ").
 description(simplesect(Parms,S)) -->
-!,
+    !,
     sect(Parms,S," ").
 
 description(itemizedlist(Atts,Text)) -->
@@ -589,13 +589,13 @@ description(S) -->
 seq(G0) -->
     %    v(G0),
     {
-	G0=..[_N,Atts,[NameS|Els]],
-	get_name(NameS, Name),
-	key_in(id(Ref),Atts),
-	member(kind(Kind),Atts),
-	top_seq_name( Kind, Type),
-	member(kind(Type),Atts),
-	!
+      G0=..[_N,Atts,[NameS|Els]],
+      get_name(NameS, Name),
+      key_in(id(Ref),Atts),
+      member(kind(Kind),Atts),
+      top_seq_name( Kind, Type),
+      member(kind(Type),Atts),
+      !
     } ,
     ["## ",Type,": "],
     ref(Ref,Name),
@@ -603,12 +603,12 @@ seq(G0) -->
     ["\n"].
 seq(G0) -->
     {
-	arg(1,G0,Atts),
-	member(kind(Kind),Atts),
-	top_seq_name( Kind, Type),
-	arg(2,G0,NameS),
-	!,
-	get_name(NameS, Name)
+      arg(1,G0,Atts),
+      member(kind(Kind),Atts),
+      top_seq_name( Kind, Type),
+      arg(2,G0,NameS),
+      !,
+      get_name(NameS, Name)
     } ,
     ["## ",Type,": ",Name,"\n"].
 
@@ -676,11 +676,11 @@ top_sectiondef_name( "func", "Functions" ).
 top_sectiondef_name(   "var", "Var" ).
 
 as_title(_,Props,PredTitle) :-
-key_in(title(_,[Title]), Props),
-!,
-decode(Title, PredTitle).
+    key_in(title(_,[Title]), Props),
+    !,
+    decode(Title, PredTitle).
 as_title(Title,_,PredTitle) :-
-decode(Title, PredTitle).
+    decode(Title, PredTitle).
 
 bd(blockquote,"\n~~~\n").
 bd(bold,"**").
@@ -695,12 +695,12 @@ bd(s, "~~").
 bd(underline, "<ins>").
 
 para(verbatim(_,[Link])) -->
-{
-string(Link),
-string_concat([_A,"[",_B,"][",_C,"]",_D],Link)
-},
-!,
-[Link].
+    {
+      string(Link),
+      string_concat([_A,"[",_B,"][",_C,"]",_D],Link)
+    },
+    !,
+    [Link].
 para(ulink([url(URL)],[Title|_])) -->
     ref(Title , URL),
     !.
@@ -736,7 +736,7 @@ para(simplesect([kind(Kind)|Text])) -->
     [" "],
     description(Text).
 para(table(_,Text)) -->
-   table(Text). % docTableType
+    table(Text). % docTableType
 para(heading(_,Text)) -->
     unimpl(heading,Text). % docHeadingType
 para(dotfile(_,Text)) -->
@@ -1308,7 +1308,7 @@ para(msc([],_Text)) -->
 para(plantuml([],_Text)) -->
     []. % docPlantumlType
 para(anchor(Parms,Children))-->
-anchor(Parms,Children).
+    anchor(Parms,Children).
 
 para([]) --> !.
 para(ref(Atts,[Name])) -->
@@ -1799,21 +1799,21 @@ para('Greater'(_,_)) -->
     [ "&lt;"].
 para(P) -->
     {
-	P=..[N,_,A],
-(	bd(N,H)->true;H="")
+      P=..[N,_,A],
+      (	bd(N,H)->true;H="")
     },
     [H],
     (
-	{string(A)}
-    ->
-    [A]
-    ;
-    description(A)
+      {string(A)}
+      ->
+      [A]
+      ;
+      description(A)
     ),
-!,
+    !,
     [H].
 para(P) -->
-{writeln(para(P))}.
+    {writeln(para(P))}.
 %<!-- end workaround for xsd.exe -->
 unimpl(Cmd,Arg) -->
     { format(user_error,'unimplemented: ~w (called with ~w)',[Cmd,Arg]) }.
@@ -1857,7 +1857,7 @@ ref(S,W) -->
 ref(S,["M"]) -->
     !.
 ref(S,W) -->
-%     {writeln(S:W)},
+    %     {writeln(S:W)},
     {
 	   sub_string(W,0,_,_,"class")
     },
@@ -1880,7 +1880,7 @@ key_in(X,[_|L]) :-
     key_in(X,L).
 
 to_predicate(P,S) :-
-check_prid(P,S).
+    check_prid(P,S).
 
 strip_module_from_pred(ROS,EOS,Final):-
     sub_string(ROS,Left,3,Right,"::P"),
@@ -1903,49 +1903,49 @@ strip_module_from_pred(ROS,EOS,Final) :-
 
 
 get_safe_name(S,N) :-
-get_name(S,N0),
-   decode(N0,N).
+    get_name(S,N0),
+    decode(N0,N).
 get_name([Name],Name) :-
-string(Name),
-!.
+    string(Name),
+    !.
 get_name(Children,Name) :-
     key_in(qualifiedname(_,NameS ),Children),
     (
-	NameS = [_,[Name]]
-    ;
-    NameS = [Name]
-    ;
-    NameS = Name
+      NameS = [_,[Name]]
+      ;
+      NameS = [Name]
+      ;
+      NameS = Name
     ),
     string(Name),
     !.
 get_name(Children,PName) :-
     key_in(compoundname(_,NameS ),Children),
     (
-	NameS = [_,[Name]]
-    ;
-    NameS = [Name]
-    ;
-    NameS = Name
+      NameS = [_,[Name]]
+      ;
+      NameS = [Name]
+      ;
+      NameS = Name
     ),
     string(Name),
-decode(Name,PName),
+    decode(Name,PName),
     !.
 get_name(Children,Name) :-
     key_in(name(_,NameS ),Children),
     (
-	NameS = [_,[Name]]
-    ;
-    NameS = [Name]
-    ;
-    NameS = Name
+      NameS = [_,[Name]]
+      ;
+      NameS = [Name]
+      ;
+      NameS = Name
     ),
     string(Name),
     !.
 
 
 anchor([id(Ref)],[]) -->
-  ["[](){#",Ref,"}\n"].
+    ["[](){#",Ref,"}\n"].
 
 gengroup(Ref0) :-
     string_concat("/group__",Ref0,Ref),
@@ -1972,20 +1972,20 @@ row(row(_,Entries)) -->
 
 entry(entry([thead(_),align(_)],Info)) -->
     ["|     "],
-   foldl(para,Info).
+    foldl(para,Info).
 
 centering(row([],Entries)) -->
-foldl(align,Entries),
-["|\n"].
+    foldl(align,Entries),
+    ["|\n"].
 
 align(entry([thead("yes"),align("center")],_In:fo)) -->
-!,
+    !,
     ["|:                 :"].
 align(entry([thead("yes"),align("right")],_Info)) -->
-!,
+    !,
     ["|                 :"].
 align(entry([thead("yes"),align("left")],_Info)) -->
-!,
+    !,
     ["|:                 "].
 
 group_edge(IDir,F) :-
@@ -2000,16 +2000,16 @@ ge(IDir,F) :-
     catch(load_xml(XFile,XML),Error,(format(user_error,'failed while processsing ~w: ~w',[XFile,Error]))),  
     XML = [doxygen(_,[compounddef(_,XMLData)|_XData])],
     (member(title([],[Title]),XMLData) ->
-         assert(title(F0,Title))
+     assert(title(F0,Title))
      ;
      member(compoundname([],[Title]),XMLData)
-    ->
-    true
+     ->
+     true
     ),
     member(innergroup([refid(Child)|_],_),XMLData),
     atom_string(A1,Child),
     assert(edge(F0,A1)), % parent to child
-%    writeln(F0:A1),
+    %    writeln(F0:A1),
     fail.
 
 nav(ODir) :-

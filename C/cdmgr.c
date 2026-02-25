@@ -1589,47 +1589,10 @@ static Int
   return (TRUE);
 }
 
-bool Yap_multiple(PredEntry *ap, Term mode USES_REGS) {
-
-  if ((ap->PredFlags & (MultiFileFlag | LogUpdatePredFlag | DynamicPredFlag)) ||
-      (mode != TermReconsult &&   mode != TermConsult) )
-    return false;
-   if ((ap->PredFlags & (SystemPredFlags| DiscontiguousPredFlag | MultiFileFlag | LogUpdatePredFlag) ||
-	falseGlobalPrologFlag(DISCONTIGUOUS_WARNINGS_FLAG))) {
-    return false;
-   }
-   if (ap->cs.p_code.NOfClauses > 0) {
-     StaticClause* c = ClauseCodeToStaticClause(ap->cs.p_code.LastClause);
-     if (c->ClOwner && c->ClOwner == Yap_source_file_name()) {
-       // avoid repeating warnings
-       return false;
-     }
-   }
-   return  ap->cs.p_code.NOfClauses > 0 && ap->src.OwnerFile != AtomNil &&
-     Yap_source_file_name() != ap->src.OwnerFile &&
-           GLOBAL_Stream[LOCAL_Including].name != (ap->src.OwnerFile);
-}
-
-static int is_fact(Term t) {
-  Term a1;
-
-  if (IsAtomTerm(t))
-    return TRUE;
-  if (FunctorOfTerm(t) != FunctorAssert)
-    return TRUE;
-  a1 = ArgOfTerm(2, t);
-  if (a1 == MkAtomTerm(AtomTrue))
-    return TRUE;
-  return FALSE;
-}
-
 static int Yap_source_stream(void) {
   int sno;
   if (!GLOBAL_Stream) {
     return -1;
-  }
-  if (LOCAL_Including >= 0) {
-    return LOCAL_Including;
   }
   if ((sno = Yap_CheckAlias(AtomLoopStream)) >= 0) {
     return sno;
@@ -1645,20 +1608,15 @@ static int Yap_source_stream(void) {
 
 }
 
-Int Yap_source_line_no(void) {
-  int sno = Yap_source_stream();
-  if (sno >= 0)
-    return GLOBAL_Stream[sno].linecount;
-  return -1;
-}
-
-
-Int Yap_source_line_pos(void) {
-  int sno = Yap_source_stream();
-  if (sno >= 0) {
-    return GLOBAL_Stream[sno].charcount+1-GLOBAL_Stream[sno].linestart;
-}
-return -1;
+static int Yap_source_file(void) {
+  int sno;
+  if (!GLOBAL_Stream) {
+    return -1;
+  }
+  if ((sno =  Yap_CheckAlias(AtomIncludeStream)) >= 0) {
+    return sno;
+  }
+  return Yap_source_stream();
 }
 
 Int Yap_source_line_no(void) {
@@ -1687,7 +1645,7 @@ return -1;
 
 
 Int Yap_source_pos(void) {
-  int sno = Yap_source_stream();
+  int sno = Yap_source_file();
   if (sno >= 0) {
     //    if(sno ==0)
     //  return(AtomUserIn);
@@ -1696,7 +1654,16 @@ Int Yap_source_pos(void) {
     return -1;
 }
 
-Atom Yap_source_file_name(void) {
+Atom Yap_source_name(void) {
+  int sno = Yap_source_file();
+  if (sno >= 0) {
+    return GLOBAL_Stream[sno].name;
+  }
+    return AtomEmpty;
+
+}
+
+Atom Yap_source_stream_name(void) {
   int sno = Yap_source_stream();
   if (sno >= 0) {
     return GLOBAL_Stream[sno].name;
@@ -4408,8 +4375,10 @@ static Int p_nth_instance(USES_REGS1) {
 }
 
 static Int including(USES_REGS1) {
-  bool rc = Yap_unify(ARG1, Yap_MkStream(LOCAL_Including));
-  if (!rc)
+  int sno  = Yap_CheckAlias(AtomIncludeStream);
+  if (sno>=0) {
+    bool rc = Yap_unify(ARG1,Yap_MkStream(sno));
+    if (!rc)
     return FALSE;
   }
   sno =  Yap_CheckStream(Deref(ARG2),Input_Stream_f,"include");

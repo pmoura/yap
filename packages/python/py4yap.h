@@ -2,8 +2,8 @@
 #ifndef PY4YAP_H
 #define PY4YAP_H 1
 
-#include "Yap.h"
 #include <Python.h>
+#include "Yap.h"
 
 /**
    @defgroup PyBuilts Py4YAP builtins

@@ -211,7 +211,6 @@ static void SearchForTrailFault(void *ptr, int sure) {
 */
 #if OS_HANDLES_TR_OVERFLOW && !USE_SYSTEM_MALLOC
   if ((ptr > (void *)LOCAL_TrailTop - 1024 &&
-       TR < (tr_fr_ptr)LOCAL_TrailTop + (64 * 1024))) {
     if (!Yap_growtrail(64 * 1024, TRUE)) {
       Yap_Error(RESOURCE_ERROR_TRAIL, TermNil,
                 "YAP failed to reserve %ld bytes in growtrail", K64);
@@ -230,8 +229,7 @@ static void SearchForTrailFault(void *ptr, int sure) {
 
 /* This routine believes there is a continuous space starting from the
    HeapBase and ending on TrailTop */
-static void
-HandleSIGSEGV(int sig, void *sipv, void *uap) {
+static void HandleSIGSEGV(int sig, void *sipv, void *uap) {
   CACHE_REGS
 
   void *ptr = TR;

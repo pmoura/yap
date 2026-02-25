@@ -115,7 +115,7 @@ static PyObject *s_to_python(const char *s, bool eval, PyObject *p0) {
 X_API PyObject *string_to_python(const char *s, bool eval, PyObject *p0) {
 
   char *buf = malloc(strlen(s) + 1), *child;
-  while ((child = strchr(s, '.')) != NULL) {
+  while ((child = (char *)strchr(s, '.')) != NULL) {
     size_t len = child - s;
     strncpy(buf, s, len);
     buf[len] = '\0';
