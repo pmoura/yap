@@ -146,8 +146,8 @@ PyObject *term_to_nametuple(const char *s, arity_t arity, PyObject *tuple) {
   if (!legal_symbol(s) || !Py_f2p) {
     PyObject *o1;
     o1 = PyTuple_New(2);
-    PyTuple_SET_ITEM(o1, 0, PyUnicode_FromString(s));
-    PyTuple_SET_ITEM(o1, 1, tuple);
+    PyTuple_SetItem(o1, 0, PyUnicode_FromString(s));
+    PyTuple_SetItem(o1, 1, tuple);
     return o1;
   }
 
@@ -162,8 +162,8 @@ PyObject *term_to_nametuple(const char *s, arity_t arity, PyObject *tuple) {
     {
       PyObject *o1;
       o1 = PyTuple_New(2);
-      PyTuple_SET_ITEM(o1, 0, PyUnicode_FromString(s));
-      PyTuple_SET_ITEM(o1, 1, tuple);
+      PyTuple_SetItem(o1, 0, PyUnicode_FromString(s));
+      PyTuple_SetItem(o1, 1, tuple);
       return o1;
     } PyStructSequence_Desc *desc = PyMem_Calloc(sizeof(PyStructSequence_Desc), 1);
     char *tnp;
@@ -709,7 +709,7 @@ static PyObject *bip_int(term_t t) {
 	      Py_DECREF(v);
 	      return NULL;
 	    }
-	    PyList_SET_ITEM(v, i, w);
+	    PyList_SetItem(v, i, w);
 	    Py_INCREF(w);
 	    ilow += istep;
 	  }
@@ -830,7 +830,7 @@ static PyObject *op(const char *s, PyObject *pArgs) {
 	      pArg = yap_to_python(tleft, false, NULL, cvt);
 	      if (pArg) {
 		/* pArg reference stolen here: */
-		PyTuple_SET_ITEM(out, i, pArg);
+		PyTuple_SetItem(out, i, pArg);
 		Py_INCREF(pArg);
 	      }
 	    }
@@ -838,8 +838,8 @@ static PyObject *op(const char *s, PyObject *pArgs) {
 
 	    if (c && PyCallable_Check(c)) {
 	      PyObject *n = PyTuple_New(arity);
-	      PyTuple_SET_ITEM(n, 0, c);
-	      PyTuple_SET_ITEM(n, 1, out);
+	      PyTuple_SetItem(n, 0, c);
+	      PyTuple_SetItem(n, 1, out);
 	      return n;
 	    }
 	    if (cvt)

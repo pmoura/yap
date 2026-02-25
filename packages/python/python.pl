@@ -1,4 +1,4 @@
-aa
+
 % % % -*-Mode : Prolog; -*-
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %    Author:        Vitor Santos Costa
@@ -22,9 +22,6 @@ aa
 
     @{
 	*/
-
-:- initialization( load_foreign_files([],['YAPPython'], init_python_dll), now ).
-
 
 :- module(python,   
 	  [
@@ -59,6 +56,9 @@ aa
 	      %        (<-)/2,
 	      '()'/1, '{}'/1
 	   ]).
+
+
+:- initialization( load_foreign_files([],['YAPPython'], init_python_dll), now ).
 
 
     :- use_module(library(lists)).

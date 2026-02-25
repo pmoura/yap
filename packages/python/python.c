@@ -147,8 +147,8 @@ if ( libpython_initialized) {
     term_t t = PL_new_term_ref();
     if (!Py_IsInitialized()) {
       Py_InitializeEx(0);
-      Yap_CloseReadline();
     } else {
+//      Yap_CloseReadline();
     }
     //  PyGILState_Ensure();
   py_Sys =  PyDict_GetItemString (PySys_GetObject("modules"),"sys");

@@ -124,7 +124,8 @@ mode and the existing spy-points, when the debugger is on.
     print_message(informational,breakp(no,breakpoint_for,M:F/N)).
 
 '$pred_being_spied'(G, M) :-
-    recorded('$spy','$spy'(G,M),_), !.
+    recorded('$spy','$spy'(G,M),_),
+!.
 
 /**
 @pred spy( + _P_ ).
@@ -207,7 +208,12 @@ Switches on the debugger and enters tracing mode.
 
 */
     trace :-
-    ( '__NB_getval__'('$spy_gn',_, fail) -> true ; '__NB_setval__'('$spy_gn',1) ),
+    (
+      '__NB_getval__'('$spy_gn',_, fail)
+ ->
+true
+ ; '__NB_setval__'('$spy_gn',1)
+    ),
     print_message(informational,debug(trace)),
     '$init_debugger',
     set_prolog_flag(debug,true),
@@ -342,7 +348,6 @@ leash(X) :-
 -----------------------------------------------------------------------------*/
 
 debugging :-
-    '$init_debugger',
 	prolog:debug_action_hook(nospyall), !.
 debugging :-
     ( current_prolog_flag(debug, true) ->
@@ -436,8 +441,11 @@ notrace(G) :-
       
 
 
-'$run_deb'(_Port,_Ctx,_GN) :-
-    '$continue_debugging'.
+'$debug_next'(Port,Ctx,GN) :-
+    '$zip_at_port'(Port,Ctx,GN),
+!.
+'$debug_next'(_Port,_Ctx,_GN) :-
+    '$creep'.
 
 
 '$exit_goal'(Ctx, _GN):-

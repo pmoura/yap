@@ -1,4 +1,4 @@
-/*
+q/*
  * Language Server support
  *
  */
@@ -126,7 +126,7 @@ user:pred_refs(Ob,URI,Line,Ch) :-
 
 
 user:complete(Self,_Line,_Pos,Prefix) :-
-    completions(Prefi,FCs),
+    completions(Prefix,FCs),
     ( var(Self)-> Self = FCs ; Self.items := FCs ).
 
     user:add_dir(Self,URI):-
@@ -263,7 +263,8 @@ user:portray_message(A,B):-
      writeln(URI/t(S,Line,Column,Size))
     ;
     % assertz(lsp(URI,t(A,S,Line,Column)),
-    Self.errors[URI].append(t(A,S,Line,Column,Size)),
+    Self.errors[URI].append(t(A,S,Line,Column,Size))
+    ),
     !,			     
     fail.
 

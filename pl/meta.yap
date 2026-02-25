@@ -233,7 +233,7 @@ false,
     (var(BM)->
 	 (callable(V)->
 	  ('$pred_exists'(V,prolog)->
-'$meta_expansion'(V,BM,BM,[],O),writeln(O)
+'$meta_expansion'(V,BM,BM,[],O)
 
 ;
     O=call(BM:V))
