@@ -72,6 +72,7 @@ EXTERNAL  lockvar  GLOBAL_StreamDescLock;
 // access to yap initial arguments
 EXTERNAL  char**  GLOBAL_argv;
 EXTERNAL  int  GLOBAL_argc;
+EXTERNAL  bool  GLOBAL_Embedded;
 // extensions to Terms
 #ifdef COROUTINING
 /* array with the ops for your favourite extensions */

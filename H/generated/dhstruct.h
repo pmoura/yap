@@ -73,6 +73,9 @@
 #define RETRY_USERC_OPCODE Yap_heap_regs->RETRY_USERC_OPCODE_
 #define CALL_OPCODE Yap_heap_regs->CALL_OPCODE_
 #define FCALL_OPCODE Yap_heap_regs->FCALL_OPCODE_
+#define YSTOP_OPCODE Yap_heap_regs->YSTOP_OPCODE_
+#define NSTOP_OPCODE Yap_heap_regs->NSTOP_OPCODE_
+#define TRUST_FAIL_OPCODE Yap_heap_regs->TRUST_FAIL_OPCODE_
 
 #define NOfAtoms Yap_heap_regs->NOfAtoms_
 #define AtomHashTableSize Yap_heap_regs->AtomHashTableSize_
@@ -102,6 +105,8 @@
 #define DBLOAD_MODULE Yap_heap_regs->DBLOAD_MODULE_
 #define RANGE_MODULE Yap_heap_regs->RANGE_MODULE_
 #define ERROR_MODULE Yap_heap_regs->ERROR_MODULE_
+#define LISTS_MODULE Yap_heap_regs->LISTS_MODULE_
+#define MAPLIST_MODULE Yap_heap_regs->MAPLIST_MODULE_
 
 
 
@@ -137,7 +142,7 @@
 #define WakeUpCode Yap_heap_regs->WakeUpCode_
 #endif
 #define PredCsult Yap_heap_regs->PredCsult_
-#define PredDollarCatch Yap_heap_regs->PredDollarCatch_
+#define PredCatchImplementation Yap_heap_regs->PredCatchImplementation_
 #ifdef YAPOR
 #define PredGetwork Yap_heap_regs->PredGetwork_
 #endif /* YAPOR */

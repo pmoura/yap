@@ -485,6 +485,7 @@ log_event( String, Args ) :-
 
 
 live  :-
+    '$init_debugger',
     repeat,
     '$top_level',
     live__,

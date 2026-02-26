@@ -198,7 +198,8 @@ CACHE_REGS
   PredEntry *pred;
   if (LOCAL_DebEvent)
     return false;
-  if (trueLocalPrologFlag(DEBUG_FLAG)) {
+  if (trueLocalPrologFlag(DEBUG_FLAG) &&
+			  Yap_GetValue(AtomCreep) != TermZip ) {
     if (creep_on_forward) {
       at = AtomCreep;
     } else {
@@ -226,17 +227,19 @@ static Int creepfail(USES_REGS1) {
 static Int stop_creeping(USES_REGS1) {
   Yap_get_signal(YAP_CREEP_SIGNAL);
   LOCAL_DebEvent = false;
-    return Yap_unify(ARG1, TermTrue);
+  Yap_PutValue(AtomCreep, TermZip);
+  return Yap_unify(ARG1, TermTrue);
 }
 
 static Int disable_debugging(USES_REGS1) {
   Yap_get_signal(YAP_CREEP_SIGNAL);
+  Yap_PutValue(AtomCreep, TermZip);
   LOCAL_DebEvent = false;
   return true;
 }
 
 static Int creep_allowed(USES_REGS1) {
-  if (!LOCAL_DebEvent && PP != NULL) {
+  if (LOCAL_DebEvent && PP != NULL && Yap_GetValue(AtomCreep) != TermZip) {
     Yap_get_signal(YAP_CREEP_SIGNAL);
     return true;
   }
@@ -249,6 +252,7 @@ static Int start_debugger(USES_REGS1) {
     fprintf(stderr,"Debugger already on\n");	     
   }
   if (trueLocalPrologFlag(DEBUG_FLAG)) {
+  Yap_PutValue(AtomCreep, TermCreep);
   LOCAL_DebEvent = true;
   }
   return true;
@@ -260,6 +264,7 @@ static Int stop_debugger(USES_REGS1) {
     fprintf(stderr,"Debugger already off\n");	     
   }
   #endif
+  Yap_PutValue(AtomCreep, TermZip);
   LOCAL_DebEvent = false;
   return true;
 }

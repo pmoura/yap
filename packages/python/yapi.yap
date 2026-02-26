@@ -12,7 +12,7 @@
 
 :- set_prolog_flag(verbose_load, false).
 
-:- use_module(library(python)).
+:- use_module(library(lsp)).
 
 :- use_module( library(lists) ).
 :- use_module( library(maplist) ).

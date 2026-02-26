@@ -1,10 +1,11 @@
-/*
+q/*
  * Language Server support
  *
  */
 
 :- module(lsp, [
 	      validate_file/2,
+	      validate_text/3,
 highlight_file/2
   ]).
 
@@ -163,7 +164,7 @@ validate_file( Self,File) :-
    retract(lsp_on).
 
 
-user:validate_text(Self,URI,S) :-
+validate_text(Self,URI,S) :-
     writeln(rs),
 	 string_concat("file://",SFile,URI),
 	 atom_string(File, SFile),
@@ -264,5 +265,7 @@ writeln(URI/t(S,Line,Column,Size))
     ;
     % assertz(lsp(URI,t(A,S,Line,Column)),
     Self.errors[URI].append(t(A,S,Line,Column,Size))
-    ).
+    ),
+    !,			     
+    fail.
 

@@ -2,7 +2,10 @@
 #ifndef PY4YAP_H
 #define PY4YAP_H 1
 
-#include <Python.h>
+//#define Py_LIMITED_API 0x030D0000
+
+#include <ctype.h>
+
 #include "Yap.h"
 
 /**
@@ -14,17 +17,15 @@
 
 #ifdef _XOPEN_SOURCE
 #undef _XOPEN_SOURCE // python does its own thing
-#endif
-
-#undef HAVE_LIBREADLINE
-
 #undef _POSIX_C_SOURCE
+#endif
 
 #include <Python.h>
 
-#include <frameobject.h>
+#undef HAVE_LIBREADLINE
 
-#include <Yap.h>
+
+#include <frameobject.h>
 
 
 #include <SWI-Prolog.h>

@@ -19,7 +19,9 @@ if ( Python3_Development_FOUND AND SWIG_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/predicates.py
     ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/queries.py
     ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/lsp.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/__main__.py)
+    ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/__main__.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml
+)
 
 
   SET_SOURCE_FILES_PROPERTIES(../../swig/yap.i PROPERTIES CPLUSPLUS ON)

@@ -77,6 +77,9 @@ EXTERNAL  OPCODE  UNDEF_OPCODE;
 EXTERNAL  OPCODE  RETRY_USERC_OPCODE;
 EXTERNAL  OPCODE  CALL_OPCODE;
 EXTERNAL  OPCODE  FCALL_OPCODE;
+EXTERNAL  OPCODE  YSTOP_OPCODE;
+EXTERNAL  OPCODE  NSTOP_OPCODE;
+EXTERNAL  OPCODE  TRUST_FAIL_OPCODE;
 /* atom tables */
 EXTERNAL  UInt  NOfAtoms;
 EXTERNAL  UInt  AtomHashTableSize;
@@ -106,6 +109,8 @@ EXTERNAL  Term  SWI_MODULE;
 EXTERNAL  Term  DBLOAD_MODULE;
 EXTERNAL  Term  RANGE_MODULE;
 EXTERNAL  Term  ERROR_MODULE;
+EXTERNAL  Term  LISTS_MODULE;
+EXTERNAL  Term  MAPLIST_MODULE;
 //
 // Module list
 //
@@ -141,7 +146,7 @@ EXTERNAL    struct pred_entry  *PredTrue;
 EXTERNAL    struct pred_entry  *WakeUpCode;
 #endif
 EXTERNAL    struct pred_entry  *PredCsult;
-EXTERNAL    struct pred_entry  *PredDollarCatch;
+EXTERNAL    struct pred_entry  *PredCatchImplementation;
 #ifdef YAPOR
 EXTERNAL    struct pred_entry  *PredGetwork;
 #endif /* YAPOR */

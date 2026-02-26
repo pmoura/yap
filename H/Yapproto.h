@@ -327,7 +327,6 @@ extern void Yap_InitYaamRegs(int, bool full_reset);
 extern void Yap_ReInitWTime(void);
 extern int Yap_OpDec(int, char *, Atom, Term);
 extern void Yap_CloseScratchPad(void);
-extern bool Yap_Embeddeded;
 
 /* inlines.c */
 extern void Yap_InitInlines(void);
