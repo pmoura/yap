@@ -356,9 +356,9 @@ public:
   ///< call load_files to load a library(file) in a module
   bool load_library(std::string  FileName)
   {
-    YAPTerm name = YAPAtomTerm(FileName);
+    YAPAtomTerm name = YAPAtomTerm(FileName);
     std::vector<YAPTerm> ts = {name};
-    name = YAPApplTerm("library",ts);
+    YAPApplTerm tname = YAPApplTerm(std::string("library"),ts);
 
     YAPTerm lf =  YAPApplTerm(std::string("load_files"), {name, YAPPairTerm(TermNil)});
     return goal(lf, YAPModule());

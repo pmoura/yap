@@ -27,9 +27,9 @@ plugins:
       ignore-errors: true
       projects:
         YAP:
-          src-dirs:       ${CMAKE_SOURCE_DIR}/CXX  
+          src-dirs: ${CMAKE_SOURCE_DIR}/CXX ${CMAKE_BINARY_DIR}/index.md ${CMAKE_SOURCE_DIR}/docs/md ${CMAKE_SOURCE_DIR}/C ${CMAKE_SOURCE_DIR}/H ${CMAKE_SOURCE_DIR}/include ${CMAKE_SOURCE_DIR}/pl ${CMAKE_SOURCE_DIR}/library ${CMAKE_SOURCE_DIR}/library/dialect/swi/fli ${CMAKE_SOURCE_DIR}/os ${CMAKE_SOURCE_DIR}/packages ${CMAKE_BINARY_DIR}/packages/python/yap4py ${CMAKE_BINARY_DIR}/packages/myddas 
           full-doc: True
-          doxy-cfg-file: ${CMAKE_BINARY_DIR}/Doxyfile.dox
+          doxy-cfg-file: ${CMAKE_BINARY_DIR}/Doxyfile.dox 
 
 markdown_extensions:
   - attr_list

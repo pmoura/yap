@@ -81,12 +81,12 @@ static char *protect_class(char *where, size_t arity, char *what, ssize_t sz) {
   //*out++ = 'Y';
   for (i = 0; i < sz; i++) {
     int ch = what[i];
-    if (isalnum(ch) && ch!='Z') {
+    if (isalnum(ch) && ch!='z') {
       *out++ = ch;
     } else {
-      out[0] = 'Z';
-      out[1] = 'A' + ch / 16;
-      out[2] = 'A' + ch % 16;
+      out[0] = 'z';
+      out[1] = 'a' + ch / 16;
+      out[2] = 'a' + ch % 16;
       out += 3;
     }
     //out[0] = '0'+arity;
@@ -154,7 +154,6 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
 {
   char oname[1024];
   strcpy(name, oname);
-  ssize_t arity;
   const char *nl = openline(star);
   char *b0 = buf;
   b0[0]= '\0';
@@ -163,9 +162,12 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
   char bf0[256], *bf = bf0;
   char *rc;
   char pi0[256], *pi = pi0;
+  ssize_t arity;
   switch (type) {
-  case STDPRED:
-    ssize_t arity = commas(args, args+argsl, &b0, &lcl);
+  case
+
+    STDPRED:
+    arity = commas(args, args+argsl, &b0, &lcl);
    bf =  protect_class(  bf0, arity, name, (int)namel);
     sprintf(be, "%.*s(%.*s)", (int)namel, name, (int)strlen(buf), buf);
     sprintf(pi,"%.*s/%ld",(int)namel,name,arity);
@@ -178,12 +180,14 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
     rc= name+(namel);
     break;
   case PREFIX:
+    arity=1;
     bf = protect_class(buf, 1, name, (int)namel);
     sprintf(be, "%.*s %.*s", (int)namel, name, (int)argsl, args);
     sprintf(pi,"%.*s/2",(int)namel,name);
     rc = args + argsl;
     break;
   case INFIX:
+    arity=2;
     sprintf(be, "%.*s %.*s %.*s", (int)argsl, args, (int)namel, name, (int)arg2sl, arg2s);
     sprintf(pi,"%.*s/2",(int)namel,name);
     bf = protect_class(bf0, 2, name, (int)namel);
@@ -199,7 +203,7 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
 /* fprintf(ostream, "@class  %s/%s@brief <b>%s</b> ",  */
 /* 	  bf,nl, */
 /* 	  be); */
-fprintf(ostream, "@class %s/%ld%s", oname, arity, nl);
+  fprintf(ostream, "@class %s/%ld%s", oname, arity, nl);
 return rc;
 }
 
