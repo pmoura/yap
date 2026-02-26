@@ -2339,7 +2339,7 @@ static Term bind_vars_in_complex_term(register CELL *pt0, register CELL *pt0_end
 #endif
 
 
-static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt0_end, Term more USES_REGS)
+static Term singletons_in_complex_term(register CELL *pt0, register CELL *pt0_end, bool singletons USES_REGS)
 {
 
   register CELL **tovisit0, **tovisit = (CELL **)Yap_PreAllocCodeSpace();
@@ -2441,14 +2441,21 @@ static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt
     goto loop;
   }
 
-  clean_tr(TR0 PASS_REGS);
-  if (HR != InitialH) {
-    /* close the list */
-    RESET_VARIABLE(HR-1);
-    Yap_unify((CELL)(HR-1),more);
-    return output;
-  } else {
-    return more;
+  Term tail = TermNil;
+  tr_fr_ptr pt;
+  for (pt=TR0; pt < TR; pt++) {
+    Term v = (TrailTerm(pt));
+    if  (Deref(v) == TermFoundVar && singletons) {
+      *HR++ = v;
+      *HR++ = tail;
+      tail = AbsPair(HR-2);
+    }
+    else if  (Deref(v) == TermRefoundVar && !singletons) {
+      *HR++ = v;
+      *HR++ = tail;
+      tail = AbsPair(HR-2);
+    }
+    RESET_VARIABLE((CELL*)TrailTerm(pt));
   }
   TR = TR0;
   return tail;
@@ -2469,17 +2476,9 @@ static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt
   return 0L;
 }
 
-    
-/** @pred term_non_singleton_( Term, Vars)
-
-UNifies _Vars_ with all the variables that have multiple occurrence in _Term_, In the example:
-
-```
-
-```
-    */
 static Int
-term_non_singletons( USES_REGS1 )	/* non_singletons in term t		 */{
+non_singletons_in_term( USES_REGS1 )	/* non_singletons in term t		 */
+{
   Term t;
   Term out;
 
@@ -2491,12 +2490,14 @@ term_non_singletons( USES_REGS1 )	/* non_singletons in term t		 */{
       out = TermNil;
 
     } else if (IsPairTerm(t)) {
-      out = non_singletons_in_complex_term(RepPair(t)-1,
-					   RepPair(t)+1, ARG2 PASS_REGS);
+      out = singletons_in_complex_term(RepPair(t)-1,
+				       RepPair(t)+1,
+				       false PASS_REGS);
     } else {
-      out = non_singletons_in_complex_term(RepAppl(t),
-					   RepAppl(t)+
-					   ArityOfFunctor(FunctorOfTerm(t)), ARG2 PASS_REGS);
+      out = singletons_in_complex_term(RepAppl(t),
+				       RepAppl(t)+
+				       ArityOfFunctor(FunctorOfTerm(t)
+						      ), false PASS_REGS);
     }
     if (out != 0L) {
       return Yap_unify(ARG2,out);
@@ -2542,36 +2543,6 @@ term_singletons( USES_REGS1 )
 	Yap_ThrowError(RESOURCE_ERROR_AUXILIARY_STACK, ARG1, "overflow in singletons");
 	return FALSE;
       }
-    }
-  }
-}
-
-static Int
-p_term_non_singletons( USES_REGS1 )	/* non_singletons in term t		 */
-{
-  Term t;
-  Term out;
-
-  while (TRUE) {
-    t = Deref(ARG1);
-    if (IsVarTerm(t)) {
-      out = MkPairTerm(t,TermNil);
-    }  else if (IsPrimitiveTerm(t)) {
-      out = TermNil;
-    } else if (IsPairTerm(t)) {
-      out = non_singletons_in_complex_term(RepPair(t)-1,
-					   RepPair(t)+1, TermNil PASS_REGS);
-    } else {
-      out = non_singletons_in_complex_term(RepAppl(t),
-					   RepAppl(t)+
-					   ArityOfFunctor(FunctorOfTerm(t)), TermNil PASS_REGS);
-    }
-    if (out) {
-      return Yap_unify(ARG2,out);
-    }
-    if (!Yap_ExpandPreAllocCodeSpace(0, NULL, TRUE)) {
-	Yap_ThrowError(RESOURCE_ERROR_AUXILIARY_STACK, ARG1, "overflow in singletons");
-	return FALSE;
     }
   }
 }
@@ -4567,8 +4538,8 @@ void Yap_InitUtilCPreds(void)
   Yap_InitCPred("_ground", 1, p_ground, SafePredFlag);
   Yap_InitCPred("$_variables_in_term", 3, p_variables_in_term, 0);
   //Yap_InitCPred("$free_variables_in_term", 3, p_free_variables_in_term, 0);
-  Yap_InitCPred("$non_singletons_in_term", 3,term_non_singletons, 0);
-  Yap_InitCPred("$term_non_singletons", 2, term_non_singletons, 0);
+  Yap_InitCPred("$non_singletons_in_term", 2, non_singletons_in_term, 0);
+  Yap_InitCPred("term_singletons", 2, term_singletons, 0);
   //Yap_InitCPred("term_variables", 2, p_term_variables, 0);
 /** @pred  term_variables(? _Term_, - _Variables_) is iso
 

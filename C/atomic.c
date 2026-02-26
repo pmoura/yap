@@ -135,10 +135,10 @@ static Int hide_atom(USES_REGS1) { /* hide(+Atom)		 */
 }
 
 /** @pred hidden_atom( +Atom )
-    
+
     Is  true  if the  atom _Atom_ is  outside the
     Prolog atom table.
-**/
+*/
 static Int hidden_atom(USES_REGS1) { /* '$hidden_atom'(+F)		 */
   Atom at;
   AtomEntry *chain;
@@ -382,11 +382,13 @@ static Int atom_concat3(USES_REGS1) {
 ```{.prolog}
 string_to_atomic("yap",L).
 ```
+
 will return:
 
 ```{.prolog}
 L = yap.
 ```
+
 and
 
 ```{.prolog}
@@ -396,8 +398,7 @@ will return:
 
 ```{.prolog}
 L = 3.
-``` 
-
+```
  *
  * */
 static Int string_to_atomic(
@@ -437,26 +438,27 @@ static Int string_to_atomic(
     }
 
 
-/// @pred atomic_to_string(?Atomic.?String)
-//
-// reverse to string_to_atomic/2.
-// The second argument may be a sequence of codes or atoms.
-//
+/** @pred atomic_to_string(?Atomic.?String)
+
+ reverse to string_to_atomic/2.
+ The second argument may be a sequence of codes or atoms.
+*/
 static Int atomic_to_string(USES_REGS1) {
   Term t1 = ARG1;
   ARG1 = ARG2, ARG2 = t1;
   return string_to_atomic(PASS_REGS1);
 }
 
-/// @pred string_to_atom(?String, ?Atom)
-//
-// Verifies if (a) at least one of the argument is bound. If
-// _String_ is bound it must be a string term, list if codes, or
-// list of atoms, and _Atom_ musr be bound to a symbol with the
-// same text. Otherwise, _Atom_ must be an _Atom_ and _String_
-// will unify with a string term of the same text.
-//
-//
+
+  /** @pred string_to_atom(?String, ?Atom)
+
+ Verifies if (a) at least one of the argument is bound. If
+ _String_ is bound it must be a string term, list if codes, or
+ list of atoms, and _Atom_ musr be bound to a symbol with the
+ same text. Otherwise, _Atom_ must be an _Atom_ and _String_
+   will unify with a string term of the same text.
+
+   */
 static Int string_to_atom(USES_REGS1) { /* string_to_atom(?String,?Atom)
                                          */
    Term t1, t2;
@@ -496,12 +498,12 @@ static Int string_to_atom(USES_REGS1) { /* string_to_atom(?String,?Atom)
     return Yap_unify(t1,t2);
 }
 
-/// @pred atom_to_string(?Atom.?String)
-//
-// reverse to string_to_atom(_Atom_, _String_).
-// The second argument may be a sequence of codes or
-// atoms.
-//
+/**  @pred atom_to_string(?Atom.?String)
+
+ reverse to string_to_atom(_Atom_, _String_).
+ The second argument may be a sequence of codes or
+ atoms.
+*/
 static Int atom_to_string(USES_REGS1) { /* string_to_atom(?String,?Atom)
                                          */
   Term t2 = ARG1;
@@ -546,12 +548,12 @@ restart_aux:
   }
 }
 
-/// @pred atom_string(?Atom.?String)
-//
-// reverse to string_to_atom(_Atom_, _String_).
-// The second argument may be a sequence of codes or
-// atoms.
-//
+/** @pred atom_string(?Atom.?String)
+
+ reverse to string_to_atom(_Atom_, _String_).
+ The second argument may be a sequence of codes or
+ atoms.
+*/
 static Int atom_string(USES_REGS1) {
    Term t1, t2;
    bool  v1, v2;
@@ -591,6 +593,7 @@ static Int atom_string(USES_REGS1) {
 }
 
 /// @pred string_atom(?String,?Atom)
+//
 // reverse atom_string/2. The first argument may be a
 // sequence of codes or
 // atoms.
@@ -630,7 +633,7 @@ static Int atom_chars(USES_REGS1) {
     Yap_SkipList(&t2, &tailp);
     if (*tailp == TermNil) {
     Atom af = Yap_ListOfAtomsToAtom(t2 PASS_REGS);
-      
+
     pop_text_stack(l);
     return Yap_unify(ARG1, MkAtomTerm(af));
     }
@@ -732,7 +735,7 @@ Cs = [97].
 Cs = [97].
 no
 ?- string_codes( A, "hello" ).
-A = `hello.
+A = hello.
 ?- string_codes( 3.3, Cs ).
 Cs = [51,46,50,57,57,57,57,57,57,57,57,57,57,57,57,57,57,56].
 ?-  string_codes( `a`, Cs ).
@@ -744,7 +747,7 @@ yes
 ?- string_codes( X, [51] ).
 X = '3'.
 ```
- *
+
  */
 static Int string_codes(USES_REGS1) {
    Term t1, t2;
@@ -1196,7 +1199,7 @@ restart_aux:
   // string, always
   // increases by 1
   int sz;
-    
+
   s = (s0 + i) + (sz=get_utf8((unsigned char *)s0 + i, -1, &chr));
       Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");
   if (s[0]) {
@@ -1266,7 +1269,7 @@ restart_aux:
         cut_fail(); // silently fail?
       }
       if (get_utf8(ns, -1, &chr)<0)
-      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");	
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");
       if (chr == '\0')
         cut_fail();
       if (Yap_unify(ARG3, MkIntegerTerm(chr)))
@@ -1331,7 +1334,7 @@ restart_aux:
       }
       utf8proc_int32_t chr;
       if (get_utf8(ns, -1, &chr)<0)
-      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");	
+      Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");
       if (chr != '\0') {
         return Yap_unify(ARG3, MkIntegerTerm(chr));
       }
@@ -1392,7 +1395,7 @@ restart_aux:
       }
       utf8proc_int32_t chr;
       if (get_utf8(ns, -1, &chr)<0)
-	Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");	
+	Yap_ThrowError(TYPE_ERROR_CHARACTER,ARG1,"char_code/2");
       if (chr != '\0') {
         return Yap_unify(ARG3, MkCharTerm(chr));
       }

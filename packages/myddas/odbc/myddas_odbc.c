@@ -646,7 +646,6 @@ static Int c_odbc_number_of_fields_in_query(USES_REGS1) {
   return TRUE;
 }
 
-#ifdef MYDDAS_ODBC
 /* This function searches the MYDDAS list for odbc connections
  If there isn't any, it returns NULL. This is a nice way to know
  if there is any odbc connections left on the list*/
@@ -662,7 +661,6 @@ myddas_util_get_odbc_enviromment(SQLHDBC connection) {
 
   return NULL;
 }
-#endif
 
 static Int c_odbc_get_fields_properties(USES_REGS1) {
   Term nome_relacao = Deref(ARG1);

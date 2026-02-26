@@ -43,7 +43,7 @@ set_property(DIRECTORY
 endif()
 
  
-    target_link_libraries(YAPsqlite3 libYap YAPmyddas   SQLite::SQLite3)
+    target_link_libraries(YAPsqlite3 libYap YAPmyddasXb   SQLite::SQLite3)
 
     set_target_properties(YAPsqlite3
       PROPERTIES

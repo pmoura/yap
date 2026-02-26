@@ -65,7 +65,7 @@ endforeach()
   )
   
   add_custom_target(YAP4PY ALL
-    COMMAND pip wheel --wheel-dir ${CMAKE_BINARY_DIR} .
+    COMMAND ${Python3_EXECUTABLE} -m pip wheel --wheel-dir ${CMAKE_BINARY_DIR} .
     DEPENDS  ${SWIG_SOURCES} YAP++ Py4YAP ${PYTHON_SOURCES}  ${CMAKE_CURRENT_BINARY_DIR}/yap4py/_yap.cxx
     DEPENDS ${CMAKE_BINARY_DIR}/${WHEEL}
   )
@@ -103,6 +103,7 @@ endforeach()
   #      ${CMAKE_CURRENT_BINARY_DIR}/ftdi1_doc.i
   #      DEPENDS ${CMAKE_BINARY_DIR}/doc/xml/ftdi_8c.xml
   #      )
+  
   #    add_custom_target(doc_i DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ftdi1_doc.i)
   #    add_dependencies(${SWIG_MODULE_ftdi1_REAL_NAME} doc_i)
   #

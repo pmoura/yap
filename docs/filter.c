@@ -174,6 +174,7 @@ static char *def(int type, bool star, char *name, ssize_t namel, char *args, siz
    rc= args+(argsl);
    break;
   case STDPRED0:
+    arity = 0;
     bf = protect_class(bf0, 0, name, (int)namel);
     sprintf(be, "%.*s", (int)namel, name);
     sprintf(pi,"%.*s/0",(int)namel,name);

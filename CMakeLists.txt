@@ -150,9 +150,11 @@ list(PREPEND CMAKE_PREFIX_PATH /usr/local /opt /opt/local)
 # APPLE requires brew or ports
 
 if (APPLE)
+  set (ASSERT_INCLUDE_PATH -I/Library/Developer/CommandLineTools/usr/include, )
+  #list (APPEND CMAKE_PREFIX_PATH /Library/Developer/CommandLineTools/usr)
     set(MACOSX_RPATH ON)
     list(PREPEND CMAKE_FRAMEWORK_PATH
-      /Library/Frameworks
+      /Library/Frameworks /Library/Developer/CommandLineTools
       )
     if (EXISTS /opt/homebrew)
         list (PREPEND CMAKE_PREFIX_PATH /opt/homebrew)
@@ -169,7 +171,7 @@ if (APPLE)
         if ( BREW_PREFIX)
             # "/opt/local" is where MacPorts lives, add `/lib` suffix and link
             message( "Located BREW at ${BREW_PREFIX}")
-            foreach( i pkg-config gmp openmpi openssl postgresql python3 readline swig mpich R)
+                     foreach( i pkg-config gmp openmpi openssl postgresql python3 readline swig mpich R)
                 if ( EXISTS ${BREW_PREFIX}/opt/${i} )
                     list(PREPEND CMAKE_PREFIX_PATH ${BREW_PREFIX}/opt/${i})
                     message("...${i} found from brew")
@@ -216,16 +218,13 @@ list(PREPEND CMAKE_PREFIX_PATH /opt/homebrew)
 if (GMP_ROOT)
     list(PREPEND CMAKE_PREFIX_PATH ${GMP_ROOT})
 endif()
-pkg_check_modules(GMP
-                  
-                  gmp)
+pkg_check_modules(GMP gmp)
 
 if( NOT GMP_FOUND)
     find_package(GMP)
 endif()
 
-pkg_check_modules(Readline
-                  readline)
+#pkg_check_modules(Readline Readline)
 
 if( NOT Readline_FOUND)
     find_library( Readline_LIBRARIES readline )
@@ -611,7 +610,8 @@ if (HAVE_GCC)
         set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<CONFIG:Release>:-O3;-fomit-frame-pointer;-fstrict-aliasing;-freorder-blocks;-fsched-interblock>)
         set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<CONFIG:Debug>:-ggdb3;-fopenmp>)
     else ()
-        set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<CONFIG:Release>:-O3;-fstrict-aliasing;-fsched-interblock;-fsanitize=memory;-fsanitize-memory-track-origins=2;-funique-source-file-names >)
+      set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<CONFIG:Release>:-O3;-fstrict-aliasing;-fsched-interblock;-fsanitize=memory;-fsanitize-memory-track-origins=2;-funique-s
+ource-file-names >)
         set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS $<$<CONFIG:Debug>:-O3;-glldb>)
     endif ()
     set_property(DIRECTORY APPEND PROPERTY COMPILE_OPTIONS -fexceptions)
