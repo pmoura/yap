@@ -1,8 +1,10 @@
 
-if (WITH_MYSQL)
-    add_feature_info(  YAPodbc "MARIADB_FOUND	" " MariaDB at PkgConfig::mariadb,  ${ODBC_INCLUDE_DIRS}" )
+find_package(MySQL)
 
-  set(MYSQL_SOURCES
+ if (MySQL_FOUND)
+     add_feature_info(  YAPmysql "MySQL_FOUND	" " MySQL at PkgConfig::MySQL,  ${MySQL_INCLUDE_DIRS}" )
+
+  set(MySQL_SOURCES
           myddas_mysql.c
           myddas_util.c
           myddas_util.c
@@ -13,32 +15,37 @@ if (WITH_MYSQL)
   set(SO_MINOR 0)
   set(SO_PATCH 0)
 
-  if (MYSQL_FOUND)
-      #  MYSQL_INCLUDE_DIR - where to find mysql.h, etc.
-      #  MYSQL_LIBRARIES   - List of libraries when using MySQL.
-      #  MYSQL_FOUND       - True if MySQL found.
+      #  MySQL_INCLUDE_DIRS - where to find mysql.h, etc.
+      #  MySQL_LIBRARIES   - List of libraries when using MySQL.
+      #  MySQL_FOUND       - True if MySQL found.
 
-        include_directories(${MYSQL_INCLUDE_DIR}  ${CMAKE_CURRENT_SOURCE_DIR}/..)
+              include_directories(${MySQL_INCLUDE_DIRS}  ${CMAKE_CURRENT_SOURCE_DIR}/..)
+    set_property(GLOBAL APPEND PROPERTY COMPILE_DEFINITIONS
+      -DMYDDAS_MYSQL=1)
+    set (MYDDAS_FLAGS ${MYDDAS_FLAGS} ON PARENT_SCOPE)
+    list (APPEND MYDDAS_FLAGS -DMYDDAS_MYSQL=1)
+
+
 	    if (WIN32)
-	      	    add_library(YAPmysql OBJECT ${MYSQL_SOURCES})
+	      	    add_library(YAPmysql OBJECT ${MySQL_SOURCES})
 	      else()
-	    add_library(YAPmysql  ${MYSQL_SOURCES})
-	    target_link_libraries(YAPmysql PUBLIC PkgConfig::mariadb} libYap)
-     install(TARGETS YAPmysql
-              RUNTIME DESTINATION ${YAP_INSTALL_LIBDIR}
-             ARCHIVE DESTINATION ${YAP_INSTALL_LIBDIR}
-             LIBRARY DESTINATION ${YAP_INSTALL_LIBDIR}
-              )
+	    add_library(YAPmysql  ${MySQL_SOURCES})
 	    endif()
       set_target_properties(YAPmysql PROPERTIES
               POSITION_INDEPENDENT_CODE ON
-                  PREFIX ""
+               PREFIX "" 
+              )
+ 	    target_link_libraries(YAPmysql PUBLIC ${MySQL_LIBRARIES}
+	    libYap)
+    install(TARGETS YAPmysql
+              RUNTIME DESTINATION ${YAP_INSTALL_LIBDIR}
+             ARCHIVE DESTINATION ${YAP_INSTALL_LIBDIR}
+             LIBRARY DESTINATION ${YAP_INSTALL_LIBDIR}
               )
 
    
  
   else ()
    
-  endif (MYSQL_FOUND)
+  endif (MySQL_FOUND)
 
-endif()

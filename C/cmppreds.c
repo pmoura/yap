@@ -505,12 +505,13 @@ Terms  _X_ and  _Y_ are not strictly identical.
 */
 static Int a_noteq(Term t1, Term t2) { return (compare(Deref(t1), Deref(t2)) != 0); }
 
-/** @infixpred   X @lt Y is iso
+/** @infixpred   X @< Y is iso
 Term  _X_ is before _Y_ in the standard order.
 
 */ static Int a_gen_lt(Term t1, Term t2) { return (compare(Deref(t1), Deref(t2)) < 0); }
 
-/** @infixpred   X =&lt; Y is iso
+/** @infixpred   X =< Y is iso
+
 Term  _X_ is before term  _Y_ in the standard order, or they are the same term.
 
 */
@@ -709,7 +710,7 @@ static Int p_acomp(USES_REGS1) { /* $a_compare(?R,+X,+Y) */
 }
 
 /**
-   @infixpred =:= _X_ == _Y_ ) is iso
+   @infixpred _X_ =:= _Y_  is iso
    Equality of arithmetic expressions
 
    The value of the expression  _X_ is equal to the value of expression _Y_.
@@ -748,7 +749,7 @@ static Int a_eq(Term t1, Term t2) {
 }
 
 /**
-    @infixpred  _X =\= _Y_ is iso
+    @infixpred  _X_ =\= _Y_ is iso
 
     Difference of arithmetic expressions
 
@@ -817,10 +818,6 @@ static Int a_le(Term t1, Term t2) { /* A <= B */
   return out <= 0;
 }
 
-/**
- @}
-*/
-
 void Yap_InitCmpPreds(void) {
   Yap_InitCmpPred("=:=", 2, a_eq, TestPredFlag|SafePredFlag | BinaryPredFlag);
   Yap_InitCmpPred("=\\=", 2, a_dif, TestPredFlag|SafePredFlag | BinaryPredFlag);
@@ -836,4 +833,8 @@ void Yap_InitCmpPreds(void) {
   Yap_InitCmpPred("@>=", 2, a_gen_ge,  TestPredFlag|BinaryPredFlag | SafePredFlag);
   Yap_InitCPred("compare", 3, p_compare, TestPredFlag | SafePredFlag);
 }
+
+/**
+ @}
+*/
 

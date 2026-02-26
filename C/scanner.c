@@ -91,21 +91,21 @@ static Term float_send(char *, int);
  * @brief try to tell the parser and friends where we are located.
  * 
  */
-static void Yap_setCurrentSourceLocation(struct stream_desc *s) {
-  CACHE_REGS
-#if HAVE_SOCKET
-  if (s->status & Socket_Stream_f)
-    LOCAL_SourceFileName = AtomSocket;
-  else
-#endif
-      if (s->status & Pipe_Stream_f)
-    LOCAL_SourceFileName = AtomPipe;
-  else if (s->status & InMemory_Stream_f)
-    LOCAL_SourceFileName = s->name;
-  else
-    LOCAL_SourceFileName = s->name;
-  LOCAL_SourceFileLineno = s->linecount;
-}
+/* static void Yap_setCurrentSourceLocation(struct stream_desc *s) { */
+/*   CACHE_REGS */
+/* #if HAVE_SOCKET */
+/*   if (s->status & Socket_Stream_f) */
+/*     LOCAL_SourceFileName = AtomSocket; */
+/*   else */
+/* #endif */
+/*       if (s->status & Pipe_Stream_f) */
+/*     LOCAL_SourceFileName = AtomPipe; */
+/*   else if (s->status & InMemory_Stream_f) */
+/*     LOCAL_SourceFileName = s->name; */
+/*   else */
+/*     LOCAL_SourceFileName = s->name; */
+/*   LOCAL_SourceFileLineno = s->linecount; */
+/* } */
 
 /* token table with some help from Richard O'Keefe's PD scanner */
 char_kind_t Yap_chtype0[NUMBER_OF_CHARS + 1] = {
@@ -949,7 +949,7 @@ TokEntry *Yap_tokenizer(void *st_, void *params_) {
     } 
   }
   params->tposOUTPUT = Yap_StreamPosition(st - GLOBAL_Stream);
-  Yap_setCurrentSourceLocation(st);
+  // Yap_setCurrentSourceLocation(st);
   do {
     int quote, isvar;
     unsigned char *charp, *mp;

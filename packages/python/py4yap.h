@@ -2,8 +2,8 @@
 #ifndef PY4YAP_H
 #define PY4YAP_H 1
 
-#include "Yap.h"
 #include <Python.h>
+#include "Yap.h"
 
 /**
    @defgroup PyBuilts Py4YAP builtins
@@ -177,7 +177,7 @@ extern X_API PyObject *py_Yapex;
 extern X_API PyObject *py_Atoms;
 extern X_API PyObject *py_Context;
 extern PyObject *Py_f2p;
-extern PyObject *py_Sys, *py_Builtins;
+extern PyObject *py_Sys, *py_Builtins, *py_Ops;
 #define py_ModDict PyImport_GetModuleDict()
 
 extern bool set_item(YAP_Term yt, PyObject *o, PyObject *val, bool eval, bool cvt);

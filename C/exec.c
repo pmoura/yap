@@ -16,7 +16,8 @@
  *************************************************************************/
 
 
-
+#include "Yap.h"
+#include "YapHeap.h"
 #ifdef SCCS
 static char SccsId[] = "@(#)cdmgr.c	1.1 05/02/98";
 #endif
@@ -586,10 +587,7 @@ bool comma_goal(Term t1, Term t0[4], bool first) {
     return false;
   }
   else if (IsPairTerm(t1)) {
-    Term ts[2];
-    ts[0] = t1;
-    ts[1] = (CurrentModule == 0 ? TermProlog : CurrentModule);
-    t0[1]  = Yap_MkApplTerm(FunctorCsult, 2, ts);
+    t0[1]  = Yap_MkApplTerm(FunctorCsult, 1, &t1);
     return false;
   }    else if (IsApplTerm(t1)) {
     Functor f = FunctorOfTerm(t1);
@@ -692,10 +690,7 @@ inline static bool do_execute(Term t, Term mod USES_REGS)
       return false;
     }
   if (IsPairTerm(t)) {
-    Term ts[2];
-    ts[0] = t;
-    ts[1] = (CurrentModule == 0 ? TermProlog : CurrentModule);
-    t  = Yap_MkApplTerm(FunctorCsult, 2, ts);
+    t  = Yap_MkApplTerm(FunctorCsult, 1, &t);
   }
   if (IsApplTerm(t))
     {
@@ -842,16 +837,29 @@ static Int do_execute_n(arity_t n, Term g, Term mod USES_REGS)
     arity = f->ArityOfFE;
     name = NameOfFunctor(f);
     if (name==AtomDot && n==1 && arity==1) {
-      name = AtomCsult;
-    }
+      Term tl = MkPairTerm(MkGlobal(ARG2),ArgOfTerm(1,g));
+      
+      ARG1  = Yap_MkApplTerm(FunctorCsult, 1, &tl);
+      arity = 1;
+      n=0;
+      name = AtomCsult;;
+    } else {
     memmove( &ARG1+arity, &ARG2, n*sizeof(CELL));
     memcpy(&ARG1,RepAppl(g)+1, arity*sizeof(CELL));
+    }
   } else if (IsAtomTerm(g)) {
     arity = 0;
     name = AtomOfTerm(g);
-    if (name==AtomDot && n==2)
-      name = AtomCsult;
-    memmove( &ARG1, &ARG2, n*sizeof(CELL));
+    if (name==AtomDot && n==2) {
+      Term tl = MkPairTerm(MkGlobal(ARG1),MkGlobal(ARG2));
+      
+      ARG1  = Yap_MkApplTerm(FunctorCsult, 1, &tl);
+      arity = 1;
+      n=0;
+      name = AtomCsult;;
+    } else {
+      memmove( &ARG1, &ARG2, n*sizeof(CELL));
+    }
   } else {
     Yap_ThrowError(TYPE_ERROR_CALLABLE,g, "in call(G,...)");
     return false;
@@ -1026,6 +1034,9 @@ static Int creep_step(USES_REGS1)
   Term mod = Deref(ARG2);
   arity_t arity, i;
   bool rc;
+  if (IsPairTerm(t)) {
+    t = Yap_MkApplTerm(FunctorCsult, 1, &t);
+  }
   PredEntry *pe = Yap_get_pred(t, mod, "execute0");
   if (!pe)
     return false;
@@ -1083,19 +1094,29 @@ static Int execute_nonstop(USES_REGS1)
    */
   Term tmod = CurrentModule;
   Term t = Yap_StripModule(Deref(ARG1), &tmod);
+  if (IsPairTerm(t)) {
+    t = Yap_MkApplTerm(FunctorCsult, 1, &t);
+  }
   PredEntry *pe = Yap_get_pred(t, tmod, "c_exec(G)");
-  register Functor f = FunctorOfTerm(t);
-  register arity_t arity = pe->ArityOfPE, i;
+  if (!pe)
+    return false;
+  register arity_t arity = pe->ArityOfPE;
+
 
   register CELL *pt;
+  arity_t i;
 
-  if (IsExtensionFunctor(f))
-    return false;
-
-  /* I cannot use the standard macro here because
-     otherwise I would dereference the argument and
-     might skip a svar */
+      /* I cannot use the standard macro here because
+         otherwise I would dereference the argument and
+         might skip a svar */
+  if (IsPairTerm(t)) {
+    pt = RepPair(t);
+  } else if (IsApplTerm(t)) {
   pt = RepAppl(t) + 1;
+  } else {
+    pt = NULL;
+  }
+    
   for (i = 1; i <= arity; ++i)
     {
 #if YAPOR_SBA
@@ -1188,9 +1209,15 @@ static bool call_with_args(int i USES_REGS)
   }
   name = AtomOfTerm(t);
   if (name == AtomDot && i==2) {
-    name = AtomCsult;
-  }
+
+      Term tl = MkPairTerm(MkGlobal(ARG2),MkGlobal(ARG3));
+      
+      ARG1  = Yap_MkApplTerm(FunctorCsult, 1, &tl);
+      i = 1;
+      name = AtomCsult; 
+} else {
   memmove(XREGS+(1),XREGS+2,i*sizeof(CELL));
+  }
   PredEntry *  pen = RepPredProp(PredPropByFunc(Yap_MkFunctor(name,i), mod));
   /* You thought we would be over by now */
   /* but no meta calls require special preprocessing */
@@ -1662,10 +1689,7 @@ Term Yap_RunTopGoal(Term t, ex_handler_t error_manager)
     }
   if (IsPairTerm(t))
     {
-      Term ts[2];
-      ts[0] = t;
-      ts[1] = (CurrentModule == 0 ? TermProlog : CurrentModule);
-      t = Yap_MkApplTerm(FunctorCsult, 2, ts);
+      t = Yap_MkApplTerm(FunctorCsult, 1, &t);
     }
   if (IsAtomTerm(t))
     {

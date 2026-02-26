@@ -732,10 +732,8 @@ bool YAPEngine::mgoal(Term t, Term tmod, bool release) {
   // don't forget, on success these guys may create slots
   //__android_log_print(ANDROID_LOG_INFO, "YAPDroid", "exec  ");
   Term ocmod = CurrentModule;
-  Term osmod = LOCAL_SourceModule;
-      CurrentModule = LOCAL_SourceModule = tmod;
+      CurrentModule= tmod;
   result = (bool)YAP_EnterGoal(ap, nullptr, &q);
-  LOCAL_SourceModule = osmod;
   CurrentModule = ocmod;
       //  std::cerr << "mgoal "  << YAPTerm(tmod).text() << ":" << YAPTerm(t).text() << "\n
       YAP_LeaveGoal(result, &q);
@@ -1085,7 +1083,7 @@ void YAPEngine::doInit(YAP_file_type_t BootMode, YAPEngineArgs *engineArgs) {
   YAP_Init(engineArgs);
         CACHE_REGS
 // yerror = throw YAPError( SOURCE(), );
-CurrentModule = LOCAL_SourceModule = TermUser;
+CurrentModule =TermUser;
 #if YAP_PYTHON
   do_init_python();
 #endif
@@ -1096,7 +1094,6 @@ CurrentModule = LOCAL_SourceModule = TermUser;
   //   initq.cut();
   // }
   CurrentModule = TermUser;
-  LOCAL_SourceModule = TermUser;
 }
 
 YAPEngine::YAPEngine(int argc, char *argv[],
@@ -1113,7 +1110,7 @@ YAPEngine::YAPEngine(int argc, char *argv[],
   //  setYAPCallback(cb);
 
   doInit(BootMode, engine_args);
-  CurrentModule = LOCAL_SourceModule = TermUser;
+  CurrentModule= TermUser;
 }
 
 YAPPredicate::YAPPredicate(YAPAtom at) {

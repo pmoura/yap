@@ -96,10 +96,10 @@ proven. The example verifies that all arithmetic statements in the list
 ?- forall(member(Result = Formula, [2 = 1 + 1, 4 = 2 * 2]),
                  Result =:= Formula).
 ```
-It is the same as `\+((Cond, \+(Action))`.
+It is the same as `\+ ((Cond, \+(Action))`.
 
 */
-forall(Cond, Action) :- ( \+((Cond, \+Action))).
+forall(Cond, Action) :-	 \+ ((Cond, \+Action)).	
 
 /** @pred  ignore(: _Goal_)
 
@@ -129,7 +129,7 @@ notrace(G) :-
 	'$debug_restart'( State ),
 	fail
     ).
-/** @infixpred  (G *-> H)
+ /** @infixpred  (G *-> H)
 
 Call goal  _H_ once per each solution of goal  _G_.
 

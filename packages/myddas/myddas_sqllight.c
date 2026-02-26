@@ -148,7 +148,7 @@ c_db_lite_connect( USES_REGS1 ) {
 
       if (new == NULL){
 #ifdef DEBUG
-	fprintf(stderror, "ERROR: ** c_db_my_connect ** Error allocating memory\n");
+	fprintf(stderror, "ERROR: ** c_mysql_connect ** Error allocating memory\n");
 #endif
 	return FALSE;
       }

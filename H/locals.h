@@ -76,8 +76,6 @@ LOCAL_INIT(int, ReductionsCounterOn, 0L);
 LOCAL_INIT(int, PredEntriesCounterOn, 0L);
 LOCAL_INIT(int, RetriesCounterOn, 0L);
 LOCAL_INIT(Term, VarNames, ((Term)0));
-LOCAL_INIT(Atom, SourceFileName, NULL);
-LOCAL_INIT(int, SourceFileLineno, 0);
 // global variables
 LOCAL_INIT_RESTORE(Term, GlobalArena, 0L, TermToGlobalOrAtomAdjust);
 LOCAL_INIT(UInt, GlobalArenaOverflows, 0L);
@@ -314,9 +312,6 @@ LOCAL(DBTerm *,Ball);
 
 // Mutexes
 LOCAL_INIT(struct swi_mutex *, Mutexes, NULL);
-
-LOCAL_INIT(Term, SourceModule, 0);
-LOCAL_INIT(Term, Including, TermNil);
 
 LOCAL_INIT(size_t, MAX_SIZE, 1024L);
 

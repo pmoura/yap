@@ -14,9 +14,7 @@
 * comments:	Predicates for comunicating with a mysql database system *
 *									 *
 *************************************************************************/
-
-#if MYDDAS_MYSQL
-
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +31,7 @@
 
 #define IS_SQL_INT(FIELD) FIELD == FIELD_TYPE_INT24    || \
 	                  FIELD == FIELD_TYPE_LONG     || \
-	                  FIELD == FIELD_TYPE_LONGLONG || \
+                          FIELD == FIELD_TYPE_LONGLONG || \
 	                  FIELD == FIELD_TYPE_SHORT    || \
 	                  FIELD == FIELD_TYPE_TINY
 
@@ -45,50 +43,50 @@
 
 static Int null_id = 0;
 
-static Int c_db_my_connect( USES_REGS1 );
-static Int c_db_my_disconnect( USES_REGS1 );
-static Int c_db_my_number_of_fields( USES_REGS1 );
-static Int c_db_my_get_attributes_types( USES_REGS1 );
-static Int c_db_my_query( USES_REGS1 );
-static Int c_db_my_table_write( USES_REGS1 );
-static Int c_db_my_row( USES_REGS1 );
-static Int c_db_my_row_cut( USES_REGS1 );
-static Int c_db_my_get_fields_properties( USES_REGS1 );
-static Int c_db_my_get_next_result_set( USES_REGS1 );
-static Int c_db_my_get_database( USES_REGS1 );
-static Int c_db_my_change_database( USES_REGS1 );
+static Int c_mysql_connect( USES_REGS1 );
+static Int c_mysql_disconnect( USES_REGS1 );
+static Int c_mysql_number_of_fields( USES_REGS1 );
+static Int c_mysql_get_attributes_types( USES_REGS1 );
+static Int c_mysql_query( USES_REGS1 );
+static Int c_mysql_table_write( USES_REGS1 );
+static Int c_mysql_row( USES_REGS1 );
+static Int c_mysql_row_cut( USES_REGS1 );
+static Int c_mysql_get_fields_properties( USES_REGS1 );
+static Int c_mysql_get_next_result_set( USES_REGS1 );
+static Int c_mysql_get_database( USES_REGS1 );
+static Int c_mysql_change_database( USES_REGS1 );
 
 void Yap_InitMYDDAS_MySQLPreds(void)
 {
   /* db_connect: Host x User x Passwd x Database x Connection x ERROR_CODE */
-  Yap_InitCPred("c_db_my_connect", 7, c_db_my_connect,  0);
+  Yap_InitCPred("c_mysql_connect", 7, c_mysql_connect,  0);
 
   /* db_number_of_fields: Relation x Connection x NumberOfFields */
-  Yap_InitCPred("c_db_my_number_of_fields",3, c_db_my_number_of_fields, 0);
+  Yap_InitCPred("c_mysql_number_of_fields",3, c_mysql_number_of_fields, 0);
 
   /* db_get_attributes_types: Relation x TypesList */
-  Yap_InitCPred("c_db_my_get_attributes_types", 3, c_db_my_get_attributes_types,  0);
+  Yap_InitCPred("c_mysql_get_attributes_types", 3, c_mysql_get_attributes_types,  0);
 
   /* db_query: SQLQuery x ResultSet x Connection */
-  Yap_InitCPred("c_db_my_query", 5, c_db_my_query, 0);
+  Yap_InitCPred("c_mysql_query", 5, c_mysql_query, 0);
 
   /* db_disconnect: Connection */
-  Yap_InitCPred("c_db_my_disconnect", 1,c_db_my_disconnect, 0);
+  Yap_InitCPred("c_mysql_disconnect", 1,c_mysql_disconnect, 0);
 
   /* db_table_write: Result Set */
-  Yap_InitCPred("c_db_my_table_write", 1, c_db_my_table_write,  0);
+  Yap_InitCPred("c_mysql_table_write", 1, c_mysql_table_write,  0);
 
   /* db_get_fields_properties: PredName x Connnection x PropertiesList*/
-  Yap_InitCPred("c_db_my_get_fields_properties",3,c_db_my_get_fields_properties,0);
+  Yap_InitCPred("c_mysql_get_fields_properties",3,c_mysql_get_fields_properties,0);
 
 
-  Yap_InitCPred("c_db_my_get_next_result_set",2,c_db_my_get_next_result_set,0);
+  Yap_InitCPred("c_mysql_get_next_result_set",2,c_mysql_get_next_result_set,0);
 
-  /* c_db_my_get_database: Connnection x DataBaseName */
-  Yap_InitCPred("c_db_my_get_database",2,c_db_my_get_database,0);
+  /* c_mysql_get_database: Connnection x DataBaseName */
+  Yap_InitCPred("c_mysql_get_database",2,c_mysql_get_database,0);
 
-  /* c_db_my_change_database: Connnection x DataBaseName */
-  Yap_InitCPred("c_db_my_change_database",2,c_db_my_change_database,0);
+  /* c_mysql_change_database: Connnection x DataBaseName */
+  Yap_InitCPred("c_mysql_change_database",2,c_mysql_change_database,0);
 
 
 }
@@ -96,15 +94,15 @@ void Yap_InitMYDDAS_MySQLPreds(void)
 void Yap_InitBackMYDDAS_MySQLPreds(void)
 {
 	/* db_row: ResultSet x Arity x ListOfArgs */
-  Yap_InitCPredBackCut("c_db_my_row", 3, sizeof(Int),
-		    c_db_my_row,
-		    c_db_my_row,
-		    c_db_my_row_cut, 0);
+  Yap_InitCPredBackCut("c_mysql_row", 3, sizeof(Int),
+		    c_mysql_row,
+		    c_mysql_row,
+		    c_mysql_row_cut, 0);
 
 }
 
 static Int
-c_db_my_connect( USES_REGS1 ) {
+c_mysql_connect( USES_REGS1 ) {
   Term arg_host = Deref(ARG1);
   Term arg_user = Deref(ARG2);
   Term arg_passwd = Deref(ARG3);
@@ -130,18 +128,20 @@ c_db_my_connect( USES_REGS1 ) {
     socket = NULL;
 
   conn = mysql_init(NULL);
-  if (conn == NULL) {
+ if (conn == NULL) {
 #ifdef DEBUG
-    printf("ERROR: ** c_db_my_connect ** error on init\n");
+    printf("ERROR: ** c_mysql_connect ** error on init\n");
 #endif
-    return FALSE;
-  }
+    return false;
+ }
+ my_bool ssl = false;
+ mysql_optionsv(conn,MYSQL_OPT_SSL_ENFORCE, &ssl);
 
   if (mysql_real_connect(conn, host, user, passwd, database, port, socket, CLIENT_MULTI_STATEMENTS) == NULL) {
 #ifdef DEBUG
-    printf("ERROR: ** c_db_my_connect ** error on connect\n");
+    printf("ERROR: ** c_mysql_connect ** error on connect\n");
 #endif
-    return FALSE;
+    return false;
   }
 
   if (!Yap_unify(arg_conn, MkIntegerTerm((Int)conn)))
@@ -149,11 +149,11 @@ c_db_my_connect( USES_REGS1 ) {
   else
     {
       /* Criar um novo no na lista de ligacoes*/
-      new = myddas_util_add_connection(conn,NULL,MYDDAS_MYSQL);
+      new = myddas_util_add_connection(conn,NULL,API_MYSQL);
 
       if (new == NULL){
 #ifdef DEBUG
-	printf("ERROR: ** c_db_my_connect ** Error allocating memory\n");
+	printf("ERROR: ** c_mysql_connect ** Error allocating memory\n");
 #endif
 	return FALSE;
       }
@@ -163,7 +163,7 @@ c_db_my_connect( USES_REGS1 ) {
 
 /* db_query: SQLQuery x ResultSet x Connection */
 static Int
-c_db_my_query( USES_REGS1 ) {
+c_mysql_query( USES_REGS1 ) {
   Term arg_sql_query = Deref(ARG1);
   Term arg_result_set = Deref(ARG2);
   Term arg_conn = Deref(ARG3);
@@ -199,7 +199,7 @@ c_db_my_query( USES_REGS1 ) {
   if (mysql_real_query(conn, sql, length) != 0)
     {
 #ifdef DEBUG
-      printf("ERROR: **c_db_my_query** Error on query! %s\n",sql);
+      printf("ERROR: **c_mysql_query** Error on query! %s\n",sql);
 #endif
       return FALSE;
     }
@@ -337,7 +337,7 @@ c_db_my_query( USES_REGS1 ) {
 }
 
 static Int
-c_db_my_number_of_fields( USES_REGS1 ) {
+c_mysql_number_of_fields( USES_REGS1 ) {
   Term arg_relation = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term arg_fields = Deref(ARG3);
@@ -355,7 +355,7 @@ c_db_my_number_of_fields( USES_REGS1 ) {
   if (mysql_query(conn, sql) != 0)
     {
 #ifdef DEBUG
-      printf("ERROR: **c_db_my_number_of_fields** Error on the query! %s\n",sql);
+      printf("ERROR: **c_mysql_number_of_fields** Error on the query! %s\n",sql);
 #endif
       return FALSE;
     }
@@ -364,7 +364,7 @@ c_db_my_number_of_fields( USES_REGS1 ) {
   if ((res_set = mysql_store_result(conn)) == NULL)
     {
 #ifdef DEBUG
-      printf("ERROR: **c_db_my_number_of_fields** Error storing the query! %s\n",sql);
+      printf("ERROR: **c_mysql_number_of_fields** Error storing the query! %s\n",sql);
 #endif
 
       return FALSE;
@@ -381,7 +381,7 @@ c_db_my_number_of_fields( USES_REGS1 ) {
 
 /* db_get_attributes_types: RelName x Connection -> TypesList */
 static Int
-c_db_my_get_attributes_types( USES_REGS1 ) {
+c_mysql_get_attributes_types( USES_REGS1 ) {
   Term arg_relation = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term arg_types_list = Deref(ARG3);
@@ -442,7 +442,7 @@ c_db_my_get_attributes_types( USES_REGS1 ) {
 
 /* db_disconnect */
 static Int
-c_db_my_disconnect( USES_REGS1 ) {
+c_mysql_disconnect( USES_REGS1 ) {
   Term arg_conn = Deref(ARG1);
 
   MYSQL *conn = (MYSQL *) IntegerOfTerm(arg_conn);
@@ -459,21 +459,23 @@ c_db_my_disconnect( USES_REGS1 ) {
     }
 }
 
+extern void myddas_mysql_table_write(MYSQL_RES *res_set);
+
 /* db_table_write: Result Set */
 static Int
-c_db_my_table_write( USES_REGS1 ) {
+c_mysql_table_write( USES_REGS1 ) {
   Term arg_res_set = Deref(ARG1);
 
   MYSQL_RES *res_set = (MYSQL_RES *) IntegerOfTerm(arg_res_set);
 
-  myddas_util_table_write(res_set);
+  myddas_mysql_table_write(res_set);
   mysql_free_result(res_set);
 
   return TRUE;
 }
 
 static Int
-c_db_my_row_cut( USES_REGS1 ) {
+c_mysql_row_cut( USES_REGS1 ) {
   MYSQL_RES *mysql_res=NULL;
 
   mysql_res = (MYSQL_RES *) IntegerOfTerm(EXTRA_CBACK_CUT_ARG(Term,1));
@@ -483,10 +485,10 @@ c_db_my_row_cut( USES_REGS1 ) {
 
 /* db_row: ResultSet x Arity_ListOfArgs x ListOfArgs -> */
 static Int
-c_db_my_row( USES_REGS1 ) {
+c_mysql_row( USES_REGS1 ) {
 #ifdef MYDDAS_STATS
 /*   Measure time used by the  */
-/*      c_db_my_row function */
+/*      c_mysql_row function */
   MYDDAS_STATS_TIME start,end,total_time,diff;
   MyddasULInt count = 0;
   start = myddas_stats_walltime();
@@ -598,7 +600,7 @@ c_db_my_row( USES_REGS1 ) {
 }
 
 static Int
-c_db_my_get_fields_properties( USES_REGS1 ) {
+c_mysql_get_fields_properties( USES_REGS1 ) {
   Term nome_relacao = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term fields_properties_list = Deref(ARG3);
@@ -678,9 +680,9 @@ c_db_my_get_fields_properties( USES_REGS1 ) {
   return TRUE;
 }
 
-/* c_db_my_get_next_result_set: Connection * NextResSet */
+/* c_mysql_get_next_result_set: Connection * NextResSet */
 static Int
-c_db_my_get_next_result_set( USES_REGS1 ) {
+c_mysql_get_next_result_set( USES_REGS1 ) {
   Term arg_conn = Deref(ARG1);
   Term arg_next_res_set = Deref(ARG2);
 
@@ -695,7 +697,7 @@ c_db_my_get_next_result_set( USES_REGS1 ) {
 }
 
 static Int
-c_db_my_get_database( USES_REGS1 ) {
+c_mysql_get_database( USES_REGS1 ) {
   Term arg_con = Deref(ARG1);
   Term arg_database = Deref(ARG2);
 
@@ -709,7 +711,7 @@ c_db_my_get_database( USES_REGS1 ) {
 }
 
 static Int
-c_db_my_change_database( USES_REGS1 ) {
+c_mysql_change_database( USES_REGS1 ) {
   Term arg_con = Deref(ARG1);
   Term arg_database = Deref(ARG2);
 
@@ -724,33 +726,12 @@ c_db_my_change_database( USES_REGS1 ) {
 
 void init_mysql( void )
 {
- Term mod = MkAtomTerm(LookupAtom("myddas_mysql")), omod = CurrentModule;
+ Term mod = MkAtomTerm(Yap_LookupAtom("myddas_mysql")), omod = CurrentModule;
   CurrentModule = mod;
     Yap_InitMYDDAS_MySQLPreds();
     Yap_InitBackMYDDAS_MySQLPreds();
   CurrentModule = omod;
 }
-
-#else
-
-void Yap_InitMYDDAS_MySQLPreds(void);
-void Yap_InitBackMYDDAS_MySQLPreds(void);
-
-void Yap_InitMYDDAS_MySQLPreds(void)
-{
-}
-
-void Yap_InitBackMYDDAS_MySQLPreds(void)
-{
-}
-
-void init_mysql( void )
-{
-    Yap_InitMYDDAS_MySQLPreds();
-    Yap_InitBackMYDDAS_MySQLPreds();
-}
-
-#endif
 
 
 #ifdef _WIN32

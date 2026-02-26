@@ -697,7 +697,7 @@ static Int file_name_extension(USES_REGS1) {
       return false;
     }
     size_t len_b = strlen(f), lenb_b;
-    char *candidate = strrchr(f, '.');
+    char *candidate = (char*)strrchr(f, '.');
     char *file = strrchr(f, '/');
     if (candidate  && candidate > file) {
       lenb_b = candidate - f;

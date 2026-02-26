@@ -76,8 +76,8 @@
 '$get_multi_results'(Con,ConType,ResSet,[List|Results]):-
 	'$lenght'(List,Arity),
 	( ConType == mysql ->
-	    my_row(ResSet,Arity,List),!,
-	    c_db_my_get_next_result_set(Con,NextResSet)
+	    mysql_row(ResSet,Arity,List),!,
+	    c_mysql_get_next_result_set(Con,NextResSet)
 	;
 	    true
 	),

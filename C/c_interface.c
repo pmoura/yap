@@ -2410,7 +2410,7 @@ X_API Term YAP_CurrentModule(void) {
 X_API Term YAP_SetCurrentModule(Term new) {
   CACHE_REGS
   Term omod = CurrentModule;
-  LOCAL_SourceModule = CurrentModule = new;
+   CurrentModule = new;
   return omod;
 }
 

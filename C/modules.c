@@ -69,7 +69,7 @@ static ModEntry *initMod(UInt inherit, AtomEntry *ae) {
   if (ae->StrOfAE[0] !=   '$')
     inherit &= ~M_SYSTEM;
   n->flags = inherit;
-  n->OwnerFile =  Yap_source_file_name();
+  n->OwnerFile =  Yap_source_stream_name();
    AddPropToAtom(ae, (PropEntry *)n);
   return n;
 }
@@ -350,7 +350,6 @@ static Int
     GetModule(RepAtom(AtomOfTerm(t)));
     CurrentModule = t;
   }
-  LOCAL_SourceModule = CurrentModule;
   return TRUE;
 }
 
@@ -358,16 +357,16 @@ static Int change_module(USES_REGS1) { /* $change_module(N)		 */
   Term mod = Deref(ARG1);
   LookupModule(mod);
   CurrentModule = mod;
-  LOCAL_SourceModule = mod;
   return TRUE;
 }
 static Int set_source_module(USES_REGS1) { /* $change_module(N)		 */
   Term mod;
-  if (!Yap_unify(ARG1,(LOCAL_SourceModule? LOCAL_SourceModule:TermProlog)))
+  if (!Yap_unify(ARG1,(CurrentModule? CurrentModule:TermProlog)))
     return false;
   mod =Deref(ARG2);
+  CurrentModule
+    = mod;
   CurrentModule = mod;
-  LOCAL_SourceModule = mod;
   return true;
 }
 
@@ -503,7 +502,7 @@ static Int strip_module(USES_REGS1) {
 }
 
 static Int yap_strip_clause(USES_REGS1) {
-  Term t1 = Deref(ARG1), th, tbody, tmod = LOCAL_SourceModule, thmod;
+  Term t1 = Deref(ARG1), th, tbody, tmod = CurrentModule, thmod;
   if (tmod == PROLOG_MODULE) {
     tmod = TermProlog;
   }
@@ -638,10 +637,10 @@ static Int context_module(USES_REGS1) {
  *  : _Mod_ is the current read-in or source module.
  */
 static Int source_module(USES_REGS1) {
-  if (LOCAL_SourceModule == PROLOG_MODULE) {
+  if (CurrentModule == PROLOG_MODULE) {
     return Yap_unify(ARG1, TermProlog);
   }
-  return Yap_unify(ARG1, LOCAL_SourceModule);
+  return Yap_unify(ARG1, CurrentModule);
 }
 
 /**
@@ -653,14 +652,14 @@ static Int source_module(USES_REGS1) {
  */
 static Int current_source_module(USES_REGS1) {
   Term t;
-  if (LOCAL_SourceModule == PROLOG_MODULE) {
-    LOCAL_SourceModule = TermProlog;
+  if (CurrentModule == PROLOG_MODULE) {
+    CurrentModule = TermProlog;
   }
-  if (!Yap_unify(ARG1, LOCAL_SourceModule)) {
+  if (!Yap_unify(ARG1, CurrentModule)) {
     return false;
   };
   if (IsVarTerm(t = Deref(ARG2))) {
-    Yap_ThrowError(INSTANTIATION_ERROR, t, NULL);
+     Yap_ThrowError(INSTANTIATION_ERROR, t, NULL);
     return false;
   }
   if (!IsAtomTerm(t)) {
@@ -669,7 +668,7 @@ static Int current_source_module(USES_REGS1) {
   }
   if (t == TermProlog)
     t = PROLOG_MODULE;
-  LOCAL_SourceModule = CurrentModule = t;
+ CurrentModule = t;
   return true;
 }
 
@@ -782,7 +781,6 @@ void Yap_InitModules(void) {
   initTermMod(RANGE_MODULE, ifl);
   initTermMod (READUTIL_MODULE, ifl);
   CurrentModule = PROLOG_MODULE;
-  LOCAL_SourceModule = PROLOG_MODULE;
 }
 
 /// @}

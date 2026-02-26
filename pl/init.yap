@@ -26,7 +26,6 @@
     set_prolog_flag(optimise, true ),
 	nb_setval('$assert_all',off),
  	nb_setval('$initialization_goals',off),
-	nb_setval('$included_file',[]),
 	\+ '$undefined'('$init_preds',prolog),
 	'$init_preds',
 	fail.

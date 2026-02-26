@@ -1138,7 +1138,7 @@ YAP_file_type_t Yap_Restore(const char *s) {
   fclose(stream);
   free(buf);
   GLOBAL_RestoreFile = NULL;
-  LOCAL_SourceModule = CurrentModule = USER_MODULE;
+ CurrentModule = USER_MODULE;
   pop_text_stack(lvl);
   return YAP_QLY;
 }

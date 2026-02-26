@@ -1165,7 +1165,7 @@ static void end_init(YAP_init_args *iap) {
     Yap_exit(0);
   LOCAL_PrologMode &= ~BootMode;
   CurrentModule = USER_MODULE;
-  LOCAL_SourceModule = USER_MODULE;
+  CurrentModule = USER_MODULE;
 }
 
 static void start_modules(void) {
@@ -1254,14 +1254,14 @@ GLOBAL_VFS = NULL;
 				MkAtomTerm(Yap_LookupAtom(Yap_BOOTSTRAP)));
     }
 
-    CurrentModule = LOCAL_SourceModule = TermUser;
+     CurrentModule = TermUser;
     setBooleanGlobalPrologFlag(SAVED_PROGRAM_FLAG, false);
   } else {
       setBooleanLocalPrologFlag(COMPILING_FLAG, true);
     __android_log_print(
 			ANDROID_LOG_INFO, "YAPDroid", "restore %s ",Yap_INPUT_STARTUP );
     Yap_Restore(Yap_INPUT_STARTUP);
-    CurrentModule = LOCAL_SourceModule = TermUser;
+    CurrentModule = TermUser;
     init_globals(yap_init);
 
     start_modules();

@@ -1,5 +1,6 @@
 
-if (WITH_Postgres)
+
+find_package(PostgresSQL)
 
   set( YAPPOSTGRES_SOURCES
     myddas_postgres.c
@@ -31,5 +32,4 @@ if (WITH_Postgres)
       )
   endif (PostgreSQL_FOUND)
 
-endif()
 

@@ -15,8 +15,6 @@
 *									 *
 *************************************************************************/
 
-#if MYDDAS_ODBC
-
 #if !defined(ODBCVER)
 typedef void *SQLHDBC;
 #endif
@@ -37,15 +35,15 @@ SQLHENV myddas_util_get_odbc_enviromment(SQLHDBC);
 
 static Int null_id = 0;
 
-static Int c_db_odbc_connect(USES_REGS1);
-static Int c_db_odbc_disconnect(USES_REGS1);
-static Int c_db_odbc_number_of_fields(USES_REGS1);
-static Int c_db_odbc_get_attributes_types(USES_REGS1);
-static Int c_db_odbc_query(USES_REGS1);
-static Int c_db_odbc_row(USES_REGS1);
-static Int c_db_odbc_row_cut(USES_REGS1);
-static Int c_db_odbc_get_fields_properties(USES_REGS1);
-static Int c_db_odbc_number_of_fields_in_query(USES_REGS1);
+static Int c_odbc_connect(USES_REGS1);
+static Int c_odbc_disconnect(USES_REGS1);
+static Int c_odbc_number_of_fields(USES_REGS1);
+static Int c_odbc_get_attributes_types(USES_REGS1);
+static Int c_odbc_query(USES_REGS1);
+static Int c_odbc_row(USES_REGS1);
+static Int c_odbc_row_cut(USES_REGS1);
+static Int c_odbc_get_fields_properties(USES_REGS1);
+static Int c_odbc_number_of_fields_in_query(USES_REGS1);
 
 static int odbc_error(SQLSMALLINT type, SQLHANDLE hdbc, char *msg,
                       char *print) {
@@ -256,7 +254,7 @@ static int SQLCOLATTRIBUTE(SQLHSTMT StatementHandle, SQLUSMALLINT ColumnNumber,
 #define IS_SQL_FLOAT(FIELD)                                                    \
   FIELD == SQL_FLOAT || FIELD == SQL_DOUBLE || FIELD == SQL_REAL
 
-static Int c_db_odbc_connect(USES_REGS1) {
+static Int c_odbc_connect(USES_REGS1) {
   Term arg_driver = Deref(ARG1);
   Term arg_user = Deref(ARG2);
   Term arg_passwd = Deref(ARG3);
@@ -293,7 +291,7 @@ static Int c_db_odbc_connect(USES_REGS1) {
   else {
     /* Criar um novo no na lista de ligacoes*/
     // new = add_connection(&TOP,hdbc,henv);
-    new = myddas_util_add_connection(hdbc, henv, MYDDAS_ODBC);
+    new = myddas_util_add_connection(hdbc, henv, API_ODBC);
     if (new == NULL) {
       fprintf(stderr, "Error: could not allocate list memory\n");
       return FALSE;
@@ -303,7 +301,7 @@ static Int c_db_odbc_connect(USES_REGS1) {
 }
 
 /* db_query: SQLQuery x ResultSet x Arity x BindList x Connection */
-static Int c_db_odbc_query(USES_REGS1) {
+static Int c_odbc_query(USES_REGS1) {
   Term arg_sql_query = Deref(ARG1);
   Term arg_result_set = Deref(ARG2);
   Term arg_arity = Deref(ARG3);
@@ -381,7 +379,7 @@ static Int c_db_odbc_query(USES_REGS1) {
   return TRUE;
 }
 
-static Int c_db_odbc_number_of_fields(USES_REGS1) {
+static Int c_odbc_number_of_fields(USES_REGS1) {
   Term arg_relation = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term arg_fields = Deref(ARG3);
@@ -422,7 +420,7 @@ static Int c_db_odbc_number_of_fields(USES_REGS1) {
 }
 
 /* db_get_attributes_types: RelName x Connection -> TypesList */
-static Int c_db_odbc_get_attributes_types(USES_REGS1) {
+static Int c_odbc_get_attributes_types(USES_REGS1) {
   Term arg_relation = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term arg_types_list = Deref(ARG3);
@@ -485,7 +483,7 @@ static Int c_db_odbc_get_attributes_types(USES_REGS1) {
 }
 
 /* db_disconnect */
-static Int c_db_odbc_disconnect(USES_REGS1) {
+static Int c_odbc_disconnect(USES_REGS1) {
   Term arg_conn = Deref(ARG1);
 
   SQLHDBC conn = (SQLHDBC)(IntegerOfTerm(arg_conn));
@@ -507,7 +505,7 @@ static Int c_db_odbc_disconnect(USES_REGS1) {
     return FALSE;
 }
 
-static Int c_db_odbc_row_cut(USES_REGS1) {
+static Int c_odbc_row_cut(USES_REGS1) {
 
   SQLHSTMT hstmt = (SQLHSTMT)IntegerOfTerm(EXTRA_CBACK_CUT_ARG(Term, 1));
 
@@ -537,7 +535,7 @@ static int release_list_args(Term arg_list_args, Term arg_bind_list,
 }
 
 /* db_row: ResultSet x BindList x ListOfArgs -> */
-static Int c_db_odbc_row(USES_REGS1) {
+static Int c_odbc_row(USES_REGS1) {
   Term arg_result_set = Deref(ARG1);
   Term arg_bind_list = Deref(ARG2);
   Term arg_list_args = Deref(ARG3);
@@ -611,7 +609,7 @@ static Int c_db_odbc_row(USES_REGS1) {
 
 /* Mudar esta funcao de forma a nao fazer a consulta, pois
  no predicate db_sql_selet vai fazer duas vezes a mesma consutla*/
-static Int c_db_odbc_number_of_fields_in_query(USES_REGS1) {
+static Int c_odbc_number_of_fields_in_query(USES_REGS1) {
   Term arg_query = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term arg_fields = Deref(ARG3);
@@ -666,7 +664,7 @@ myddas_util_get_odbc_enviromment(SQLHDBC connection) {
 }
 #endif
 
-static Int c_db_odbc_get_fields_properties(USES_REGS1) {
+static Int c_odbc_get_fields_properties(USES_REGS1) {
   Term nome_relacao = Deref(ARG1);
   Term arg_conn = Deref(ARG2);
   Term fields_properties_list = Deref(ARG3);
@@ -769,37 +767,73 @@ static Int c_db_odbc_get_fields_properties(USES_REGS1) {
   return TRUE;
 }
 
+/* db_table_write: Result Set */
+static Int c_odbc_table_write(USES_REGS1) {
+  /*
+    Term arg_res_set = Deref(ARG1);
+    sqlite3_RES *res_set = (sqlite3_RES *) IntegerOfTerm(arg_res_set);
+
+    mydas_util_table_write(res_set);
+    sqlite3_free_result(res_set);
+  */
+  return TRUE;
+}
+
+
+static Int c_odbc_get_database(USES_REGS1) {
+  Term arg_con = Deref(ARG1);
+  Term arg_database = Deref(ARG2);
+
+  if (!Yap_unify(arg_database, arg_con))
+    return FALSE;
+
+  return TRUE;
+}
+
+static Int c_odbc_change_database(USES_REGS1) {
+  /* no-op for now */
+  return TRUE;
+}
+
 void Yap_InitMYDDAS_ODBCPreds(void) {
   /* db_connect: Host x User x Passwd x Database x Connection */
-  Yap_InitCPred("c_db_odbc_connect", 4, c_db_odbc_connect, 0);
+  Yap_InitCPred("c_odbc_connect", 4, c_odbc_connect, 0);
 
   /* db_number_of_fields: Relation x Connection x NumberOfFields */
-  Yap_InitCPred("c_db_odbc_number_of_fields", 3, c_db_odbc_number_of_fields, 0);
+  Yap_InitCPred("c_odbc_number_of_fields", 3, c_odbc_number_of_fields, 0);
 
   /* db_number_of_fields_in_query: SQLQuery x Connection x NumberOfFields */
-  Yap_InitCPred("c_db_odbc_number_of_fields_in_query", 3,
-                c_db_odbc_number_of_fields_in_query, 0);
+  Yap_InitCPred("c_odbc_number_of_fields_in_query", 3,
+                c_odbc_number_of_fields_in_query, 0);
 
   /* db_get_attributes_types: Relation x TypesList */
-  Yap_InitCPred("c_db_odbc_get_attributes_types", 3,
-                c_db_odbc_get_attributes_types, 0);
+  Yap_InitCPred("c_odbc_get_attributes_types", 3,
+                c_odbc_get_attributes_types, 0);
 
   /* db_query: SQLQuery x ResultSet x Connection */
-  Yap_InitCPred("c_db_odbc_query", 5, c_db_odbc_query, 0);
+  Yap_InitCPred("c_odbc_query", 5, c_odbc_query, 0);
 
   /* db_disconnect: Connection */
-  Yap_InitCPred("c_db_odbc_disconnect", 1, c_db_odbc_disconnect, 0);
+  Yap_InitCPred("c_odbc_disconnect", 1, c_odbc_disconnect, 0);
 
-  /* db_get_fields_properties: PredName x Connnection x PropertiesList */
-  Yap_InitCPred("c_db_odbc_get_fields_properties", 3,
-                c_db_odbc_get_fields_properties, 0);
+ 
+  /* db_table_write: Result Set */
+  Yap_InitCPred("c_odbc_table_write", 1, c_odbc_table_write, 0);
+   /* db_get_fields_properties: PredName x Connnection x PropertiesList */
+  Yap_InitCPred("c_odbc_get_fields_properties", 3,
+                c_odbc_get_fields_properties, 0);
+  /* c_odbc_get_database: connection x DataBaseName */
+  Yap_InitCPred("c_odbc_get_database", 2, c_odbc_get_database, 0);
+
+  /* c_odbc_change_database: connection x DataBaseName */
+  Yap_InitCPred("c_odbc_change_database", 2, c_odbc_change_database, 0);
 }
 
 void Yap_InitBackMYDDAS_ODBCPreds(void) {
 
   /*  db_row: ResultSet x ListOfArgs */
-  Yap_InitCPredBackCut("c_db_odbc_row", 3, sizeof(Int), c_db_odbc_row,
-                       c_db_odbc_row, c_db_odbc_row_cut, 0);
+  Yap_InitCPredBackCut("c_odbc_row", 3, sizeof(Int), c_odbc_row,
+                       c_odbc_row, c_odbc_row_cut, 0);
 }
 void init_odbc() {
   CACHE_REGS
@@ -809,18 +843,6 @@ void init_odbc() {
   Yap_InitBackMYDDAS_ODBCPreds();
   CurrentModule = omod;
   }
-
-
-#else
-
-void Yap_InitMYDDAS_ODBCPreds(void) {}
-void Yap_InitBackMYDDAS_ODBCPreds(void) {}
-
-void init_odbc(void) {
-  }
-
-
-#endif
 
 
 #ifdef _WIN32
@@ -843,4 +865,3 @@ int WINAPI win_odbc(HANDLE hinst, DWORD reason, LPVOID reserved) {
   return 1;
 }
 #endif
-/*MYDDAS_ODBC*/

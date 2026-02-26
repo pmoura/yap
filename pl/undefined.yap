@@ -70,9 +70,21 @@ followed by the failure of that call.
 :- multifile user:unknown_predicate_handler/3.
 :- dynamic user:unknown_predicate_handler/3.
 
+%% @pred $undefp( Goal )
+%%
+%% receives an undefined goal and silently fails;
+%%   - generates an exception or warning; or calls 
+%%   - calls user define code unknown_predicate_handler
+%%
+%% Note:
+%%   - $undefp must deal with recursive undefinesa
+%%   - dynamic and multi-file predicates are always defined, even if 0 clauses.
+%%
 '$undefp'(G0) :-
-    '$exit_undefp',
-    '$undefp__'(G0, NewG),
+    setup_call_cleanup(
+´$enter_undefp',
+	'$undefp__'(G0, NewG),
+    '$exit_undefp'),
     call(NewG).
 
 '$undefp__'(MGoal, FMGoal) :-

@@ -2345,7 +2345,6 @@ static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt
   register CELL **tovisit0, **tovisit = (CELL **)Yap_PreAllocCodeSpace();
   register tr_fr_ptr TR0 = TR;
   CELL *InitialH = HR;
-  CELL output = AbsPair(HR);
 
   tovisit0 = tovisit;
  loop:
@@ -2451,6 +2450,8 @@ static Term non_singletons_in_complex_term(register CELL *pt0, register CELL *pt
   } else {
     return more;
   }
+  TR = TR0;
+  return tail;
 
  aux_overflow:
 #ifdef RATIONAL_TREES
@@ -2478,17 +2479,17 @@ UNifies _Vars_ with all the variables that have multiple occurrence in _Term_, I
 ```
     */
 static Int
-term_non_singletons( USES_REGS1 )	/* non_singletons in term t		 */
-{
+term_non_singletons( USES_REGS1 )	/* non_singletons in term t		 */{
   Term t;
   Term out;
 
   while (TRUE) {
     t = Deref(ARG1);
     if (IsVarTerm(t)) {
-      out = MkPairTerm(t,ARG2);
+      out = TermNil;
     }  else if (IsPrimitiveTerm(t)) {
-      out = ARG2;
+      out = TermNil;
+
     } else if (IsPairTerm(t)) {
       out = non_singletons_in_complex_term(RepPair(t)-1,
 					   RepPair(t)+1, ARG2 PASS_REGS);
@@ -2498,7 +2499,44 @@ term_non_singletons( USES_REGS1 )	/* non_singletons in term t		 */
 					   ArityOfFunctor(FunctorOfTerm(t)), ARG2 PASS_REGS);
     }
     if (out != 0L) {
-      return Yap_unify(ARG3,out);
+      return Yap_unify(ARG2,out);
+    } else {
+      if (!Yap_ExpandPreAllocCodeSpace(0, NULL, TRUE)) {
+	Yap_ThrowError(RESOURCE_ERROR_AUXILIARY_STACK, ARG1, "overflow in singletons");
+	return FALSE;
+      }
+    }
+  }
+}
+
+/** @pred term_singletons( +T , ?L)
+
+The list collects all singleton variables in term T
+*/
+static Int
+term_singletons( USES_REGS1 )	
+{
+  Term t;
+  Term out;
+
+  while (TRUE) {
+    t = Deref(ARG1);
+    if (IsVarTerm(t)) {
+      out = MkPairTerm(t,TermNil);
+    }  else if (IsPrimitiveTerm(t)) {
+      out = TermNil;
+    } else if (IsPairTerm(t)) {
+      out = singletons_in_complex_term(RepPair(t)-1,
+				       RepPair(t)+1,
+				       true PASS_REGS);
+    } else {
+      out = singletons_in_complex_term(RepAppl(t),
+				       RepAppl(t)+
+				       ArityOfFunctor(FunctorOfTerm(t)
+						      ), true PASS_REGS);
+    }
+    if (out != 0L) {
+      return Yap_unify(ARG2,out);
     } else {
       if (!Yap_ExpandPreAllocCodeSpace(0, NULL, TRUE)) {
 	Yap_ThrowError(RESOURCE_ERROR_AUXILIARY_STACK, ARG1, "overflow in singletons");

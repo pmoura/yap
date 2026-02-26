@@ -818,4 +818,5 @@ install_t install_pypreds(void) {
   PL_register_foreign_in_module("python", "end_python", 0, end_python, 0);
   PL_register_foreign_in_module("jupyter", "jupyter", 1, python_jupyter, 0);
   init_python_vfs();
+    install_pl2pl();
 }

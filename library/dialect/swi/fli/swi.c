@@ -2236,7 +2236,7 @@ X_API int PL_is_initialised(int *argcp, char ***argvp) {
 
 X_API module_t PL_context(void) {
   CACHE_REGS
-  return Yap_GetModuleEntry(LOCAL_SourceModule);
+  return Yap_GetModuleEntry(CurrentModule);
 }
 
 X_API int PL_strip_module(term_t raw, module_t *m, term_t plain) {
