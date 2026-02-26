@@ -74,7 +74,7 @@ static Int usable_readline(USES_REGS1) {
   if (getenv("INSIDE_EMACS")) {
     return false;
   }
-  if (Yap_Embedded) {
+  if (GLOBAL_Embedded) {
     return false;
   }
   return true;

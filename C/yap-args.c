@@ -1110,8 +1110,6 @@ struct ssz_t {
   size_t Heap, Stack, Trail;
 };
 
-extern bool Yap_Embedded;
-
 static void init_hw(YAP_init_args *yap_init, struct ssz_t *spt) {
   Yap_page_size = Yap_InitPageSize(); /* init memory page size, required by
 					 later functions */
@@ -1122,7 +1120,7 @@ static void init_hw(YAP_init_args *yap_init, struct ssz_t *spt) {
     yap_init->install = false;
     GLOBAL_PrologShouldHandleInterrupts =
       yap_init->PrologCannotHandleInterrupts = true;
-      Yap_Embedded = true;
+      GLOBAL_Embedded = true;
   } else {
     GLOBAL_PrologShouldHandleInterrupts =
       !yap_init->PrologCannotHandleInterrupts;
@@ -1199,7 +1197,7 @@ GLOBAL_VFS = NULL;
   if (YAP_initialized)
     /* ignore repeated calls to YAP_Init */
     return;
-  Yap_Embedded = yap_init->Embedded;
+  GLOBAL_Embedded = yap_init->Embedded;
 
   minfo.Trail = 0, minfo.Stack = 0, minfo.Trail = 0;
   init_hw(yap_init, &minfo);

@@ -1,6 +1,7 @@
 /// @file yapi.cpp
 /// @brief C++ interface support
 #include "yapi.hh"
+#include "Yatom.h"
 
 extern "C" {
 
@@ -708,7 +709,7 @@ bool YAPEngine::mgoal(Term t, Term tmod, bool release) {
       ap->OpcodeOfPred == UNDEF_OPCODE) {
     ap = rewriteUndefEngineQuery(ap, t, tmod);
   }
-  if (false && ap->PredFlags & MetaPredFlag) {
+  if (ap->PredFlags & (MetaPredFlag|ProxyPredFlag)) {
     ts[0] = tmod;
     ts[1] = t;
     ARG1 = Yap_MkApplTerm(FunctorModule,2,ts);

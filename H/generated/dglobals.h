@@ -72,6 +72,7 @@
 
 #define GLOBAL_argv Yap_global->argv_
 #define GLOBAL_argc Yap_global->argc_
+#define GLOBAL_Embedded Yap_global->Embedded_
 
 #ifdef COROUTINING
 

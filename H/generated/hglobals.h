@@ -72,6 +72,7 @@ typedef struct global_data {
 // access to yap initial arguments
   char**  argv_;
   int  argc_;
+  bool  Embedded_;
 // extensions to Terms
 #ifdef COROUTINING
 /* array with the ops for your favourite extensions */

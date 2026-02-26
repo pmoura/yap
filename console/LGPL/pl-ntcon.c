@@ -27,6 +27,7 @@
 #include "SWI-Stream.h"
 #include "SWI-Prolog.h"
 #include <signal.h>
+XXPP
 
 int APP_main(int argc, char **argv);
 		/* decode ANSI color sequences (ESC[...m) */

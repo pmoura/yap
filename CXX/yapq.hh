@@ -233,9 +233,9 @@ public:
 #endif
   };
 
-  inline void setEmbedded(bool fl) { Embedded = fl; };
+  inline void setEmbedded(bool fl) { GLOBAL_Embedded = fl; };
 
-  inline bool getEmbedded() { return Embedded; };
+  inline bool getEmbedded() { return GLOBAL_Embedded; };
 
   inline void setStackSize(bool fl) { StackSize = fl; };
 

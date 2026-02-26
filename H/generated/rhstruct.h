@@ -73,6 +73,9 @@
   RETRY_USERC_OPCODE = Yap_opcode(_retry_userc);
   CALL_OPCODE = Yap_opcode(_call);
   FCALL_OPCODE = Yap_opcode(_fcall);
+  YSTOP_OPCODE = Yap_opcode(_Ystop);
+  NSTOP_OPCODE = Yap_opcode(_Nstop);
+  TRUST_FAIL_OPCODE = Yap_opcode(_trust_fail);
 
 
 
@@ -102,6 +105,8 @@
   DBLOAD_MODULE = AtomTermAdjust(DBLOAD_MODULE);
   RANGE_MODULE = AtomTermAdjust(RANGE_MODULE);
   ERROR_MODULE = AtomTermAdjust(ERROR_MODULE);
+  LISTS_MODULE = AtomTermAdjust(LISTS_MODULE);
+  MAPLIST_MODULE = AtomTermAdjust(MAPLIST_MODULE);
 
 
 
@@ -137,7 +142,7 @@
   WakeUpCode = PtoPredAdjust(WakeUpCode);
 #endif
   PredCsult = PtoPredAdjust(PredCsult);
-  PredDollarCatch = PtoPredAdjust(PredDollarCatch);
+  PredCatchImplementation = PtoPredAdjust(PredCatchImplementation);
 #ifdef YAPOR
   PredGetwork = PtoPredAdjust(PredGetwork);
 #endif /* YAPOR */
