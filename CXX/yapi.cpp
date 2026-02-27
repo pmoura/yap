@@ -695,7 +695,6 @@ bool YAPEngine::mgoal(Term t, Term tmod, bool release) {
   YAP_dogoalinfo q;
   BACKUP_MACHINE_REGS();
 
-   Term *ts = nullptr;
   q.CurSlot = Yap_StartSlots();
   q.p = P;
   q.cp = CP;
@@ -710,24 +709,25 @@ bool YAPEngine::mgoal(Term t, Term tmod, bool release) {
     ap = rewriteUndefEngineQuery(ap, t, tmod);
   }
   if (ap->PredFlags & (MetaPredFlag|ProxyPredFlag)) {
+   Term ts[2];
     ts[0] = tmod;
     ts[1] = t;
     ARG1 = Yap_MkApplTerm(FunctorModule,2,ts);
     ap = PredCall;
   } else {
-  if (IsApplTerm(t))
-    ts = RepAppl(t) + 1;
-  else if (IsPairTerm(t))
-    ts = RepPair(t);
+    Term *ts;
+    if (IsApplTerm(t))
+      ts = RepAppl(t) + 1;
+    else if (IsPairTerm(t))
+      ts = RepPair(t);
   /* legal ap */
   
-  arity_t arity = ap->ArityOfPE;
+    arity_t arity = ap->ArityOfPE;
 
-  for (arity_t i = 0; i < arity; i++) {
-    XREGS[i + 1] = ts[i];
+    for (arity_t i = 0; i < arity; i++) {
+      XREGS[i + 1] = ts[i];
+    }
   }
-  }
-  ts = nullptr;
   bool result;
   // allow Prolog style exception handling
   // don't forget, on success these guys may create slots

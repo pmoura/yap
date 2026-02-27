@@ -1,4 +1,5 @@
-q/*
+
+/*
  * Language Server support
  *
  */
@@ -6,7 +7,12 @@ q/*
 :- module(lsp, [
 	      validate_file/2,
 	      validate_text/3,
+highlight_text/2,pred_def/4,
+pred_def/2,
+pred_refs/4,
+complete/4,
 highlight_file/2
+
   ]).
 
 :- set_prolog_flag(double_quotes, string).
@@ -67,7 +73,7 @@ symbol(N0/Ar0,Mod,
 %%
 %% find the definition for the text at URI:Line:Ch
 %%
-user:pred_def(Ob,URI,Line,Ch) :-
+pred_def(Ob,URI,Line,Ch) :-
 	string_concat(`file://`, FS, URI),
 	string_to_atom(FS, Afs),
 	name2symbol(Afs,Line,Ch,Mod:N0/Ar0),
@@ -79,19 +85,17 @@ user:pred_def(Ob,URI,Line,Ch) :-
 	  Ob.items := Ps
 	).
 
-user:pred_def(Ob, S) :-
-    writeln(user_error,(S)),
+pred_def(Ob, S) :-
     atom_string( Name, S),
     current_module( Mod),
     current_predicate(Mod:Name/Ar),
     functor(G,Name,Ar),
     predicate_property(Mod:G,file(F) ),
     predicate_property(Mod:G,line_count(L)),
-    writeln(user_error,(F+L)),
     string_atom( SMod, Mod),
     Ob.defs.append(t(F,L,0,SMod,Ar)),
     fail.
-user:pred_def(_Ob, _Name).
+pred_def(_Ob, _Name).
 
 name2symbol(Name,t(F,Lines,0)) :-
     strip_module(Name,Mod,N),
@@ -111,7 +115,7 @@ get_ref(N/A,M,Ref) :-
 %%
 %% find the definition for the text at URI:Line:Ch
 %%
-user:pred_refs(Ob,URI,Line,Ch) :-
+pred_refs(Ob,URI,Line,Ch) :-
 	string_concat(`file://`, FS, URI),
 	string_to_atom(FS, Afs),
 %	mkgraph(Afs),
@@ -126,7 +130,7 @@ user:pred_refs(Ob,URI,Line,Ch) :-
 	).
 
 
-user:complete(Self,_Line,_Pos,Prefix) :-
+complete(Self,_Line,_Pos,Prefix) :-
     completions(Prefix,FCs),
     ( var(Self)-> Self = FCs ; Self.items := FCs ).
 
@@ -165,12 +169,10 @@ validate_file( Self,File) :-
 
 
 validate_text(Self,URI,S) :-
-    writeln(rs),
-	 string_concat("file://",SFile,URI),
-	 atom_string(File, SFile),
-	 	 writeln(File),
+    string_concat("file://",SFile,URI),
+    atom_string(File, SFile),
     open(string(S),read,Stream,[alias(File)]),
-	 	 writeln(done),
+    start_low_level_trace,
     set_stream(Stream,file_name(File)),
     assert(lsp_on),
     asserta(my(Self,URI)),
@@ -238,7 +240,7 @@ highlight_file(Self, File) :-
     open(File,read,Stream,[alias(File)]),
     highlight_and_convert_stream(Self,Stream).
 
-user:highlight_text(Self,Text):-
+highlight_text(Self,Text):-
     open(string(Text),read,Stream,[alias(data)]),
     highlight_and_convert_stream(Self, Stream).
 
