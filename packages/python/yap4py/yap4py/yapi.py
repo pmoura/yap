@@ -75,7 +75,7 @@ class Engine( YAPEngine ):
         if not args:
             args = EngineArgs(**kwargs)
             args.setEmbedded(True)
-        if self_contained:
+        if False and self_contained:
             yap_lib_path = dirname(__file__)
             args.setYapShareDir(join(yap_lib_path, "prolog"))
             args.setYapPLDIR(yap_lib_path)

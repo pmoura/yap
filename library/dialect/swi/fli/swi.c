@@ -2186,7 +2186,7 @@ X_API void PL_clear_exception(void) {
 X_API int PL_initialise(int myargc, char **myargv) {
   YAP_init_args init_args;
 
-  if (!Yap_Embedded) {
+  if (!GLOBAL_Embedded) {
     
     
     GLOBAL_PL_Argv = GLOBAL_argv;

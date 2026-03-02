@@ -354,11 +354,9 @@ static int volume_header(char *file) {
 int Yap_volume_header(char *file) { return volume_header(file); }
 
 const char *Yap_getcwd(char *buf, size_t cwdlen) {
-#if USE_CWD_CACHE
-if (GLOBAL_cwd && GLOBAL_cwd[0]) {
-    return cwd;
-  }
-#endif
+//  if (LOCAL_cwd) {
+//    return LOCAL_cwd;
+//  }
 #if _WIN32 || defined(__MINGW32__)
   if (GetCurrentDirectory(cwdlen, (char *)cwd) == 0) {
     Yap_WinError("GetCurrentDirectory failed");
@@ -371,6 +369,7 @@ if (GLOBAL_cwd && GLOBAL_cwd[0]) {
       cwdlen *=2 ;
       buf = realloc(buf, cwdlen);
   }
+  LOCAL_cwd = buf;
  // __android_log_print(ANDROID_LOG_INFO, "YAPDroid", "chdir %s", rc);
 return rc;
 }

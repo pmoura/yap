@@ -116,6 +116,7 @@ setup_args = dict(
     scripts         = glob(pjoin('scripts', '*')),
     zip_safe        = False,
     packages        = packages,
+    
     include_package_data    = True,
     description     = "YAP in Python",
     author          = 'YAP Development Team',

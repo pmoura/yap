@@ -1032,31 +1032,13 @@ static Int creep_step(USES_REGS1)
    */
   Term t = Deref(ARG1);
   Term mod = Deref(ARG2);
-  arity_t arity, i;
   bool rc;
   if (IsPairTerm(t)) {
     t = Yap_MkApplTerm(FunctorCsult, 1, &t);
   }
-  PredEntry *pe = Yap_get_pred(t, mod, "execute0");
+  PredEntry *pe = Yap_MkGoalFromTerm(t, mod, "execute0");
   if (!pe)
     return false;
-  arity = pe->ArityOfPE;
-  if (arity)
-    {
-      CELL *pt = RepAppl(t) + 1;
-      for (i = 1; i <= arity; ++i)
-	{
-#if YAPOR_SBA
-	  Term d0 = *pt++;
-	  if (d0 == 0)
-	    XREGS[i] = (CELL)(pt - 1);
-	  else
-	    XREGS[i] = d0;
-#else
-	  XREGS[i] = *pt++;
-#endif
-	}
-    }
   /*	N = arity; */
   /* call may not define new system predicates!! */
   if (pe->PredFlags & SpiedPredFlag)
@@ -1094,41 +1076,9 @@ static Int execute_nonstop(USES_REGS1)
    */
   Term tmod = CurrentModule;
   Term t = Yap_StripModule(Deref(ARG1), &tmod);
-  if (IsPairTerm(t)) {
-    t = Yap_MkApplTerm(FunctorCsult, 1, &t);
-  }
-  PredEntry *pe = Yap_get_pred(t, tmod, "c_exec(G)");
+  PredEntry *pe = Yap_MkGoalFromTerm(t, tmod, "c_exec(G)");
   if (!pe)
     return false;
-  register arity_t arity = pe->ArityOfPE;
-
-
-  register CELL *pt;
-  arity_t i;
-
-      /* I cannot use the standard macro here because
-         otherwise I would dereference the argument and
-         might skip a svar */
-  if (IsPairTerm(t)) {
-    pt = RepPair(t);
-  } else if (IsApplTerm(t)) {
-  pt = RepAppl(t) + 1;
-  } else {
-    pt = NULL;
-  }
-    
-  for (i = 1; i <= arity; ++i)
-    {
-#if YAPOR_SBA
-      Term d0 = *pt++;
-      if (d0 == 0)
-        XREGS[i] = (CELL)(pt - 1);
-      else
-        XREGS[i] = d0;
-#else
-      XREGS[i] = *pt++;
-#endif
-    }
   yamop  *pc= pe->CodeOfPred;
   if (pe->PredFlags & SpiedPredFlag)
     pc =  pe->cs.p_code.TrueCodeOfPred ;
@@ -1141,34 +1091,9 @@ static Int creep_clause(USES_REGS1)
    */
 
   Term t = Deref(ARG1);
-  PredEntry *pe = Yap_get_pred(t, ARG2, "clause(K, Ref)")
+  Term tmod = Deref(ARG2);
+  PredEntry *pe = Yap_MkGoalFromTerm(t, tmod, "clause(K, Ref)")
     ;
-
-  if (IsApplTerm(t))
-    {
-      arity_t i;
-      CELL *pt;
-
-      pt = RepAppl(t) + 1;
-      arity_t arity = pe->ArityOfPE;
-      for (i = 1; i <= arity; ++i)
-	{
-#if YAPOR_SBA
-	  Term d0 = *pt++;
-	  if (d0 == 0)
-	    XREGS[i] = (CELL)(pt - 1);
-	  else
-	    XREGS[i] = d0;
-#else
-	  XREGS[i] = *pt++;
-#endif
-	}
-    }
-  else
-    {
-      Yap_ThrowError(TYPE_ERROR_CALLABLE, t, "call/1");
-      return FALSE;
-    }
   /*	N = arity; */
   /* call may not define new system predicates!! */
   if (pe->PredFlags & LogUpdatePredFlag)
@@ -2126,7 +2051,7 @@ void Yap_InitYaamRegs(int myworker_id, bool full_reset)
 
 static void InitCommaPreds(void) {
   arity_t i;
-  CommaPredicates = malloc(8*sizeof(struct pred_entry *));
+  CommaPredicates = malloc(8*sizeof(struct pred_eyapntry *));
   for (i=2;i<10;i++) {
     CommaPredicates[i-2] = RepPredProp(Yap_NewPredPropByFunctor(Yap_MkFunctor((AtomInnerComma), i), PROLOG_MODULE));
   }

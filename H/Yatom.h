@@ -563,6 +563,9 @@ extern PredEntry *Yap_get_pred(Term t, Term tmod, const char *pname);
 
 extern PredEntry *Yap_new_pred(Term t, Term tmod, bool lu, const char *pname);
 
+extern PredEntry *Yap_MkGoalFromTerm(Term t, Term tmod, const char *pname);
+
+
 extern profile_data *Yap_initProfiler(PredEntry *p);
 
 /* Flags for code or dbase entry */

@@ -19,6 +19,7 @@
 // START_GLOBAL_DATA
 
 // initialization: tell whether the system has been initialised and by whom.
+#include "Yap.h"
 GLOBAL_INIT(int, Initialised, FALSE);
 GLOBAL_INIT(int, InitialisedFromPL, FALSE);
 GLOBAL_INIT(int, PL_Argc, 0);
@@ -162,6 +163,9 @@ GLOBAL_INIT(char *, CharConversionTable2, NULL);
 
 /* max priority */
 GLOBAL_INIT(int, MaxPriority, 1200);
+
+/** whether YAP is embedded in some other system */
+GLOBAL(bool,Embedded, false);
 
 /// alias table access
 GLOBAL_INIT(struct AliasDescS *, FileAliases, Yap_InitStandardAliases());

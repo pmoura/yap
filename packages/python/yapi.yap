@@ -7,7 +7,8 @@
 
  :- module(yapi, [
 	       yapi_query/2,
-	       term_to_dict/4
+	       term_to_dict/4,
+top_goal/2
  	   ]).
 
 :- set_prolog_flag(verbose_load, false).
@@ -82,7 +83,7 @@ argi(N,I,I1) :-
   * @pred top_goal(Self, Text)
   * how the YAP Jupyter kernels calls a goal in the cell.
   */
-user:top_goal( Self, MString		) :-
+top_goal( Self, MString		) :-
     yapi_query( Self, MString	).
 
 yapi_query( Engine, MString) :-

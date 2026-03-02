@@ -142,4 +142,5 @@ EXTERNAL  int  GLOBAL_NOfFileAliases;
 EXTERNAL  int  GLOBAL_SzOfFileAliases;
 EXTERNAL    struct vfs*  GLOBAL_VFS;
 EXTERNAL  char*  GLOBAL_cwd;
+EXTERNAL  bool  GLOBAL_Embedded;
 

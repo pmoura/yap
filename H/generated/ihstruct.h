@@ -73,6 +73,9 @@
   RETRY_USERC_OPCODE = Yap_opcode(_retry_userc);
   CALL_OPCODE = Yap_opcode(_call);
   FCALL_OPCODE = Yap_opcode(_fcall);
+  YSTOP_OPCODE = Yap_opcode(_Ystop);
+  NSTOP_OPCODE = Yap_opcode(_Nstop);
+  TRUST_FAIL_OPCODE = Yap_opcode(_trust_fail);
 
 
 
@@ -102,6 +105,8 @@
   DBLOAD_MODULE = MkAtomTerm(AtomDBLoad);
   RANGE_MODULE = MkAtomTerm(AtomRange);
   ERROR_MODULE = MkAtomTerm(AtomError);
+  LISTS_MODULE = MkAtomTerm(AtomError);
+  MAPLIST_MODULE = MkAtomTerm(AtomError);
 
 
 
@@ -137,7 +142,7 @@
   WakeUpCode = RepPredProp(PredPropByFunc(Yap_MkFunctor(AtomWakeUpGoal,2),PROLOG_MODULE));
 #endif
   PredCsult = RepPredProp(PredPropByFunc(FunctorCsult,PROLOG_MODULE));
-  PredDollarCatch = RepPredProp(PredPropByFunc(FunctorCatch,PROLOG_MODULE));
+  PredCatchImplementation = RepPredProp(PredPropByFunc(FunctorCatchImplementation,PROLOG_MODULE));
 #ifdef YAPOR
   PredGetwork = RepPredProp(PredPropByAtom(AtomGetwork,PROLOG_MODULE));
 #endif /* YAPOR */

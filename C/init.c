@@ -64,7 +64,7 @@ static char SccsId[] = "%W% %G%";
 Atom AtomFoundVar, AtomFreeTerm, AtomNil, AtomDot;
 #endif // !YAPOR
 
-bool Yap_Embedded = false;
+bool GLOBAL_Embedded = false;
 
 int Yap_output_msg = FALSE;
 const  char *Yap_BOOTFILE;

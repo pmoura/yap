@@ -291,7 +291,7 @@ public:
   YAPEngine(int argc, char *argv[],
             YAPCallback *callback = (YAPCallback *)NULL);
   ///< kill engine
-  ~YAPEngine() { delYAPCallback(); };
+   ~YAPEngine() { delYAPCallback(); };
   ///< remove current callback
   void delYAPCallback() { _callback = 0; };
   ///< set a new callback
@@ -360,7 +360,7 @@ public:
     std::vector<YAPTerm> ts = {name};
     YAPApplTerm tname = YAPApplTerm(std::string("library"),ts);
 
-    YAPTerm lf =  YAPApplTerm(std::string("load_files"), {name, YAPPairTerm(TermNil)});
+    YAPTerm lf =  YAPApplTerm(std::string("load_files"), {tname, YAPPairTerm(TermNil)});
     return goal(lf, YAPModule());
   };
   Term top_level(std::string s);

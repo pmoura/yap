@@ -2,6 +2,7 @@
 
 #include "YapCompoundTerm.h"
 #include "pyerrors.h"
+#include "refcount.h"
 
 #include <frameobject.h>
 
@@ -73,6 +74,7 @@ static Term python_to_term__(PyObject *pVal) {
 #else
     const unsigned char *s = (unsigned char*)PyUnicode_AsUTF8(pVal);
 #endif
+    Py_INCREF(pVal);
       if  (pyStringToYAP == PYSTRING2STRING)
         return MkUStringTerm(s);
       else if  (pyStringToYAP == PYSTRING2ATOM)
@@ -228,7 +230,7 @@ static Term python_to_term__(PyObject *pVal) {
 foreign_t python_to_term(PyObject *pVal, term_t t) {
    Py_INCREF(pVal);
   Term o = python_to_term__(pVal);
-  Py_DECREF(pVal);
+  //Py_DECREF(pVal);
   return YAP_Unify(o,YAP_GetFromSlot(t));
 }
 
@@ -244,9 +246,9 @@ X_API YAP_Term pythonToYAP(PyObject *pVal) {
   if (pVal == NULL)
     Yap_ThrowError(SYSTEM_ERROR_INTERNAL, 0, NULL);
   yhandle_t h0 = Yap_CurrentHandle();
-   Py_INCREF(pVal);
+  // Py_INCREF(pVal);
 Term t =  python_to_term__(pVal);
-  Py_DECREF(pVal);
+ // Py_DECREF(pVal);
      /* fputs("<< ***    ", stderr); */
   /* Yap_DebugPlWrite(t); */
 

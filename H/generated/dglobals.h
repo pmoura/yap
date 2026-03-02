@@ -143,3 +143,7 @@
 #define GLOBAL_VFS Yap_global->VFS_
 #define GLOBAL_cwd Yap_global->cwd_
 
+
+#define GLOBAL_Embedded Yap_global->Embedded
+
+

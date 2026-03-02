@@ -45,7 +45,9 @@ static void add_modules(USES_REGS1) {
 
   //Term exp_string = MkAtomTerm(Yap_LookupAtom("python_export_string_as"));
   py_Atoms= PyDict_New();
-
+  if (py_Atoms) {
+    Py_INCREF(py_Atoms);
+  }
   /* if ((py_Main = PyImport_ImportModule("__main__"))!=NULL) */
   /* Py_INCREF(py_Main); */
   
@@ -74,12 +76,12 @@ static void add_modules(USES_REGS1) {
   Py_f2p = PythonLookup("f2p", NULL);
   if (!Py_f2p)
     Py_f2p = PyList_New(16);
-  {
+  Py_INCREF(Py_f2p);
+ {
     int i;
     for (i=0; i < 16; i++)
       PyList_SetItem(Py_f2p,i,PyDict_New());
   }
-    Py_INCREF(Py_f2p);
   init_python_vfs();
 }
 
@@ -90,6 +92,7 @@ static void add_modules(USES_REGS1) {
   ATOM_A = PL_new_atom("A");
   ATOM_V = PL_new_atom("V");
   ATOM_builtin = PL_new_atom("__builtin__");
+
   ATOM_comma = PL_new_atom(",");
   ATOM_colon = PL_new_atom(":");
   ATOM_true = PL_new_atom("true");

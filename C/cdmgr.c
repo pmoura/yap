@@ -188,6 +188,60 @@ restart:
   return NULL;
 }
 
+PredEntry *Yap_MkGoalFromTerm(Term t, Term tmod, const char *pname) {
+  Term t0 = t;
+
+restart:
+  if (IsVarTerm(t)) {
+    Yap_ThrowError(INSTANTIATION_ERROR, t0, pname);
+    return NULL;
+  } else if (tmod && IsVarTerm(tmod)) {
+    Yap_ThrowError(INSTANTIATION_ERROR, t0, pname);
+    return NULL;
+ } else if (tmod && !IsAtomTerm(tmod)) {
+    Yap_ThrowError(TYPE_ERROR_ATOM, t0, pname);
+    return NULL;
+  } else if (IsAtomTerm(t)) {
+    PredEntry *ap = RepPredProp(Yap_GetPredPropByAtom(AtomOfTerm(t), tmod));
+    return ap;
+  } else if (IsIntegerTerm(t) && tmod == IDB_MODULE) {
+    return Yap_FindLUIntKey(IntegerOfTerm(t));
+  } else if (IsPairTerm(t)) {
+    ARG1 = t;
+    return PredCsult;
+  } else if (IsApplTerm(t)) {
+    Functor fun = FunctorOfTerm(t);
+    if (IsExtensionFunctor(fun)) {
+      Yap_ThrowError(TYPE_ERROR_CALLABLE, Yap_PredicateIndicator(t, tmod), pname);
+      return NULL;
+    }
+    if (fun == FunctorModule) {
+      tmod = ArgOfTerm(1,t);
+      t = ArgOfTerm(2, t);
+      goto restart;
+    }
+    PredEntry *ap = RepPredProp(Yap_GetPredPropByFunc(fun, tmod));
+    arity_t  arity = ap->ArityOfPE, i;
+    CELL *pt = RepAppl(t) + 1;
+      for (i = 0; i < arity; ++i)
+	{
+#if YAPOR_SBA
+	  Term d0 = *pt++;
+	  if (d0 == 0)
+	    RESET_VARIABLE(XREGS+i+1);
+	  else
+	    XREGS[i+1] = d0;
+#else
+	  XREGS[i+1] = *pt++;
+#endif
+	}
+      return ap;
+  } else {
+    Yap_ThrowError(TYPE_ERROR_CALLABLE, t, pname);
+  }
+  return NULL;
+}
+
 PredEntry *get_full_pred(Term *tp, Term *tmodp, const char *pname USES_REGS) {
   Term t0 = *tp, t = t0;
   Term tmod = CurrentModule;

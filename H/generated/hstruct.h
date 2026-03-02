@@ -77,6 +77,9 @@
   OPCODE  RETRY_USERC_OPCODE_;
   OPCODE  CALL_OPCODE_;
   OPCODE  FCALL_OPCODE_;
+  OPCODE  YSTOP_OPCODE_;
+  OPCODE  NSTOP_OPCODE_;
+  OPCODE  TRUST_FAIL_OPCODE_;
 /* atom tables */
   UInt  NOfAtoms_;
   UInt  AtomHashTableSize_;
@@ -106,6 +109,8 @@
   Term  DBLOAD_MODULE_;
   Term  RANGE_MODULE_;
   Term  ERROR_MODULE_;
+  Term  LISTS_MODULE_;
+  Term  MAPLIST_MODULE_;
 //
 // Module list
 //
@@ -141,7 +146,7 @@
   struct pred_entry  *WakeUpCode_;
 #endif
   struct pred_entry  *PredCsult_;
-  struct pred_entry  *PredDollarCatch_;
+  struct pred_entry  *PredCatchImplementation_;
 #ifdef YAPOR
   struct pred_entry  *PredGetwork_;
 #endif /* YAPOR */

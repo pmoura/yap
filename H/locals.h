@@ -331,8 +331,10 @@ LOCAL_INITF(struct local_optyap_data, optyap_data,Yap_init_local_optyap_data(wid
 LOCAL_INIT(UInt, TabMode, 0L);
 #endif /* YAPOR || TABLING */
 
+LOCAL_INIT(char *, cwd, NULL);
 
 #if LOW_LEVEL_TRACER
 LOCAL_INIT(Int, total_choicepoints, 0);
 #endif
+
 

@@ -19,9 +19,7 @@ if ( Python3_Development_FOUND AND SWIG_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/predicates.py
     ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/queries.py
     ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/lsp.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/__main__.py
-    ${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml
-)
+    ${CMAKE_CURRENT_SOURCE_DIR}/yap4py/__main__.py)
 
 
   SET_SOURCE_FILES_PROPERTIES(../../swig/yap.i PROPERTIES CPLUSPLUS ON)
@@ -38,6 +36,7 @@ if ( Python3_Development_FOUND AND SWIG_FOUND)
   #  configure_file("MANIFEST.in" ${CMAKE_CURRENT_BINARY_DIR}/MANIFEST.in)
   configure_file(yap4py/__init__.py.in yap4py/__init__.py)
   configure_file(setup.py.in setup.py)
+  configure_file(pyproject.toml.in pyproject.toml)
 
 
   INCLUDE_DIRECTORIES(${Python3_LIBRARY_DIRS}  ${CMAKE_CURRENT_BINARY_DIR}/yap4py/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/packages/python
@@ -67,7 +66,7 @@ endforeach()
   add_custom_target(YAP4PY ALL
     COMMAND pip wheel --wheel-dir ${CMAKE_BINARY_DIR} .
     DEPENDS  ${SWIG_SOURCES} YAP++ Py4YAP ${PYTHON_SOURCES}  ${CMAKE_CURRENT_BINARY_DIR}/yap4py/_yap.cxx
-    DEPENDS ${CMAKE_BINARY_DIR}/${WHEEL}
+    DEPENDS ${CMAKE_BINARY_DIR}/${WHEEL}  libYap YAPPython  YAP++ Py4YAP
   )
 
 

@@ -74,7 +74,7 @@ static Int usable_readline(USES_REGS1) {
   if (getenv("INSIDE_EMACS")) {
     return false;
   }
-  if (Yap_Embedded) {
+  if (GLOBAL_Embedded) {
     return false;
   }
   return true;
@@ -289,7 +289,7 @@ bool Yap_ReadlineOps(StreamDesc *s) {
   }
   return false;
 }
-extern bool Yap_Embedded;
+
 
 bool Yap_InitReadline(Term enable) {
   // don't call readline within emacs
