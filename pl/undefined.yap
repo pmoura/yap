@@ -36,7 +36,6 @@ compatible with previous releases of YAP).
 `user:unknown_predicate_handler/3`. This solution is compatible
 with SICStus Prolog.
 
-
 */
 
 /**  @pred  unknown_predicate_handler(+ _Call_, + _M_, - _N_)
@@ -55,6 +54,7 @@ undefined(A) :-
 	     format('Undefined predicate: ~w~n',[A]), fail.
 
 :- assert(user:unknown_predicate_handler(U,M,undefined(M:U)) )
+```
 
 call to a predicate for which no clauses were defined will result in
 the output of a message of Undefined predicate.
@@ -62,8 +62,11 @@ the output of a message of Undefined predicate.
 ```
 Undefined predicate:
 ```
+
 followed by the failure of that call.
+
 */
+
 :- multifile user:unknown_predicate_handler/3.
 :- dynamic user:unknown_predicate_handler/3.
 
@@ -130,5 +133,3 @@ unknown(P, NP) :-
 /**
 @}
 */
-
-

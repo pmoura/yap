@@ -1,6 +1,7 @@
 /// @file yapi.cpp
 /// @brief C++ interface support
 #include "yapi.hh"
+#include "Yatom.h"
 
 extern "C" {
 

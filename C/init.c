@@ -429,10 +429,10 @@ static UInt update_flags_from_prolog(UInt flags, PredEntry *pe) {
     flags |= ModuleTransparentPredFlag;
   if (pe->PredFlags & StandardPredFlag)
     flags |= StandardPredFlag;
+  if (pe->PredFlags & ProxyPredFlag)
+    flags |= ProxyPredFlag;
   return flags;
 }
-
-
 
 
  

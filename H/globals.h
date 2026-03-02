@@ -49,7 +49,7 @@ GLOBAL_INIT(UInt, NOfThreadsCreated, 1);
 /* total run time for dead threads */
 GLOBAL_INIT(UInt, ThreadsTotalTime, 0L);
 // Threads Array
-GLOBAL_INITF(lockvar, ThreadHandlesLock, MkLock);
+7GLOBAL_INITF(lockvar, ThreadHandlesLock, MkLock);
 #endif
 
 #if defined(YAPOR) || defined(THREADS);
@@ -64,6 +64,7 @@ GLOBAL(struct global_optyap_data, optyap_data);
 // whether Yap is responsible for signal handling
 
 GLOBAL(int, PrologShouldHandleInterrupts);
+GLOBAL(bold, Embedded);
 
 /* This is the guy who actually started the system, and who has the correct
  * registers */

@@ -150,6 +150,7 @@ if ( libpython_initialized) {
     term_t t = PL_new_term_ref();
     if (!Py_IsInitialized()) {
       Py_InitializeEx(0);
+      GLOBAL_Embedded = true;
     } else {
 //      Yap_CloseReadline();
     }

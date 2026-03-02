@@ -414,20 +414,20 @@ void Yap_DefaultStreamOps(StreamDesc *st) {
   
   if (st->status & Tty_Stream_f && st-GLOBAL_Stream <3) {
       st->stream_putc =ConsolePutc;
-    if (st->status & Readline_Stream_f) {
-      st->stream_getc =ReadlineGetc  ;
-          st->stream_peek = Yap_ReadlinePeekChar;
-    st->stream_wpeek = Yap_ReadlinePeekChar;
-    } else {
-      st->stream_getc =ConsoleGetc;
-    }
+      if (st->status & Readline_Stream_f) {
+	st->stream_getc =ReadlineGetc  ;
+	st->stream_peek = Yap_ReadlinePeekChar;
+	st->stream_wpeek = Yap_ReadlinePeekChar;
+      } else {
+	st->stream_getc =ConsoleGetc;
+      }
       st->stream_getc =ReadlineGetc  ;
   } else if (st->status & Null_Stream_f) {
     st->stream_putc = NullPutc;
   } else if (st->status & Pipe_Stream_f) {
-      Yap_PipeOps(st);
-    } else if (st->status & InMemory_Stream_f) {
-      Yap_MemOps(st);
+    Yap_PipeOps(st);
+  } else if (st->status & InMemory_Stream_f) {
+    Yap_MemOps(st);
 #if HAVE_SETBUF
             setbuf(stdin, NULL);
 #endif /* HAVE_SETBUF */
@@ -2178,7 +2178,7 @@ void Yap_InitIOPreds(void) {
   Yap_InitCharsio();
   Yap_InitChtypes();
   Yap_InitConsole();
-  Yap_InitReadUtil();
+
   Yap_InitMems();
   Yap_InitPipes();
   Yap_InitFiles();

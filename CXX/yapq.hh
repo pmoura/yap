@@ -222,20 +222,21 @@ public:
   YAPEngineArgs() {
     memset(this,0,sizeof(YAPEngineArgs));
     // const std::string *s = new std::string("startup.yss");
-    Embedded = true;
+    GLOBAL_Embedded = false;
     install = false;
     Yap_InitDefaults(&this->start, nullptr, 0, nullptr);
 #if YAP_PYTHON
-    Embedded = true;
     python_in_python = Py_IsInitialized();
+    if (python_in_python)
+      GLOBAL_Embedded = true;
 #endif
 #if __ANDROID__
 #endif
   };
 
-  inline void setEmbedded(bool fl) { Embedded = fl; };
+  inline void setEmbedded(bool fl) { GLOBAL_Embedded = fl; };
 
-  inline bool getEmbedded() { return Embedded; };
+  inline bool getEmbedded() { return GLOBAL_Embedded; };
 
   inline void setStackSize(bool fl) { StackSize = fl; };
 

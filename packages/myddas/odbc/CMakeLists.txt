@@ -20,7 +20,7 @@ set_property(DIRECTORY
         APPEND PROPERTY
 	INCLUDE_DIRECTORIES  ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/)
     add_library(YAPodbc  ${YAPODBC_SOURCES})
-    target_link_libraries(YAPodbc libYap ${ODBC_LIBRARIES})
+    target_link_libraries(YAPodbc libYap YAPmyddas ${ODBC_LIBRARIES})
      
        set_target_properties (YAPodbc PROPERTIES
       POSITION_INDEPENDENT_CODE ON

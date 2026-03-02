@@ -18,6 +18,7 @@
 
 #include "Yap.h"
 #include "YapHeap.h"
+#include "Yatom.h"
 #ifdef SCCS
 static char SccsId[] = "@(#)cdmgr.c	1.1 05/02/98";
 #endif
@@ -1651,7 +1652,7 @@ Term Yap_RunTopGoal(Term t, ex_handler_t error_manager)
     }
   ppe = RepPredProp(pe);
   if (pe == NIL  ||
-      (ppe->PredFlags & (MetaPredFlag)))
+      (ppe->PredFlags & (MetaPredFlag|ProxyPredFlag)))
     {
       // we're in a meta-call, rake care about modules
       //

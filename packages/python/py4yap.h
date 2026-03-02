@@ -32,7 +32,7 @@
 #ifdef HAVE_STAT
 #undef HAVE_STATa
 #endif
-#include <assert.h>
+//#include <assert.h>
 #include <string.h>
 #define EXTRA_MESSSAGES 1
 

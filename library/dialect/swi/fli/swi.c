@@ -2196,6 +2196,7 @@ X_API int PL_initialise(int myargc, char **myargv) {
 
   return true;
   }
+/*
   memset((void *)&init_args, 0, sizeof(init_args));
   init_args.Argv = myargv;
   init_args.Argc = myargc;
@@ -2222,6 +2223,7 @@ X_API int PL_initialise(int myargc, char **myargv) {
   YAP_Init(&init_args);
   return true;
 }
+*/
 
 X_API int PL_is_initialised(int *argcp, char ***argvp) {
   if (!GLOBAL_InitialisedFromPL) {
