@@ -82,8 +82,9 @@ restart:
     ts = nullptr;
     ap = Yap_FindLUIntKey(IntegerOfTerm(t));
   } else if (IsPairTerm(t)) {
+    ts = RepPair(t);
     t = Yap_MkApplTerm(FunctorCsult, 1, &t);
-    goto restart;
+    ap = PredCsult;
   } else if (IsApplTerm(t)) {
     Functor fun = FunctorOfTerm(t);
     if (IsExtensionFunctor(fun)) {
@@ -102,7 +103,9 @@ restart:
       goto restart;
     }
     ap = RepPredProp(Yap_GetPredPropByFunc(fun, tmod));
-    ts = RepAppl(t) + 1;
+       while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
+ ts = RepAppl(t) + 1;
   } else {
     throw YAPError(SOURCE(), TYPE_ERROR_CALLABLE, t0, pname);
   }
@@ -683,7 +686,7 @@ bool YAPEngine::call(YAPPredicate ap, YAPTerm ts[]) {
   return result;
 }
 
-bool YAPEngine::mgoal(Term t, Term tmod, bool release) {
+bool YAPEngine::mgoal(Term t, Term tmod                                 , bool release) {
 #if YAP_PYTHON
   //  std::cerr << "mgoal(in) "  << YAPTerm(tmod).text() << ":" << YAPTerm(t).text() << "\n";
   // PyThreadState *_save;
@@ -713,10 +716,7 @@ bool YAPEngine::mgoal(Term t, Term tmod, bool release) {
   // allow Prolog style exception handling
   // don't forget, on success these guys may create slots
   //__android_log_print(ANDROID_LOG_INFO, "YAPDroid", "exec  ");
-  Term ocmod = CurrentModule;
-      CurrentModule= tmod;
   result = (bool)YAP_EnterGoal(ap, nullptr, &q);
-  CurrentModule = ocmod;
       //  std::cerr << "mgoal "  << YAPTerm(tmod).text() << ":" << YAPTerm(t).text() << "\n
       YAP_LeaveGoal(result, &q);
   if (release)
@@ -1065,7 +1065,7 @@ void YAPEngine::doInit(YAP_file_type_t BootMode, YAPEngineArgs *engineArgs) {
   YAP_Init(engineArgs);
         CACHE_REGS
 // yerror = throw YAPError( SOURCE(), );
-CurrentModule =TermUser;
+	CurrentModule =TermUser;
 #if YAP_PYTHON
   do_init_python();
 #endif
@@ -1075,7 +1075,6 @@ CurrentModule =TermUser;
   // if (initq.next()) {
   //   initq.cut();
   // }
-  CurrentModule = TermUser;
 }
 
 YAPEngine::YAPEngine(int argc, char *argv[],
@@ -1124,15 +1123,9 @@ PredEntry *YAPPredicate::getPred(Term &t, Term &m, CELL *&out) {
     ap = RepPredProp(PredPropByAtom(AtomOfTerm(t), m));
     return ap;
   } else if (IsPairTerm(t)) {
-    Term ts[2], *s = (out ? out : ts);
-    Functor FunctorConsult = Yap_MkFunctor(Yap_LookupAtom("consult"), 1);
-    s[1] = t;
-    s[0] = m;
-    t = Yap_MkApplTerm(FunctorModule, 2, s);
-    t = Yap_MkApplTerm(FunctorConsult, 1, &t);
-    if (!out)
-      out = RepAppl(t) + 1;
-  }
+    *out = t;
+    return PredCsult;
+   }
   Functor f = FunctorOfTerm(t);
   if (IsExtensionFunctor(f)) {
     throw YAPError(SOURCE(), TYPE_ERROR_CALLABLE, t, 0);

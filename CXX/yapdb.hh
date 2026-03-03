@@ -5,6 +5,7 @@
 #ifndef _YAPDB_H
 #define _YAPDB_H
 
+#include "Yatom.h"
 #include "yapa.hh"
 #include <YapInterface.h>
 
@@ -134,24 +135,25 @@ public:
   /// It also communicates the array of arguments t[]
   /// and the array of variables
   /// back to yapquery
-  YAPPredicate(const char *s0, Term &tout, YAPPairTerm * &names, CELL *&nts) {
+  YAPPredicate(const char *s, Term &tout, YAPPairTerm * &names, CELL *&nts) {
     CACHE_REGS
-    const char *s = (const char *)s0;
     Term tnames = MkVarTerm(),
       parameters = TermNil;
     tout =
-        Yap_BufferToTermWithPrioBindings(s, parameters, tnames, strlen(s0)+1, 1200);
+        Yap_BufferToTermWithPrioBindings(s, parameters, tnames, strlen(s)+1, 1200);
     
     // fprintf(stderr,"ap=%p arity=%d text=%s", ap, ap->ArityOfPE, s);
     if (tout == 0L) {
-      return;
       throw YAPError();
     }
     Term tm = Yap_CurrentModule();
     ap = getPred(tout, tm, nts);
-    tout = Yap_SaveTerm(tout);
+    while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
+    Term tsaved =  Yap_SaveTerm(MkPairTerm(tout,tnames));
+    tout = HeadOfTerm(tsaved);
     
-    names = new YAPPairTerm(tnames);
+    names = new YAPPairTerm(TailOfTerm (tsaved));
   }
 
   
@@ -183,6 +185,8 @@ public:
     } else {
       ap = RepPredProp(PredPropByAtom(at.a, mod.term()));
     }
+    while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
   }
 
  
@@ -200,6 +204,8 @@ public:
     m =  Yap_CurrentModule();
   ap = RepPredProp(PredPropByFunc(Yap_MkFunctor(Yap_LookupAtom(at.c_str()), arity),
 				m));
+    while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
 }
 
     inline YAPPredicate(const char *at, uintptr_t arity) {   ///< char */arity constructor for predicates.
@@ -208,18 +214,24 @@ public:
 
     ap = RepPredProp(PredPropByFunc(Yap_MkFunctor(Yap_LookupAtom(at), arity),
                                     Yap_CurrentModule()));
+    while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
   };
 
     inline YAPPredicate(const char *at, uintptr_t arity, YAPTerm mod) {   ///< char */module constructor for predicates.
 
     ap = RepPredProp(
         PredPropByFunc(Yap_MkFunctor(Yap_LookupAtom(at), arity), mod.term()));
-  };
+      while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
+};
 
     inline YAPPredicate(const char *at, YAPTerm mod) {   ///< char */module constructor for predicates.
 
     ap = RepPredProp(PredPropByAtom(Yap_LookupAtom(at), mod.term()));
-  }
+     while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
+ }
 
     /// notice that modules are currently treated as atoms, this should change.
   YAPModule module() {   ///< module of a predicate

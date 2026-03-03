@@ -17,7 +17,7 @@
 **/
 
 :- module(yap_hacks, [
-	      trace/1,
+	      ctrace/1,
 	      alarm/3,
 	      choicepoint/7,
 	      code_location/3,
@@ -35,7 +35,6 @@
               fully_strip_module/3,
 	      exception_property/3,
   yap_error_descriptor/2,
-  ctrace/1,
   fully_strip_module/3,
 ctrace/1,
 	      context_variables/1

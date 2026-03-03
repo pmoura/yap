@@ -34,9 +34,9 @@ if ( Python3_Development_FOUND AND SWIG_FOUND)
   set(YAP4PY_PY __main__.py yap4py/yapi.py)
 
   #  configure_file("MANIFEST.in" ${CMAKE_CURRENT_BINARY_DIR}/MANIFEST.in)
-  configure_file(yap4py/__init__.py.in yap4py/__init__.py)
-  configure_file(setup.py.in setup.py)
-  configure_file(pyproject.toml.in pyproject.toml)
+  configure_file(yap4py/__init__.py.in ${CMAKE_CURRENT_BINARY_DIR}/yap4py/__init__.py)
+  configure_file(setup.py.in ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
+  configure_file(pyproject.toml.in ${CMAKE_CURRENT_BINARY_DIR}/pyproject.toml)
 
 
   INCLUDE_DIRECTORIES(${Python3_LIBRARY_DIRS}  ${CMAKE_CURRENT_BINARY_DIR}/yap4py/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/packages/python

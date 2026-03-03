@@ -170,6 +170,8 @@ expand_term( Term, UExpanded,  Expanded) :-
 
 '$prompt_alternatives_on'(determinism).
 
+:- meta_predicate(0,+,+,+,-).
+
 /* Execute a query */
 query_to_answer(G0,Vs,Port, NVs, Gs) :-
     '$query'(G0,Vs,Port),

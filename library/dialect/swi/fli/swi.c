@@ -2193,7 +2193,7 @@ X_API int PL_initialise(int myargc, char **myargv) {
     GLOBAL_PL_Argc = GLOBAL_argc;
     GLOBAL_InitialisedFromPL = true;
   ATOM_nil = YAP_SWIAtomFromAtom(AtomNil);
-
+  }
   return true;
   }
 /*

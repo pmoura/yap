@@ -10,7 +10,8 @@ highlight_text/2,pred_def/4,
 pred_def/2,
 pred_refs/4,
 complete/4,
-highlight_file/2
+highlight_file/2,
+add_dir/2
 
   ]).
 
@@ -133,7 +134,7 @@ complete(Self,_Line,_Pos,Prefix) :-
     completions(Prefix,FCs),
     ( var(Self)-> Self = FCs ; Self.items := FCs ).
 
-    user:add_dir(Self,URI):-
+    add_dir(Self,URI):-
 	string_concat(`file://`, FS, URI),
 	atom_string(F,FS),
 	file_directory_name(F,D),

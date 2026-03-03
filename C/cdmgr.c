@@ -221,6 +221,8 @@ restart:
       goto restart;
     }
     PredEntry *ap = RepPredProp(Yap_GetPredPropByFunc(fun, tmod));
+    while (ap->PredFlags & ProxyPredFlag)
+      ap = ap->PredIsProxyFor ;
     arity_t  arity = ap->ArityOfPE, i;
     CELL *pt = RepAppl(t) + 1;
       for (i = 0; i < arity; ++i)
