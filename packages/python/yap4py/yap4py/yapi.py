@@ -154,11 +154,12 @@ class YAPShell:
         try:
             engine = self.engine
             loop = False
-            engine.q = top_query(engine, query)
-            q = engine.q
+            q = top_query(engine, query)
             for _ in q:
                 if q.done():
-                    return True, q.bindings
+                    q.close()
+                    q = None
+                    return True
                 if loop:
                     continue
                 s = input("more(;), all(*), no(\\n), python(#)?  ").lstrip()
@@ -176,22 +177,20 @@ class YAPShell:
                     break
             if q:
                 q.close()
-                self.engine.q = None
-            print("No (more) answers")
-            return True
+                q = None
+                print("No (more) answers")
+                return True
         except Exception as e:
-            if not self.engine.q:
-                return False, None
-            self.engine.q.close()
-            self.engine.q = None
-            print("Exception",e)
             e.errorNo = 0
+            if q:
+                q.close()
+                q = None
+            print("Exception",e)
             raise
 
     def live(self, engine, **kwargs):
         try:
             loop = True
-            self.engine.q = None
             while loop:
                 try:
                     s = input("?- ")
@@ -228,7 +227,6 @@ class YAPShell:
         self.engine = engine
 
         self.live(engine)
-        self.engine.q = None
 
 
 def main():
