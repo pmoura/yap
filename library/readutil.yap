@@ -36,6 +36,8 @@
 	read_file_to_codes/2,
 	read_file_to_codes/3,
 	read_file_to_string/2,
+                     read_file_to_terms/4,
+                     read_stream_to_terms/4,
                      read_file_to_terms/3,
                      read_stream_to_terms/3,
                      read_file_to_terms/2,
@@ -79,24 +81,44 @@ read_file_to_codes(File, Codes) :-
 	read_stream_to_codes(Stream, Codes, []),
 	close(Stream).
 
-read_file_to_terms(File, Codes, _) :-
-	open(File, read, Stream),
-	prolog_read_stream_to_terms(Stream, Codes, []),
+/**
+   @pred read_file_to_terms( +_Stream_, -Terms, ?Tail, Opts)
+
+   If _Stream_ is a file text stream, unify _Terms_ with
+   the contents of the stream as a difference list of terms. Opts are the arguments used to
+   read the term.
+
+ */
+
+read_file_to_terms(File, Codes, Tail, Opts) :-
+    open(File, read, Stream),
+	read_stream_to_terms(Stream, Codes, Tail, Opts),
 	close(Stream).
+
+/**
+   @pred read_file_to_terms( +_Stream_, -Terms, ?Tail))
+`
+   If _Stream_ is a file text stream, unify _Terms_ with
+   the contents of the stream as a difference list of terms.
+ ,
+
+ */
+read_file_to_terms(File, Codes, Tail) :-
+    open(File, read, Stream),
+	read_stream_to_terms(Stream, Codes, Tail, []),
+	close(Stream).
+
+/**
+   @pred read_file_to_terms( +_Stream_, -Codes)
+
+   If _Stream_ is a file text stream, unify _String_ with
+   the contents of the stream as a list of terms.
+
+ */
 
 read_file_to_terms(File, Codes) :-
-	open(File, read, Stream),
-	read_stream_to_terms(Stream, Codes, []),
+    open(File, read, Stream),
+	read_stream_to_terms(Stream, Codes, [], []),
 	close(Stream).
-
-
-prolog_read_stream_to_terms(Stream, Terms, Terms0) :-
-	read(Stream, Term),
-	(Term == end_of_file ->
-	    Terms = Terms0
-	;
-	    Terms = [Term|TermsI],
-	    prolog_read_stream_to_terms(Stream, TermsI, Terms0)
-	).
 
 %% @}

@@ -359,6 +359,55 @@ static Int read_stream_to_codes(USES_REGS1) {
 }
 
 /**
+   @pred read_stream_to_chars( +_Stream_, -Codes, ?_Tail_)
+
+   If _Stream_ is a readable text stream, unify _String_ with
+   the difference list  storing the codes forming the first line of the stream.
+
+     If the stream is exhausted, unify _Codes_ with `end_of_file`.
+ */
+static Int read_stream_to_chars(USES_REGS1) {
+  int sno = Yap_CheckStream(ARG1, Input_Stream_f,
+                            "reaMkAtomTerm (AtomEofd_line_to_codes/2");
+  CELL *HBASE = HR;
+  CELL *h0 = &ARG4;
+
+  if (sno < 0)
+    return FALSE;
+  while (!(GLOBAL_Stream[sno].status & Past_Eof_Stream_f)) {
+    /* skip errors */
+    Int ch = GLOBAL_Stream[sno].stream_getc(sno);
+    Term t;
+    if (ch == EOFCHAR)
+      break;
+    t = MkCharTerm(ch);
+    h0[0] = AbsPair(HR);
+    *HR = t;
+    HR += 2;
+    h0 = HR - 1;
+    yhandle_t news, news1, st = Yap_StartSlots();
+    if (HR >= ASP - 1024) {
+      RESET_VARIABLE(h0);
+      news = Yap_InitSlot(AbsPair(HBASE));
+      news1 = Yap_InitSlot((CELL)(h0));
+      if (!Yap_dogc(PASS_REGS1)) {
+        Yap_Error(RESOURCE_ERROR_STACK, ARG1, "read_stream_to_codes/3");
+        return false;
+      }
+      /* build a legal term again */
+      h0 = (CELL *)(Yap_GetFromSlot(news1));
+      HBASE = RepPair(Yap_GetFromSlot(news));
+    }
+    Yap_CloseSlots(st);
+  }
+  if (HR == HBASE)
+    return Yap_unify(ARG2, ARG3);
+  RESET_VARIABLE(HR - 1);
+  Yap_unify(HR[-1], ARG3);
+  return Yap_unify(AbsPair(HBASE), ARG2);
+}
+
+/**
    @pred read_stream_to_string( +_Stream_, -Codes)
 
    If _Stream_ is a readable text stream, unify _String_ with
@@ -400,95 +449,81 @@ static Int read_stream_to_string(USES_REGS1) {
 }
 
 
-/**
-   @pred read_stream_to_terms( +_Stream_, -Terms, ?_Tail_)
-
-   If _Stream_ is a readable text stream, unify _String_ with
-   the difference list  storing the Prolog terms in the stream.
-
-     If the stream is exhausted, unify _Codes_ with `end_of_file`.
- */
-
-static Int read_stream_to_terms(USES_REGS1) {
-  int sno = Yap_CheckStream(ARG1, Input_Stream_f, "read_line_to_codes/2");
-  Term t, r;
-  yhandle_t hdl, hd3;
-
-  if (sno < 0)
-    return FALSE;
-
-  hd3 =  Yap_InitSlot((ARG3));
- Term td = TermDec10;
- Term opts =  MkPairTerm(Yap_MkApplTerm(FunctorSyntaxErrors,1,&td),TermNil);
-  hdl = Yap_InitSlot(ARG2);
+static Term
+stream_to_terms(int sno, Term tail, Term opts) {
+  Term r;
+  Term td = TermDec10;
+  opts =  MkPairTerm(Yap_MkApplTerm(FunctorSyntaxErrors,1,&td),opts);
   while (!(GLOBAL_Stream[sno].status & Past_Eof_Stream_f)) {
+    yhandle_t yopts = Yap_InitHandle(opts);
+    yhandle_t ytail = Yap_InitHandle(tail);
     r = Yap_read_term(sno, opts, 2);
-      ;
+    opts = Yap_PopHandle(yopts);
+    tail = Yap_PopHandle(ytail);
       //      Yap_DebugPlWriteln(r);
     // just ignore failure
-      t = Deref(Yap_GetFromHandle(hdl));
     if (Deref(r) == TermEOfCode) {
-      break;
+      return tail;
+
     } else {    
-      if (IsVarTerm(t)) {
-	Yap_unify(t, Yap_MkNewPairTerm());
-	t = Deref(t);
-      } else if (!IsPairTerm(t))
-	return false;
-      Term h = HeadOfTerm(t);
-	if (!Yap_unify(h,r))
-	    return false;
-	//          Yap_DebugPlWriteln(t);
-  Yap_PutInHandle(hdl,TailOfTerm(t));
+      tail = MkPairTerm(r, tail);
     }
   }
-  return Yap_unify( Yap_GetFromHandle(hdl), Yap_GetFromHandle(hd3));
+  return tail;
+}
+  
+
+/**
+   @pred read_stream_to_terms( +_Stream_, -Terms, ?Tail, +Opts)
+
+   If _Stream_ is a readable text stream, unify _Terms_ with
+   the difference list  storing the Prolog terms in the stream.
+
+ */
+static Int read_stream_to_terms4(USES_REGS1) {
+
+  int sno = Yap_CheckStream(ARG1, Input_Stream_f, "read_stream_to_terms/4");
+  if (sno < 0)
+    return false;
+  return Yap_unify( ARG1, stream_to_terms(sno,ARG3,ARG4));
 }
 
 
 /**
-   @pred read_file_to_string( +_Stream_, -Codes)
-
-   If _Stream_ is a file text stream, unify _String_ with
-   the contents of the stream.
+   @pred read_stream_to_terms( +_Stream_, -Terms, ?Tail)
+`
+   If _Stream_ is a stream text stream, unify _Terms_ with
+   the contents of the stream as a difference list of terms.
+ ,
 
  */
-static Int read_file_to_string(USES_REGS1) {
- char *s;
- must_be_atom(Deref(ARG1));
-  s  = RepAtom(AtomOfTerm(Deref(ARG1)))->StrOfAE;
- 
-  int fildes  = open(s,O_RDONLY);
-  if (fildes<0) {
-    Yap_ThrowError(SYSTEM_ERROR_OPERATING_SYSTEM, ARG1, "error %s while opening %s", strerror(errno), s);
-  }
-  struct stat buf;
-  if (fstat(fildes, &buf) < 0) {
-    Yap_ThrowError(SYSTEM_ERROR_OPERATING_SYSTEM, ARG1, "error %s while opening %s", strerror(errno), s); 
-}
-  size_t sz = buf.st_size;
-  while (HR > ASP - (sz/sizeof(CELL)+4096)) {
-     if (!Yap_dogc(PASS_REGS1)) {
-        Yap_Error(RESOURCE_ERROR_STACK, ARG1, "read_stream_to_codes/3");
-        return false;
-      }
-    }
-  Term t = MkStringTerm("");
-  if (sz) {
-    s = (char*)StringOfTerm(t);
-    if (read(fildes,s, sz) < 0) {
-      Yap_ThrowError(SYSTEM_ERROR_OPERATING_SYSTEM, ARG1, "error %s while opening %s", strerror(errno), s); 
-    }
-    s[sz]='\0';
-  }
-    return Yap_unify(ARG2,t);
+static Int read_stream_to_terms3(USES_REGS1) {
+
+  int sno = Yap_CheckStream(ARG1, Input_Stream_f, "read_stream_to_terms/3");
+  if (sno < 0)
+    return false;
+  return Yap_unify( ARG2, stream_to_terms(sno,TermNil, ARG3));
 }
 
+/**
+   @pred read_stream_to_terms( +_Stream_, -Codes)
+
+   If _Stream_ is a stream text stream, unify _String_ with
+   the contents of the stream as a list of terms.
+*/
+ static Int read_stream_to_terms2(USES_REGS1) {
+
+  int sno = Yap_CheckStream(ARG1, Input_Stream_f, "read_stream_to_terms/2");
+  if (sno < 0)
+    return false;
+  return Yap_unify( ARG2, stream_to_terms(sno,TermNil, TermNil));
+}
 
 
 
 void Yap_InitReadUtil(void) {
   CACHE_REGS
+
 
 
     Term cm = CurrentModule;
@@ -500,11 +535,14 @@ void Yap_InitReadUtil(void) {
   Yap_InitCPred("read_line_to_chars", 3, read_line_to_chars, SyncPredFlag);
   Yap_InitCPred("read_line_to_chars", 2, read_line_to_chars2, SyncPredFlag);
   Yap_InitCPred("read_stream_to_codes", 3, read_stream_to_codes, SyncPredFlag);
-  Yap_InitCPred("read_stream_to_terms", 3, read_stream_to_terms, SyncPredFlag);
-  Yap_InitCPred("read_file_to_string", 2, read_file_to_string, SyncPredFlag);
-  Yap_InitCPred("read_stream_to_string", 2, read_stream_to_string, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_terms", 4, read_stream_to_terms4, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_terms", 3, read_stream_to_terms3, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_terms", 2, read_stream_to_terms2, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_strings", 3, read_stream_to_string, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_chars", 2, read_stream_to_string, SyncPredFlag);
   CurrentModule = cm;
 }
 
 /// @}
   
+
