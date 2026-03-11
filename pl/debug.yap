@@ -314,7 +314,7 @@ yap_hacks:trace(MGoal, top, _),
 '$spy'(MGoal,inner) :-
     yap_hacks:trace(MGoal,inner, _). 
 
-yap_hacks:trace(MGoal) :-
+yap_hacks:trace_goal(MGoal) :-
     '$spy'(MGoal, outer, _).
 
 /**
@@ -478,7 +478,7 @@ yap_hacks:trace(MG, Ctx, GN) :-
     setup_call_cleanup(
  '$stop_debugger',
     '$execute'(M:G),    
- '$tart_debugger'
+ '$start_debugger'
     ).
 '$debug_goal'(G, M, Ctx, GN, CP) :-
     '$id_goal'(GoalNumber),
@@ -489,7 +489,7 @@ yap_hacks:trace(MG, Ctx, GN) :-
     setup_call_cleanup(
  '$stop_debugger',
     '$execute'(M:G),   
- '$tart_debugger'
+ '$start_debugger'
     )
       ;
       
@@ -512,7 +512,7 @@ yap_hacks:trace(MG, Ctx, GN) :-
    setup_call_cleanup(
  '$stop_debugger',
     '$execute'(M:G),  
- '$tart_debugger'
+ '$start_debugger'
     ).
 '$step_goal'(G,M,Ctx, GoalNumber) :-
     '$predicate_type'(G,M,T),
@@ -1147,7 +1147,7 @@ trace_error(Event,_,_,_,_,_) :-
 '$debugger_skip_loop_spy2'(CPs,CPs).
 
 '$debugger_prepare_meta_arguments'([], [], []).
-'$debugger_prepare_meta_arguments'([A|As], [N|Ms], [yap_hacks:trace(call(MA:GA))|NAs]) :-
+'$debugger_prepare_meta_arguments'([A|As], [N|Ms], [yap_hacks:trace((MA:GA),outer,_)|NAs]) :-
     '$yap_strip_module'(A,MA,GA),
     integer(N),
     N>=0,
@@ -1180,7 +1180,7 @@ watch_goal(G) :-
 
 
 trace(G) :-
-    yap_hacks:trace(G,outer).
+    yap_hacks:trace_goal(G,outer).
 
 '$debugging' :- nb_getval(running_debugger_code, true  ).
 %% @}
