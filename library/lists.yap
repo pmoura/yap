@@ -18,6 +18,7 @@
 	   max_list/2,
 	   list_to_set/2,
 	   member/2,
+identical_member/2,
 	   memberchk/2,
 	   min_list/2,
 	   nextto/3,

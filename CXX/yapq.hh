@@ -378,7 +378,7 @@ public:
 template<class STREAM>
 struct STDIOAdapter
 {
-    static FILE* yield(STREAM* stream)
+ls    static FILE* yield(STREAM* stream)
     {
       // assert(stream != NULL);
 
@@ -438,7 +438,6 @@ struct STDIOAdapter
       mod =YAPModule(*module);
     else
       mod = YAPModule();
-
     return goal(YAPApplTerm("load_files",{YAPApplTerm("string",{s})}), mod
 , true);
   }

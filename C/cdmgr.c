@@ -150,7 +150,7 @@ Term Yap_PredicateToIndicator(PredEntry *pe) {
 
 PredEntry *Yap_get_pred(Term t, Term tmod, const char *pname) {
   Term t0 = t;
-
+  tmod = tmod==PROLOG_MODULE?TermProlog:tmod;
 restart:
   if (IsVarTerm(t)) {
     Yap_ThrowError(INSTANTIATION_ERROR, t0, pname);
@@ -190,6 +190,7 @@ restart:
 
 PredEntry *Yap_MkGoalFromTerm(Term t, Term tmod, const char *pname) {
   Term t0 = t;
+ tmod =  tmod==PROLOG_MODULE?TermProlog:tmod;
 
 restart:
   if (IsVarTerm(t)) {
@@ -247,6 +248,7 @@ restart:
 PredEntry *get_full_pred(Term *tp, Term *tmodp, const char *pname USES_REGS) {
   Term t0 = *tp, t = t0;
   Term tmod = CurrentModule;
+ tmod =  tmod==PROLOG_MODULE?TermProlog:tmod;
 
 restart:
   if (IsVarTerm(t)) {
@@ -295,6 +297,7 @@ restart:
 PredEntry *Yap_new_pred(Term t, Term tmod, bool mkLU, const char *pname) {
    PredEntry *rc;
    Term t0 = t;
+ tmod =  tmod==PROLOG_MODULE?TermProlog:tmod;
 
  restart:
   t = Yap_YapStripModule(t,&tmod);
