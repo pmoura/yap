@@ -73,7 +73,7 @@ static void add_modules(USES_REGS1) {
   } else {
     py_Context = PyDict_New();
   }
-  Py_f2p = PythonLookup("f2p", NULL);
+  Py_f2p = PythonLookup("f2p",NULL, NULL);
   if (!Py_f2p)
     Py_f2p = PyList_New(16);
   Py_INCREF(Py_f2p);

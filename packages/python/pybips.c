@@ -10,7 +10,7 @@
 
 #include "py4yap.h"
 #include "pyerrors.h"
-
+static PyObject *op(const char *s, PyObject *pArgs);
 
 static PyObject *read_symbol( PyObject *ctx, const char *s) {
   PyObject *out;
@@ -34,11 +34,11 @@ static PyObject *read_symbol( PyObject *ctx, const char *s) {
       }
     }
      if (PyErr_Occurred())
-       PyErr_Clear();
-    return NULL;
+       PyErr_Clear(); 
+   return NULL;
     }
 
-static PyObject *Lookup(PyObject *ctx, const char *s) {
+static PyObject *Lookup(PyObject *ctx, PyObject *pArgs,const char *s) {
   PyObject *out;
     if (strcmp(s, "none") == 0)
       return Py_None;
@@ -53,6 +53,8 @@ static PyObject *Lookup(PyObject *ctx, const char *s) {
     }
     else if (strcmp(s, "{}") == 0) {
       out = PyDict_New();
+      return out;
+    } else if ((out = op( s, pArgs))) {
       return out;
     }
     if (ctx) {
@@ -77,9 +79,9 @@ static PyObject *Lookup(PyObject *ctx, const char *s) {
 }
 
 
-PyObject *PythonLookup(const char *s, PyObject *ctx) {
+PyObject *PythonLookup(const char *s,PyObject * pArgs,PyObject *ctx) {
   PyObject *o;
-  o = Lookup(ctx, s);
+  o = Lookup(ctx, pArgs,s);
   return o;
 }
 
@@ -721,67 +723,67 @@ static PyObject *bip_int(term_t t) {
 static PyObject *op(const char *s, PyObject *pArgs) {
   if (!strcmp("+",s)) {
     if (PySequence_Check(PySequence_GetItem(pArgs,0)))
-      return Lookup(py_Ops,"concat");
+      return Lookup(py_Ops,pArgs,"concat");
     else
-      return  Lookup(py_Ops, "add");
+      return  Lookup(py_Ops,pArgs, "add");
     }
     if (!strcmp("in",s)) {
-      return  Lookup(py_Ops, "contains");
+      return  Lookup(py_Ops, pArgs,"contains");
     }
     if (!strcmp("/",s)) {
-      return  Lookup(py_Ops, "truediv");
+      return  Lookup(py_Ops,pArgs, "truediv");
     }
     if (!strcmp("//",s)) {
-	   return  Lookup(py_Ops, "floordiv");
+	   return  Lookup(py_Ops,pArgs, "floordiv");
 	 }
 		     
  	 if (!strcmp("&",s)) {
-	   return  Lookup(py_Ops, "and_");
+	   return  Lookup(py_Ops,pArgs, "and_");
 	 }
  	 if (!strcmp("^",s)) {
-	   return  Lookup(py_Ops, "xor");
+	   return  Lookup(py_Ops,pArgs, "xor");
 	 }
   	 if (!strcmp("~",s)) {
-	   return  Lookup(py_Ops, "xor");
+	   return  Lookup(py_Ops,pArgs, "xor");
 	 }
   	 if (!strcmp("|",s)) {
-	   return  Lookup(py_Ops, "or_");
+	   return  Lookup(py_Ops,pArgs, "or_");
 	 }
   	 if (!strcmp("**",s)) {
-	   return  Lookup(py_Ops, "pow");
+	   return  Lookup(py_Ops,pArgs, "pow");
 	 }
   	 if (!strcmp("is",s)) {
-	   return  Lookup(py_Ops, "is_");
+	   return  Lookup(py_Ops,pArgs, "is_");
 	 }
   	 if (!strcmp("*",s)) {
-	   return  Lookup(py_Ops, "mul");
+	   return  Lookup(py_Ops, pArgs,"mul");
 	 }
   	 if (!strcmp("@",s)) {
-	   return  Lookup(py_Ops, "matmul");
+	   return  Lookup(py_Ops, pArgs,"matmul");
 	 }
   	 if (!strcmp("-",s)) {
-	   return  Lookup(py_Ops, "neg");
+	   return  Lookup(py_Ops, pArgs,"neg");
 	 }
   	 if (!strcmp(">>",s)) {
-	   return  Lookup(py_Ops, "rshift");
+	   return  Lookup(py_Ops,pArgs, "rshift");
 	 }
   	 if (!strcmp("%",s)) {
-	   return  Lookup(py_Ops, "mod");
+	   return  Lookup(py_Ops,pArgs, "mod");
 	 }
   	 if (!strcmp("<",s)) {
-	   return  Lookup(py_Ops, "lt");
+	   return  Lookup(py_Ops,pArgs, "lt");
 	 }
   	 if (!strcmp("==",s)) {
-	   return  Lookup(py_Ops, "eq");
+	   return  Lookup(py_Ops,pArgs, "eq");
 	 }
   	 if (!strcmp("!=",s)) {
-	   return  Lookup(py_Ops, "ne");
+	   return  Lookup(py_Ops, pArgs,"ne");
 	 }
   	 if (!strcmp(">=",s)) {
-	   return  Lookup(py_Ops, "ge");
+	   return  Lookup(py_Ops,pArgs, "ge");
 	 }
   	 if (!strcmp(">",s)) {
-	   return  Lookup(py_Ops, "gt");
+	   return  Lookup(py_Ops,pArgs, "gt");
 	 }
 	 return NULL;
 }
@@ -834,7 +836,7 @@ static PyObject *op(const char *s, PyObject *pArgs) {
 		Py_INCREF(pArg);
 	      }
 	    }
-	    PyObject *c = PythonLookup(s, o);
+	    PyObject *c = PythonLookup(s,out, o);
 
 	    if (c && PyCallable_Check(c)) {
 	      PyObject *n = PyTuple_New(arity);
@@ -948,7 +950,7 @@ static PyObject *op(const char *s, PyObject *pArgs) {
 	    fprintf(stderr,"\n" );
 #endif
 	    PyObject *
-		ys = PythonLookup(s, context);
+		ys = PythonLookup(s,pArgs, context);
 	    if (!ys)  ys =PyUnicode_FromString(s);
 	    if ( ys && (PyCallable_Check(ys) || (ys=op(s,pArgs)))) {
 		    if (!pArgs)

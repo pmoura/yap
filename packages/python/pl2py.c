@@ -85,12 +85,12 @@ void YEM(const char *exp, int line, const char *file, const char *code) {
 static PyObject *s_to_python(const char *s, bool eval, PyObject *p0) {
   PyObject *o;
   if (eval) {
-    o = PythonLookup(s, p0);
+    o = PythonLookup(s, NULL, p0);
     /*     if (!o)
            return o;
     */
   } else {
-    o = PythonLookup(s, NULL);
+    o = PythonLookup(s,NULL, NULL);
   }
   if (o) {
     Py_INCREF(o);
@@ -157,12 +157,12 @@ switch (YAP_TagOfTerm(t)) {
       return PyDict_New();
     }
     s = YAP_AtomName(at);
-    o = PythonLookup(s, o);
+    o = PythonLookup(s,NULL, o);
     while (o && PyUnicode_Check(o) ) {
       const char *s = PyUnicode_AsUTF8(o);
       if (!legal_symbol(s))
 	return  PyUnicode_FromString(s);
-      PyObject *ne = PythonLookup(s,NULL);
+      PyObject *ne = PythonLookup(s,NULL,NULL);
       if (ne && ne != Py_None )
 	o = ne;
       else
@@ -321,7 +321,7 @@ switch (YAP_TagOfTerm(t)) {
 	YAP_Term targ = YAP_ArgOfTerm(1,t);
 	s = AtomTermName(targ);
 	/* return __main__,s */
-	return PythonLookup(s,o);
+	return PythonLookup(s,NULL,o);
       }
       if (fun == FunctorBrackets) {
 

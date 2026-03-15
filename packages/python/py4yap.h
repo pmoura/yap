@@ -340,7 +340,7 @@ X_API extern bool do_init_python(void);
 extern PyObject *find_term_obj(PyObject *ob, YAP_Term *yt, bool eval);
 //extern PyObject PyInit_yap(void);
 
-extern PyObject *PythonLookup(const char *s, PyObject *o);
+extern PyObject *PythonLookup(const char *s, PyObject * pArgs, PyObject *o);
 
 extern PyObject *assign_symbol(const char *s, PyObject *, PyObject *);
 
