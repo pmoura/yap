@@ -22,10 +22,9 @@ set(YAP_PATCH_VERSION 2)
 include(CMakeToolsHelpers OPTIONAL)
 
 
-include(FeatureSummary)
-
 set(YAP_APP_DIR "${CMAKE_SOURCE_DIR}/../yaplib")
-cmake_policy(VERSION 3.18)
+
+include(FeatureSummary)
 
 set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" "${CMAKE_SOURCE_DIR}/cmake" "${CMAKE_SOURCE_DIR}/packages/gecode/cmake")
 
@@ -101,6 +100,9 @@ if (POLICY CMP0068)
 endif()
 if (POLICY CMP0075)
     cmake_policy(SET CMP0075 NEW)
+endif ()
+if (POLICY CMP0183)
+    cmake_policy(SET CMP0183 NEW)
 endif ()
 
 #YAP needs these directories
