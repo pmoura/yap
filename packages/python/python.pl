@@ -98,7 +98,7 @@
  *
  */
     F() :-
-  python:python_proc(F() ).
+  python:python_proc(F ).
 
 
     /**
