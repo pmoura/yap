@@ -423,7 +423,7 @@ don't forget to also add in qly.h
  BinaryPredFlag = (((uint64_t)1)<<7),   //< test predicate
  TabledPredFlag = (((uint64_t)1)<<6), //< is tabled
  SequentialPredFlag = (((uint64_t)1)<<5), //< may not create parallel choice points!
-   ProxyPredFlag=   (((uint64_t)1)<<4), //< Predicate is a proxy for some other pred.
+ ProxyPredFlag=   (((uint64_t)1)<<4), //< Predicate is a proxy for some other pred.
  BackCPredFlag = (((uint64_t)1)<<3), //<        Myddas Imported pred
  ModuleTransparentPredFlag = (((uint64_t)1)<<2),
  SWIEnvPredFlag = (((uint64_t)1)<<1), //< new SWI interface

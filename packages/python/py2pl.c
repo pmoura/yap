@@ -313,30 +313,36 @@ foreign_t assign_to_symbol(term_t t, PyObject *e) {
 bool
 assign_obj(PyObject* ctx, PyObject *val, YAP_Term yt, bool eval) {
   YAP_Term hd;
+
   Term t = yt;
-  ctx = find_term_obj(ctx,&t,val);
+  //  ctx = find_term_obj(ctx,&t,val);
   // Yap_DebugPlWriteln(yt);
-  while (IsPairTerm(yt))     {
+      ssize_t len;
+  if (IsPairTerm(yt))     {
+    Term t0 = yt, *tail;
+      if ((len = Yap_SkipList(&t0, &tail)) > 0 && *tail != TermNil) {
+	while (IsPairTerm(yt)) { // f(X).g(X)
+	  ctx = yap_to_python(HeadOfTerm(yt), eval, ctx, false);
+	  yt = TailOfTerm(yt);
+	}
+      }}
+  if (IsPairTerm(yt))     {
       Term t0 = yt;
       Term *tail;
-      ssize_t len;
       if ((len = Yap_SkipList(&t0, &tail)) > 0 && *tail == TermNil) {
 	if (!PyList_Check(val) || PyList_GET_SIZE(val)!=len)
 	  return false;
 	int i = 0;
-  while (IsPairTerm(yt)) { // f(X).g(X)
-    hd = HeadOfTerm(yt);
-    PyObject *p = PyList_GET_ITEM(val,i);
-    python_assign(hd, p, ctx);
-    yt = TailOfTerm(yt);
-    i++;
+	while (IsPairTerm(yt)) { // f(X).g(X)
+	  hd = HeadOfTerm(yt);
+	  PyObject *p = PyList_GET_ITEM(val,i);
+	  assign_obj(ctx,p, hd, true);
+	  yt = TailOfTerm(yt);
+	  i++;
+	}
+	return true;
+      } 
   }
-  return true;
-      }
-  ctx = yap_to_python(HeadOfTerm(yt), eval, ctx, false);
-  yt = TailOfTerm(yt);
-  }
-  
   if (IsAtomTerm(yt)) {
     const char *s;
     s=AtomTermName(yt);
@@ -364,19 +370,19 @@ assign_obj(PyObject* ctx, PyObject *val, YAP_Term yt, bool eval) {
       PySequence_SetSlice(ctx,k,l,val);
       return true;
     }
-  return set_item( key,  ctx, val, eval, false);
+    return set_item( key,  ctx, val, eval, false);
   }
 
-  ssize_t len, i;
-if (IsApplTerm(yt) && PyTuple_Check(val) &&
+  if (IsApplTerm(yt) && PyTuple_Check(val) &&
       ArityOfFunctor(FunctorOfTerm(yt)) ==
     (len = PyTuple_GET_SIZE(val))) {
+    int i;
   for (i=0; i<len;i++) {
     PyObject *p = PyTuple_GET_ITEM(val,i);
-    python_assign(ArgOfTerm(i+1,yt), p, ctx);
-    }
+    assign_obj(ctx, p,ArgOfTerm(i+1,yt), true);
+  }
   return true;
- }
+  }
   return false;
 }
 
@@ -398,14 +404,3 @@ if (IsApplTerm(yt) && PyTuple_Check(val) &&
  * Note that this is an auxiliary routine to the Prolog
  *python find_assign.
  */
-bool python_assign(YAP_Term t, PyObject *exp, PyObject *context) {
-  // Yap_DebugPlWriteln(yt);
-  PyErr_Clear();
-  if (IsVarTerm(t)) {
-    // if (context == NULL) // prevent a.V= N*N[N-1]
-    return Yap_unify(t,pythonToYAP(exp));
-  }
-
- return assign_obj(context,exp, t, true);
-
-}

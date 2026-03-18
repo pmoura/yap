@@ -979,8 +979,8 @@ set__(M,V) :-
 
     !,
     (
-	number(V)
-    -sss>
+    number(V)
+    ->
     matrix_set_all(M,V)
     ;
     is_list(V)

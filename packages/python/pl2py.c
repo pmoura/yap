@@ -239,7 +239,11 @@ switch (YAP_TagOfTerm(t)) {
           }
           return out;
       } else {
-          o = find_term_obj(o, &t, eval);
+          while (IsPairTerm(t)) {
+              Term ai = HeadOfTerm(t);
+              o = yap_to_python(ai, eval, o, false);
+              t = TailOfTerm(t);
+          }
           return yap_to_python(*tail, eval, o, cvt);
       }
   }
@@ -320,14 +324,13 @@ switch (YAP_TagOfTerm(t)) {
 	const char *s = NULL;
 	YAP_Term targ = YAP_ArgOfTerm(1,t);
 	s = AtomTermName(targ);
-	/* return __main__,s */
 	return PythonLookup(s,NULL,o);
       }
       if (fun == FunctorBrackets) {
 
 	PyObject *rc;
 	YAP_Term targ = YAP_ArgOfTerm(1,t);
-	PyObject *ys = yap_to_python(targ, true, o, true);
+	PyObject *ys = yap_to_python(targ, false, o, true);
 	CHECK_CALL(ys, PyTuple_New(0), NULL);
 	return rc;
       }

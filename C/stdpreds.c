@@ -652,7 +652,8 @@ static bool valid_prop(Prop p,
   }
   PredEntry *pe = RepPredProp(p);
   if (task == TermUndefined)
-    return pe->cs.p_code.TrueCodeOfPred->opc == UNDEF_OPCODE;
+    return pe->cs.p_code.TrueCodeOfPred->opc == UNDEF_OPCODE &&
+      !(pe->PredFlags &( TabledPredFlag|MultiFileFlag|MetaPredFlag));
   if ((pe->PredFlags & HiddenPredFlag)) {
     return false;
   }

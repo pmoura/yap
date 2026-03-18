@@ -448,6 +448,47 @@ static Int read_stream_to_string(USES_REGS1) {
     return Yap_unify(t, ARG2);
 }
 
+/**
+   @pred read_stream_to_atom( +_Stream_, -Codes)
+
+   If _Stream_ is a readable text stream, unify _Atom_ with
+   the contents of the stream.
+
+     If the stream is exhausted, unify _Codes_ with `end_of_file`.
+ */
+static Int read_stream_to_atom(USES_REGS1) {
+  int sno = Yap_CheckStream(ARG1, Input_Stream_f,
+                            "reaMkAtomTerm (AtomEofd_line_to_codes/2");
+ size_t sz=4096;
+  char *buf =malloc(sz), *b = buf;
+
+  Term t;
+  if (sno < 0)
+    return false;
+  while (!(GLOBAL_Stream[sno].status & Past_Eof_Stream_f)) {
+    Int ch = GLOBAL_Stream[sno].stream_getc(sno);
+    if (ch == EOF)
+      break;
+    *b++ = ch;
+    if (b-buf==sz-1) {
+       size_t n=b-buf;
+      sz+=4096;
+      buf = realloc(buf,sz);
+      b=buf+n;
+            /* build a legal term again */
+  }
+  }
+    b[0]='\0';
+    while (HR > ASP - (sz/sizeof(CELL)+4096)) {
+     if (!Yap_dogc(PASS_REGS1)) {
+        Yap_Error(RESOURCE_ERROR_STACK, ARG1, "read_stream_to_codes/3");
+        return false;
+     }
+    }
+    t = MkAtomTerm(Yap_LookupAtom(buf));
+    return Yap_unify(t, ARG2);
+}
+
 
 static Term
 stream_to_terms(int sno, Term tail, Term opts) {
@@ -538,8 +579,9 @@ void Yap_InitReadUtil(void) {
   Yap_InitCPred("read_stream_to_terms", 4, read_stream_to_terms4, SyncPredFlag);
   Yap_InitCPred("read_stream_to_terms", 3, read_stream_to_terms3, SyncPredFlag);
   Yap_InitCPred("read_stream_to_terms", 2, read_stream_to_terms2, SyncPredFlag);
-  Yap_InitCPred("read_stream_to_strings", 3, read_stream_to_string, SyncPredFlag);
-  Yap_InitCPred("read_stream_to_chars", 2, read_stream_to_string, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_string", 2, read_stream_to_string, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_atom", 2, read_stream_to_atom, SyncPredFlag);
+  Yap_InitCPred("read_stream_to_chars", 3, read_stream_to_chars, SyncPredFlag);
   CurrentModule = cm;
 }
 

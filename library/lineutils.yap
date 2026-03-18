@@ -25,7 +25,6 @@
 	   fields/3,
 	   glue/3,
 	   copy_line/2,
-	   filter/1,
 	   filter/3,
 	   file_filter/3,
 	   filter_chars/3,
@@ -57,7 +56,6 @@ available by loading the
 */
 
 :- meta_predicate
-	filter(2),
 	filter(+,+,2),
 	file_filter(+,+,2),
 	filter_atom(+,+,2),
@@ -708,6 +706,30 @@ file_filter_string(Inp, Out, Command) :-
 	open(Inp, read, StreamInp, [alias(filter_string_input)]),
 	open(Out, write, StreamOut),
 	filter_string(StreamInp, StreamOut, Command),
+	close(StreamInp),
+	close(StreamOut).
+
+/**
+  * @pred file_filter_atom(+ _FileIn_, + _FileOut_, + _Goal_)  is meta
+  *
+  * @param _FileIn_  File to process
+  * @param _FileOut_ Output file, often user_error
+  * @param _Goal_ to be metacalled, receives FileIn and FileOut as
+  * extra arguments
+  *
+  * @return succeeds
+
+  For every line  _LineIn_ in file  _FileIn_, execute
+  `call(Goal,LineIn,LineOut)`, and output  _LineOut_ to file
+  _FileOut_.
+
+  The input stream is accessible through the alias `filter_atom_input`, and
+  the output stream is accessible through `filter_atom_output`.
+*/
+file_filter_atom(Inp, Out, Command) :-
+	open(Inp, read, StreamInp, [alias(filter_atom_input)]),
+	open(Out, write, StreamOut),
+	filter_atom(StreamInp, StreamOut, Command),
 	close(StreamInp),
 	close(StreamOut).
 

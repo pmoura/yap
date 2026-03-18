@@ -220,10 +220,6 @@ int_action(h) :-
 
 
 
-'$start_creep'(Mod:G) :-
-    current_choice_point(CP),
-    '$trace_goal'(G, Mod, outer ,_,CP).
-
 '$no_creep_call'('$execute_clause'(G,Mod,Ref,CP),_) :- !,
 	'$execute_clause'(G,Mod,Ref,CP).
 '$no_creep_call'('$execute0'(M:G),_) :- !,

@@ -137,7 +137,7 @@ static foreign_t prolog_list_to_python_list(YAP_Term plist, YAP_Term pyt, YAP_Te
   if (IsVarTerm(tlen)) {
     Yap_unify(tlen, MkIntTerm(sz));
   } else {
-    python_assign(tlen, PyLong_FromUnsignedLong(sz), NULL);
+    assign_obj(NULL,PyLong_FromUnsignedLong(sz), tlen, true);
   }
   pyErrorAndReturn( true);
 }

@@ -302,19 +302,19 @@ be lost.
 '$spy'(MGoal,outer) :-
     setup_call_catcher_cleanup(
  '$start_debugger',
-yap_hacks:trace(MGoal, outer, GN),
+'$debugger':trace(MGoal, outer, GN),
 Port,
  '$debug_next'(Port, outer, GN)).
 '$spy'(MGoal,top) :-
     setup_call_cleanup(
  '$start_debugger',
-yap_hacks:trace(MGoal, top, _),
+'$debugger':trace(MGoal, top, _),
  '$stop_debugger'
 ).
 '$spy'(MGoal,inner) :-
-    yap_hacks:trace(MGoal,inner, _). 
+    '$debugger':trace(MGoal,inner, _). 
 
-yap_hacks:trace_goal(MGoal) :-
+'$debugger':trace_goal(MGoal) :-
     '$spy'(MGoal, outer, _).
 
 /**
@@ -331,7 +331,7 @@ a  *
 */
 %%! The first case matches system_predicates or zip
 %    trace_goal(G,M, inner, _GoalNumberN, _CP0).
-yap_hacks:trace(MG, Ctx, GN) :-
+'$debugger':trace(MG, Ctx, GN) :-
     strip_module(MG,M,G),
     nb_setval(creep,creep),
     nb_setval('$spy_on',stop),
@@ -1120,14 +1120,14 @@ trace_error(Event,_,_,_,_,_) :-
 
 
 '$cps'([CP|CPs]) :-
-    yap_hacks:choicepoint(CP,_A_,_B,_C,_D,_E,_F),
+    '$debugger':choicepoint(CP,_A_,_B,_C,_D,_E,_F),
     '$cps'(CPs).
 '$cps'([]).
 
 
 '$debugger_skip_debug_goal'([],[]).
 '$debugger_skip_debug_goal'([CP|CPs],CPs1) :-
-    yap_hacks:choicepoint(CP,_,yap_hacks,'$debug_goal',5,(_;_),_),
+    '$debugger':choicepoint(CP,_,'$debugger','$debug_goal',5,(_;_),_),
     !,
     '$debugger_skip_debug_goal'(CPs,CPs1).
 '$debugger_skip_debug_goal'([CP|CPs],[CP|CPs1]) :-
@@ -1135,19 +1135,19 @@ trace_error(Event,_,_,_,_,_) :-
     '$debugger_skip_debug_goal'(CPs,CPs1).
 
 '$debugger_skip_traces'([CP|CPs],CPs1) :-
-    yap_hacks:choicepoint(CP,_,prolog,'$port',7,(_;_),_),
+    '$debugger':choicepoint(CP,_,prolog,'$port',7,(_;_),_),
     !,
     '$debugger_skip_traces'(CPs,CPs1).
 '$debugger_skip_traces'(CPs,CPs).
 
 '$debugger_skip_loop_spy2'([CP|CPs],CPs1) :-
-    yap_hacks:choicepoint(CP,_,prolog,'$loop_spy2',5,(_;_),_),
+    '$debugger':choicepoint(CP,_,prolog,'$loop_spy2',5,(_;_),_),
     !,
     '$debugger_skip_loop_spy2'(CPs,CPs1).
 '$debugger_skip_loop_spy2'(CPs,CPs).
 
 '$debugger_prepare_meta_arguments'([], [], []).
-'$debugger_prepare_meta_arguments'([A|As], [N|Ms], [yap_hacks:trace((MA:GA),outer,_)|NAs]) :-
+'$debugger_prepare_meta_arguments'([A|As], [N|Ms], ['$debugger':trace((MA:GA),outer,_)|NAs]) :-
     '$yap_strip_module'(A,MA,GA),
     integer(N),
     N>=0,
@@ -1180,7 +1180,7 @@ watch_goal(G) :-
 
 
 trace(G) :-
-    yap_hacks:trace_goal(G,outer).
+    '$debugger':trace_goal(G,outer).
 
 '$debugging' :- nb_getval(running_debugger_code, true  ).
 %% @}

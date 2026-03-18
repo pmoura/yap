@@ -2189,6 +2189,7 @@ void Yap_InitIOPreds(void) {
 #if USE_READLINE
   Yap_InitReadlinePreds();
 #endif
+  Yap_InitReadUtil();
   Yap_InitSockets();
   Yap_InitSignalPreds();
   Yap_InitSysPreds();

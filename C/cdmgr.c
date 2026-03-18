@@ -19,6 +19,7 @@
 
 #include "Regs.h"
 
+#include "YapFlags.h"
 #include "YapHeap.h"
 #include "YapTags.h"
 #include "Yapproto.h"
@@ -84,6 +85,15 @@ typedef enum asserting_flags_enum {
   RECONSULT = 0x20, //> compile(....), assert(...)
 } assert_control_t;
 
+
+static bool  is_undefined(PredEntry *pe)
+{
+  return
+    pe->OpcodeOfPred == UNDEF_OPCODE &&
+    pe->cs.p_code.NOfClauses == 0 &&
+    !(pe->PredFlags & ( ProxyPredFlag| StandardPredFlag| TabledPredFlag| MetaPredFlag));
+}
+	   
 static assert_control_t get_mode(Term tmode) {
  if (tmode == TermConsult) {
     return CONSULT;
@@ -532,7 +542,7 @@ static void split_megaclause(PredEntry *ap) {
         } else {
           Yap_ThrowError(RESOURCE_ERROR_HEAP, TermNil,
                     "while breaking up mega clause for %s\n",
-                    RepAtom((Atom)ap->FunctorOfPred)->StrOfAE);
+			 RepAtom((Atom)ap->FunctorOfPred)->StrOfAE);
         }
         return;
       }
@@ -2060,7 +2070,7 @@ static Int may_update_predicate(USES_REGS1) {
   }
   PredEntry *pe = Yap_get_pred(head, mod,"compile clause");
   bool asserting_dynamic = Deref(ARG5) == TermDynamic;
-  if (!pe || pe->OpcodeOfPred==UNDEF_OPCODE) {
+if (!pe || is_undefined(pe)) {
     type = TermUndefined;
   } else if ( pe->PredFlags & LogUpdatePredFlag){
     type = TermDynamic;
@@ -2659,8 +2669,8 @@ static  Term gpred(PredEntry *pe)
     }
     if (pe->PredFlags & SourcePredFlag)
 	return  TermSourceProcedure;
-   if (pe->cs.p_code.NOfClauses == 0)
-     	return  TermUndefinedProcedure;
+    if (is_undefined(pe))
+     return  TermUndefinedProcedure;
     //    if (pe->PredFlags & NoTracePredFlag)
    return  TermStaticProcedure;
 	//    return TermStaticProcedure;
@@ -2974,7 +2984,8 @@ static Int p_undefined(USES_REGS1) { /* '$undefined'(P,Mod)	 */
   pe = Yap_get_pred(Deref(ARG1), Deref(ARG2), "undefined/1");
   if (EndOfPAEntr(pe))
     return TRUE;
-  if (!is_live(pe) && pe->OpcodeOfPred == UNDEF_OPCODE) {
+  if (!is_live(pe) &&
+      is_undefined(pe)) {
     return TRUE;
   }
   return FALSE;

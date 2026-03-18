@@ -46,6 +46,7 @@
 '$undefp0'(M: G) :-
 	stream_property( loop_stream, file_name(F)),
 	stream_property( loop_stream, line_number(L)),
+	current_source_module(prolog, prolog),
 	format(user_error,'~a:~d error undefined: call to ~w~n',[F,L,M:G]),
 	!,
 	fail.

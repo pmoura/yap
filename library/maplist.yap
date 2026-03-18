@@ -35,7 +35,6 @@
 	   mapnodes/3,
 	   partition/4,
 	   partition/5,
-	   scanl/4,
 	   scanl/5,
 	   scanl/6,
 	   scanl/7,
@@ -85,7 +84,6 @@ expands_to/3
        foldl(5, +, +, +, +, -),
        foldl(6, +, +, +, +, +, -),
        foldl(7, +, +, +, +, +, +, -),
-       scanl(3, +, +, -),
        scanl(4, +, +, +, -),
        scanl(5, +, +, +, +, -),
        scanl(6, +, +, +, +, +, -).
@@ -609,6 +607,15 @@ foldl(Goal, [H1|T1], [H2|T2], [H3|T3], [H4|T4], V0, V) :-
 
 
 /**
+
+*/
+foldl(_, [], [], [], [], [], V, V).
+foldl(Goal, [H1|T1], [H2|T2], [H3|T3], [H4|T4], [H5|T5], V0, V) :-
+    call(Goal, H1, H2, H3, H4, H5, V0, V1),
+    foldl(Goal, T1, T2, T3, T4, T5, V1, V).
+
+
+/**
    @pred foldl2(: _Pred_, + _List_, ? _X0_, ? _X_, ? _Y0_, ? _Y_)
 
   Calls  _Pred_ on all elements of `List` and collects a result in
@@ -697,18 +704,7 @@ foldl4(Goal, [H|T], V0, V, W0, W, X0, X, Y0, Y) :-
 *******************************/
 
 /**
-%
-%	Left scan of  list.  The  scanl   family  of  higher  order list
-%	operations is defined by:
-%
-%
-```
-scanl(P, [X11,...,X1n], ..., [Xm1,...,Xmn], V0, [V0,V1,...,Vn]) :-
-		P(X11, ..., Xmn, V0, V1),
-		...
-	        P(X1n, ..., Xmn, V', Vn).
-```
-
+d%
 Left scan of  list.  The  scanl   family  of  higher  order list
 operations is defined by:
 
@@ -729,7 +725,7 @@ scanl(Goal,[H|T], V, [VH|VT]) :-
 
 Left scan of  two lists with an accumulator.
  */
-scanl(_, [], [], Out, Out).
+scanl(_, [], [], _Out, []).
 scanl(Goal, [H1|T1], [H2|T2], V, [VH|VT]) :-
     call(Goal, H1, H2, V, VH),
     scanl(Goal, T1, T2, VH, VT).
@@ -739,7 +735,7 @@ scanl(Goal, [H1|T1], [H2|T2], V, [VH|VT]) :-
 
 Left scan of three lists of the same length  with an accumulator.
 */
-scanl(_, [], [], [], V, V).
+scanl(_, [], [], [], _V, []).
 scanl(Goal, [H1|T1], [H2|T2], [H3|T3], V, [VH|VT]) :-
     call(Goal, H1, H2, H3, V, VH),
     scanl(Goal, T1, T2, T3, VH, VT).
@@ -750,7 +746,7 @@ scanl(Goal, [H1|T1], [H2|T2], [H3|T3], V, [VH|VT]) :-
   Left scan of  list.
 */
 
-scanl(_Goal, [], [], [], [], T, T).
+scanl(_Goal, [], [], [], [], _, []).
 scanl(Goal, [H1|T1], [H2|T2], [H3|T3], [H4|T4], V, [VH|VT]) :-
     call(Goal, H1, H2, H3, H4, V, VH),
     scanl(Goal, T1, T2, T3, T4 , VH, VT).

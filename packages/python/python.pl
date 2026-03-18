@@ -120,7 +120,7 @@
  *
  */
     V := F :-
-    writeln((V:=F)),
+%    writeln((V:=F)),
   python:python_assign(F, V).
 
     /*

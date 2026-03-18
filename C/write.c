@@ -1319,7 +1319,7 @@ void Yap_plwrite(Term t, StreamDesc *mywrite, CELL * hbase, yhandle_t ynames, wr
   t = Deref(t);
     wglb.stream = mywrite;
   wglb.Ignore_ops = flags & YAP_WRITE_IGNORE_OPS;
-  wglb.Write_strings = flags & BackQuote_String_f;
+  wglb.Write_strings = !(flags & BackQuote_String_f);
   wglb.Use_portray = flags & YAP_WRITE_USE_PORTRAY;
   wglb.Portray_delays = flags & AttVar_Portray_f;
   wglb.Keep_terms = flags & YAP_WRITE_HEAP_TERMS;

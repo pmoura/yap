@@ -1410,7 +1410,7 @@ static inline ans_node_ptr answer_search_loop(sg_fr_ptr sg_fr,
   CELL *stack_vars_base = (CELL *)TR;
 #define stack_terms_limit (stack_vars_base + vars_arity)
 #if TRIE_COMPACT_PAIRS
- int in_pair;
+  int in_pair;
 #else
 #define in_pair 0
 #endif /* TRIE_COMPACT_PAIRS */

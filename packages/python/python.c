@@ -12,6 +12,7 @@
  * @{
  */
 
+//#include "Atoms.h"
 #include "py4yap.h"
 
 
@@ -48,15 +49,19 @@ static void add_modules(USES_REGS1) {
   if (py_Atoms) {
     Py_INCREF(py_Atoms);
   }
-  /* if ((py_Main = PyImport_ImportModule("__main__"))!=NULL) */
-  /* Py_INCREF(py_Main); */
+  if ((py_Main = PyImport_ImportModule("__main__"))!=NULL) {
+    Py_INCREF(py_Main);
+  } else {
+    py_Main = PyModule_New("__main__");
+  }
+  py_User = PyModule_New("user");
   
-  //     py_Sys =  PyImport_ImportModule("sys");
+  py_Sys =  PyImport_ImportModule("sys");
   py_Np = PyImport_ImportModule("numpy");
   if (py_Np) {
     Py_INCREF(py_Np);
   } else {
-    Yap_ThrowError(DOMAIN_ERROR_MISSING_LIBRARY,MkStringTerm("numpy"), " Missin Python numpy library");
+
   }
   py_Ops = PyImport_ImportModule("operator");
   if (py_Ops) {
@@ -147,16 +152,52 @@ if ( libpython_initialized) {
   return true;
 }
    libpython_initialized = true;
-    term_t t = PL_new_term_ref();
-    if (!Py_IsInitialized()) {
-      Py_InitializeEx(0);
-      GLOBAL_Embedded = true;
-    } else {
+   term_t t = PL_new_term_ref();
+   if (!Py_IsInitialized()) {
+     GLOBAL_Embedded = true;
+/*   PyInitConfig *config = PyInitConfig_Create(); */
+   /*   if (config == NULL) { */
+   /*     fprintf(stderr,"PYTHON INIT ERROR: memory allocation failed\n"); */
+   /*     return -1; */
+   /*   } */
+
+   /*   // Enable the Python Development Mode */
+   /*   if (PyInitConfig_SetInt(config, "dev_mode", 1) < 0) { */
+   /*     goto error; */
+   /*   } */
+   /*   // Enable the Python Development Mode */
+   /*   if (PyInitConfig_SetInt(config, "dev_mode", 1) < 0) { */
+   /*     goto error; */
+   /*   } */
+   /*   if (PyInitConfig_SetInt(config, "install_signal_handlers", 0) < 0) { */
+   /*     goto error; */
+   /*   } */
+   /*   // Initialize Python with the configuration */
+   /*   if (Py_InitializeFromInitConfig(config) < 0) { */
+   /*     goto error; */
+   /*   } */
+   /*   PyInitConfig_Free(config); */
+   /*   return 0; */
+   /* error: */
+   /*   exit(1); */
+   /* } else { */
 //      Yap_CloseReadline();
     }
     //  PyGILState_Ensure();
-  py_Sys =  PyDict_GetItemString (PySys_GetObject("modules"),"sys");
-  py_Main = PyDict_GetItemString (PySys_GetObject("modules"),"__main__");
+   Py_Initialize();
+  /*  const char *s = PyUnicode_AsUTF8(PyDict_GetItemString (PySys_GetObject("modules"),"sys")); */
+  /*     char *ns =  */
+  /* if (py_Sys) { */
+  /*   const char *path = PyUnicode_AsUTF8(PyDict_GetItemString (py_sys,"path")), */
+  /*   *cwd = get_current_directory(); */
+  /*   char *np = mallo(cstrlen(path))+strlen(':')+strlen(cwd)+1; */
+  /*   strcpy(np,cwd); */
+  /*   strcat(np,":"); */
+  /*   strcat(np,path); */
+  /*   yDict_SetItemString (py_sys,"path",PyUnicode_FromString(np); */
+  /* } */
+  //  py_Main = PyDict_GetItemString (PySys_GetObject("modules"),"__maingre__");
+     PyObject* py_Main = PyModule_GetDict(PyImport_AddModule("__main__"));
   PyObject  *builtins = PyEval_GetBuiltins(), *globals =PyDict_New();
   add_modules(PASS_REGS1);
  if (builtins)

@@ -177,6 +177,7 @@ extern X_API PyObject *py_Main;
 extern X_API PyObject *py_Yapex;
 extern X_API PyObject *py_Atoms;
 extern X_API PyObject *py_Context;
+extern X_API PyObject *py_User;
 extern PyObject *Py_f2p;
 extern PyObject *py_Sys, *py_Builtins, *py_Ops;
 #define py_ModDict PyImport_GetModuleDict()
@@ -255,7 +256,7 @@ static inline PyObject *atom_to_python_string(term_t t) {
     s = RepAtom(AtomOfTerm(yapt))->StrOfAE;
   else
     return NULL;
-/* return __main__,s */
+/* return._main__,s */
 #if PY_MAJOR_VERSION < 3
   if (proper_ascii_string(s)) {
     return PyString_FromStringAndSize(s, strlen(s));
@@ -336,8 +337,6 @@ extern install_t install_pl2pl(void);
 
 X_API extern bool loadt_python(void);
 X_API extern bool do_init_python(void);
-
-extern PyObject *find_term_obj(PyObject *ob, YAP_Term *yt, bool eval);
 //extern PyObject PyInit_yap(void);
 
 extern PyObject *PythonLookup(const char *s, PyObject * pArgs, PyObject *o);
@@ -351,7 +350,6 @@ X_API extern PyObject *term_to_python(term_t t, bool eval, PyObject *o, bool cvt
 X_API extern bool Yap_create_prolog_flag(const char *name, bool writable,  YAP_Term ttype, Term v);
 
 X_API extern foreign_t python_to_term(PyObject *pVal, term_t t);
-  X_API extern bool python_assign(YAP_Term t, PyObject *exp, PyObject *context);
 #define YAPPy_ThrowError(id, inp, ...)                                         \
   YAPPy_ThrowError__(__FILE__, __FUNCTION__, __LINE__, id, inp, __VA_ARGS__)
 
