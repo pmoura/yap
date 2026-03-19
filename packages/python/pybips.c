@@ -64,8 +64,6 @@ static PyObject *Lookup(PyObject *ctx, PyObject *pArgs,const char *s) {
   } else {
     if ((out = PyImport_ImportModule(s)))
 	return out;
-  if (py_Context && (out = read_symbol(py_Context ,s))!=NULL)
-      return out;
   if (py_Main && (out = read_symbol(py_Main ,s))!=NULL)
       return out;
   if (py_User && (out = read_symbol(py_User ,s))!=NULL)
@@ -100,7 +98,7 @@ PyObject *assign_symbol(const char *s, PyObject *ctx, PyObject *v) {
     ctx = py_Main;
   }
   if (!ctx) {
-    ctx = py_User;
+    ctx = py_Main;
   }
   if (PyModule_Check(ctx)) {
     dict = PyModule_GetDict(ctx);

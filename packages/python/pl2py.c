@@ -330,9 +330,7 @@ switch (YAP_TagOfTerm(t)) {
 
 	PyObject *rc;
 	YAP_Term targ = YAP_ArgOfTerm(1,t);
-	PyObject *ys = yap_to_python(targ, false, o, true);
-	CHECK_CALL(ys, PyTuple_New(0), NULL);
-	return rc;
+	return PyObject_CallMethodNoArgs(o, PyUnicode_FromString(AtomTermName( targ)));
       }
       if (fun == FunctorComplex) {
 	PyObject *lhs, *rhs;
