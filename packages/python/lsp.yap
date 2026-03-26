@@ -12,13 +12,11 @@ pred_refs/4,
 complete/4,
 highlight_file/2,
 add_dir/2
-
   ]).
 
 :- set_prolog_flag(double_quotes, string).
 
-
-:- dynamic my/2.
+:- dynamic state/2, lsp_on/0.
 
 :- use_module(library(lists)).
 :- use_module(library(maplist)).
@@ -148,70 +146,61 @@ complete(Self,_Line,_Pos,Prefix) :-
 %% absolute_file_name(File,Path,[file_type(prolog)]),
 %%    validate_file(Self,Path).
 
-:- dynamic lsp_on/0.
+:- dynamic lsp/1.
 
+
+enter_file(Self,File) :-
+    assert(lsp(on)),
+    asserta(state(Self,File)),
+assert((user:term_expansion(G, user:input(G)) :- writeln(user_error, processing:G))).
+exit_file(_Self,_File) :-
+    retractall(lsp(_)),
+    retractall(state(_,_)),
+retractall(user:term_expansion(_, _)).
 
 
 validate_file( Self,File) :-
-    assert(lsp_on),
     absolute_file_name(File, Path,
 		       [ file_type(prolog),
 			 access(read),
+expand(true),
 			 file_errors(fail)
 		       ]),
-    atom_string(Path, SPath),
-    string_concat("file://",SPath,URI),
-    asserta(my(Self,URI)),
-    Self.errors[URI] = [],
+enter_file(Self,Path),
     load_files(Path,[]),
-    retract(my(Self,URI)),
-   retract(lsp_on).
-
+exit_file(Self,Path).
 
 validate_text(Self,URI,S) :-
     string_concat("file://",SFile,URI),
     atom_string(File, SFile),
-    open(string(S),read,Stream,[alias(File)]),
-    start_low_level_trace,
-    set_stream(Stream,file_name(File)),
-    assert(lsp_on),
-    asserta(my(Self,URI)),
+    open(string(S),read,Stream),
+    set_stream(Stream,[file_name(File)]),
+enter_file(Self,File),
     load_files(File,[stream(Stream)]),
-%    forall(my(URI,Err),Self[URI]:=Err),
-    retract(my(Self,URI)),
-    retract(lsp_on).
+exit_file(Self,File).
 
 
-q_msg(informational, _, _, _,  _, _) :-
+q_msg(informational, _, _) :-
     !,
     fail.
-q_msg(help, _, _, _,  _, _) :-
+q_msg(help, _, _) :-
     !,
     fail.
-q_msg(warning, error(style_check(singletons,[VName,Line,Column,_F0],_),Desc),S,Line0,Column,Siz) :-
+q_msg(warning, error(style_check(singletons,[VName,Line,_Column,_F0],_),_Desc),t("warning",S, Line)) :-
     !,
-    Line0 is Line-1,
-    exception_property(parserSize, Desc, Siz),
     format(string(S), 'singleton variable ~s.~n ', [VName]).
-q_msg(warning, error(style_check(multiple,_,_I ) ,Desc ), S, L0,C0,Siz) :-
+q_msg(warning, error(style_check(multiple,_,_I ) ,Desc ), t("warning",S, L)) :-
     !,
-    exception_property(parserLine, Desc, L1),
-    L0 is L1-1,
-    exception_property(parserLinePos, Desc, C0),
-    exception_property(parserSize, Desc, Siz),
+    exception_property(parserLine, Desc, L),
     format(string(S), 'previously defined.~n',[]).
-q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), S, L0,C0, Siz) :-
+q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), S, t("warning".S, L)) :-
     !,
-    exception_property(parserLine, Desc, L1),
-    L0 is L1-1,
-    exception_property(parserLinePos, Desc, C0),
-    exception_property(parserSize, Desc, Siz),
+    exception_property(parserLine, Desc, L),
     S = "discontiguous.~n".
-q_msg(_error, error(syntax_error(_Msg), Desc), "syntax error",L0,C0, _Siz) :-
+q_msg(_error, error(syntax_error(_Msg), Desc),  t("error","syntax error", L)) :-
     !,	    
-    exception_property(parserLine, Desc, L1),
-    L0 is L1-1,
-    exception_property(parserLinePos, Desc, C0).
+    exception_property(parserLine, Desc, L),
+
 
 
 add_file(Self, D, File) :-
@@ -257,17 +246,16 @@ highlight_and_convert_stream(Self,Stream) :-
     ).
 
 user:portray_message(A,B):-
-    my(Self,URI),
-    q_msg(A,B,S,Line,Column, Size),
+    state(Self,_File),
+    q_msg(Self,T),
     !,
     (
-var(Self)
-->
-writeln(URI/t(S,Line,Column,Size))
+      var(Self)
+      ->
+      writeln(    t(String,Line))
     ;
-    % assertz(lsp(URI,t(A,S,Line,Column)),
-    Self.errors[URI].append(t(A,S,Line,Column,Size))
+      % assertz(lsp(URI,t(A,S,Line,Column)),
+      self.errors := self.errors + [ T]
     ),
-    !,			     
-    fail.
+    !.
 

@@ -695,9 +695,11 @@ bool YAPEngine::mgoal(Term t, Term tmod                                 , bool r
   //  _save = PyEval_SaveThread();
 #endif
   CACHE_REGS
+  bool result;
   YAP_dogoalinfo q;
   BACKUP_MACHINE_REGS();
 
+  try {
   q.CurSlot = Yap_StartSlots();
   q.p = P;
   q.cp = CP;
@@ -712,7 +714,6 @@ bool YAPEngine::mgoal(Term t, Term tmod                                 , bool r
     ap = rewriteUndefEngineQuery(ap, t, tmod);
  }
 
-  bool result;
   // allow Prolog style exception handling
   // don't forget, on success these guys may create slots
   //__android_log_print(ANDROID_LOG_INFO, "YAPDroid", "exec  ");
@@ -723,6 +724,8 @@ bool YAPEngine::mgoal(Term t, Term tmod                                 , bool r
     HR = B->cp_h;
  ENV = LCL0-oenv;
  B = (choiceptr)(LCL0-oB);
+  } catch (...) {
+  }
   //      PyEval_RestoreThread(_save);
   RECOVER_MACHINE_REGS();
   return result;
