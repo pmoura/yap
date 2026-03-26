@@ -260,6 +260,12 @@
     ;
     '$load_files'(T, M,O,Call)
     ).
+'$load_files_'(string(S), M,Opts, Call) :-
+    string(S),
+!,
+File = '__string__',
+open(string(S),read,Stream),
+  '$load_stream__'(prolog, File,Stream, (File), M, [stream(Stream)|Opts], Call).
 '$load_files_'(user, M,Opts, Call) :-
     !,
      '$load_stream__'(prolog,  user, user_input, user_input, M, Opts, Call).

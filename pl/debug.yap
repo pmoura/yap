@@ -312,20 +312,26 @@ Port,
  '$stop_debugger'
 ).
 '$spy'(MGoal,inner) :-
-    '$debugger':trace(MGoal,inner, _). 
+    trace(MGoal,inner, _). 
 
-'$debugger':trace_goal(MGoal) :-
-    '$spy'(MGoal, outer, _).
+%% @pred trace( 0:Goal )
+%
+% If the `debug` flag is true and we are not in zip mode,  execute
+% _Goal_ in tracing mode; otherwise, execute the meta-call.
+%
+% T
+%
+trace(MGoal) :-
+    '$spy'(MGoal, outer).
 
-/**
-  * @pred trace( +Goal, +Context )
+/** @pred trace( +Goal, +Context, ?GoalNo )
   *
   * This launches a goal from the debugger with the  call. It must:
   *  - disable user interaction;
   *  - verify whether debugging is still ok;
   *  - enter the debugger core.
   * The top gated_call should set up creeping for the next call.
-a  *
+  *
   * @param _Mod_:_Goal_ is the goal to be examined.
   * @return `call(Goal)`
 */
@@ -601,11 +607,20 @@ Port,
     recorded('$m', meta_predicate(M,PredDef),_)
     ),
     PredDef=..[N|Ms],
+'$one_number'(Ms),
     '$debugger_prepare_meta_arguments'(As, Ms, NAs),
     NG=..[N|NAs],
     G \== NG,
     !.
 '$meta_hook'(MG,MG).
+
+'$one_number'([N|_Ms]) :-
+    integer(N),
+!.
+'$one_number'([_|Ms]) :-
+    '$one_number'(Ms),
+   !.
+
 
 /*'$interact'(P, MG, GoalNumber) :-
     '$zip_at_port'(P,GoalNumber,MG),
@@ -645,7 +660,7 @@ true
       '$action'(C,P1,L,G,Module,Deterministic)
       ;
       '$action'('\n',P1,L,G,Module,Deterministic),
-      nl(debugger_output)                            
+      nl(debugger_otput)                            
     ),
     !.
 
@@ -1096,6 +1111,7 @@ trace_error(Event,_,_,_,_,_) :-
 '$get_deb_depth_char_by_char'(10,X,X) :- !.
 '$get_deb_depth_char_by_char'(C,X0,XF) :-
     C >= "0", C =< "9", !,
+
 			XI is X0*10+C-"0",
 			get_code( debugger_input,NC),
 			'$get_deb_depth_char_by_char'(NC,XI,XF).
@@ -1147,12 +1163,12 @@ trace_error(Event,_,_,_,_,_) :-
 '$debugger_skip_loop_spy2'(CPs,CPs).
 
 '$debugger_prepare_meta_arguments'([], [], []).
-'$debugger_prepare_meta_arguments'([A|As], [N|Ms], ['$debugger':trace((MA:GA),outer,_)|NAs]) :-
+'$debugger_prepare_meta_arguments'([A|As], [N|Ms], [trace((MA:GA))|NAs]) :-
     '$yap_strip_module'(A,MA,GA),
     integer(N),
     N>=0,
     length(B,N),
-    '#append'(B,R,As),
+    '$append'(B,R,As),
     GA=..[GN|GAs],
     '$append'(GAs,B,NGAs),
     NGA =.. [GN|NGAs],
@@ -1179,8 +1195,5 @@ watch_goal(G) :-
     ).
 
 
-trace(G) :-
-    '$debugger':trace_goal(G,outer).
-
 '$debugging' :- nb_getval(running_debugger_code, true  ).
-%% @}
+%% @

@@ -619,6 +619,8 @@ unload_file(user) :-
 unload_file(user_input) :-
     !,
     '$unload_file'(user_input).
+unload_file(string(_)) :-
+    !.
 unload_file(F) :-
     absolute_file_name(F,[access(read),file_type(prolog),file_errors(fail),solutions(first),expand(true)],File),
     unload_file_(File).

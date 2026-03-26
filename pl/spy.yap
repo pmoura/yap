@@ -448,10 +448,6 @@ notrace(G) :-
     '$creep'.
 
 
-'$exit_goal'(Ctx, _GN):-
-    '$continue_debugging'(Ctx).
-
-
 /**
 What to do after we finish or fail a goal?
 */
@@ -459,10 +455,12 @@ What to do after we finish or fail a goal?
     current_prolog_flag(debug, true),
     (
       '$running_the_debugger'
+->
+true
       ;
-      current_prolog_flag( trace,true)
-    ),
-    '$creep'.
+      current_prolog_flag( trace,true),
+    '$creep'
+    ).
 
 '$restart_debugging':-
     nb_setval('$spy_on',stop),

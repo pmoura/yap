@@ -1427,11 +1427,11 @@ prolog:print_message_(_Severity, _Term) :-
 build_message( Term, Lines0, Linesf) :- 
     translate_message( Term,Lines0, Linesf).
 
-prolog:prolog:print_message(Severity, Msg) :-
+prolog:print_message(Severity, Msg) :-
 %    writeln(prolog:print_message_(Severity, Msg)),
-	prolog:prolog:print_message_(Severity, Msg),
+	prolog:print_message_(Severity, Msg),
 	fail.
-prolog:prolog:print_message(_Severity, _Msg).
+prolog:print_message(_Severity, _Msg).
 
 is_exception_descriptor(exception(Address)) :-
     integer(Address). 

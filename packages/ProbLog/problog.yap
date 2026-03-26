@@ -4232,7 +4232,7 @@ signal_decision(ClauseID,GroundID) :-
 user:term_expansion(throw(Error),throw(user_error(Error,[]))) :-
     functor(Error,error,_),
     !.
-user:term_expansion(Term,ExpandedTerm) :-
+ user:term_expansion(Term,ExpandedTerm) :-
 	Term \== end_of_file,
 	prolog_load_context(module,Mod),
 	problog:term_expansion_intern(Term,Mod,ExpandedTerm).
