@@ -43,18 +43,30 @@
 
 
 meta_predicate(P) :-
-must_be_ground(P),
-    strip_module(P, OM, Pred),
-	'$meta_predicate'(Pred, OM).
+		strip_module(P, OM, Pred),
+		'$meta_predicate'(Pred, OM).
 		
 
+'$meta_predicate'(P,M) :-
+    (var(P);var(M)),
+    !,
+    throw_error(instantiation_error,meta_predicate(M:P)).
 '$meta_predicate'((P,_Ps),M) :-
-	meta_predicate(M:P),
+	'$meta_predicate'(P,M),
 	fail.
 '$meta_predicate'((_P,Ps),M) :-
-    !,
-	meta_predicate(M:Ps).
+	!,
+	'$meta_predicate'(Ps,M).
+'$meta_predicate'( M:D, _M ) :-
+	'$yap_strip_module'( M:D, M1, P),
+	P\==D,
+	!,
+	'$add_meta_predicate'( P, M1 ).
 '$meta_predicate'( P, M ) :-  
+    '$add_meta_predicate'( P, M ).
+
+
+'$add_meta_predicate'( P, M ) :-
     '$new_meta_pred'(P, M),
     recordz('$m' , meta_predicate(M,P),_).				
 
