@@ -149,35 +149,40 @@ complete(Self,_Line,_Pos,Prefix) :-
 :- dynamic lsp/1.
 
 
-enter_file(Self,File) :-
+enter_file(Self,URI) :-
     assert(lsp(on)),
-    asserta(state(Self,File)),
-assert((user:term_expansion(G, user:input(G)) :- writeln(user_error, processing:G))).
-exit_file(_Self,_File) :-
+    asserta(state(Self,URI)),
+    assert((user:term_expansion(G, user:input(G)) :- writeln(user_error, processing:G))).
+
+exit_file(_Self,_) :-
     retractall(lsp(_)),
     retractall(state(_,_)),
 retractall(user:term_expansion(_, _)).
 
 
 validate_file( Self,File) :-
+    atom_string(File, SFile),
+    string_concat("file://",SFile,URI),
     absolute_file_name(File, Path,
 		       [ file_type(prolog),
 			 access(read),
 expand(true),
 			 file_errors(fail)
 		       ]),
-enter_file(Self,Path),
-    load_files(Path,[]),
-exit_file(Self,Path).
+    enter_file(Self,URI),
+    load_files(Path,[syntax_errors(warning)]),
+    exit_file(Self,URI).
 
 validate_text(Self,URI,S) :-
     string_concat("file://",SFile,URI),
     atom_string(File, SFile),
     open(string(S),read,Stream),
     set_stream(Stream,[file_name(File)]),
-enter_file(Self,File),
-    load_files(File,[stream(Stream)]),
-exit_file(Self,File).
+    enter_file(Self,URI),
+    load_files(File,[stream(Stream),syntax_errors(warning)]),
+    findall(Msg, retract(new_message(Msg)),Msgs),
+    exit_file(Self,URI),
+    Self := Msgs.
 
 
 q_msg(informational, _, _) :-
@@ -193,15 +198,13 @@ q_msg(warning, error(style_check(multiple,_,_I ) ,Desc ), t("warning",S, L)) :-
     !,
     exception_property(parserLine, Desc, L),
     format(string(S), 'previously defined.~n',[]).
-q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), S, t("warning".S, L)) :-
+q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), t("warning".S, L)) :-
     !,
     exception_property(parserLine, Desc, L),
     S = "discontiguous.~n".
 q_msg(_error, error(syntax_error(_Msg), Desc),  t("error","syntax error", L)) :-
     !,	    
-    exception_property(parserLine, Desc, L),
-
-
+     exception_property(parserLine, Desc, L).
 
 add_file(Self, D, File) :-
     absolute_file_name(File, Path,
@@ -246,16 +249,16 @@ highlight_and_convert_stream(Self,Stream) :-
     ).
 
 user:portray_message(A,B):-
-    state(Self,_File),
-    q_msg(Self,T),
+    state(Self,URI),
+    q_msg(A,B,T),
     !,
     (
       var(Self)
       ->
-      writeln(    t(String,Line))
+      writeln(T)
     ;
       % assertz(lsp(URI,t(A,S,Line,Column)),
-      self.errors := self.errors + [ T]
+      assert(new_message( T, URI))
     ),
     !.
 

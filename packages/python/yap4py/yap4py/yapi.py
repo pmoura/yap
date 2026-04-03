@@ -70,7 +70,8 @@ class Engine( YAPEngine ):
             yap_lib_path = dirname(__file__)
             args.setYapShareDir(join(yap_lib_path, "prolog"))
             args.setYapPLDIR(yap_lib_path)
-            args.setSavedState(join(yap_lib_path, "startup.yss"))
+            args.setSavedState(join(yape_lib_path, "startup.yss"))
+        data = []
         YAPEngine.__init__(self, args)
         self.load_library( "yapi")
 

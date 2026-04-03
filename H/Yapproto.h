@@ -144,7 +144,7 @@ extern struct pred_entry *Yap_PredFromClause(Term t USES_REGS);
 extern bool Yap_discontiguous(struct pred_entry *ap, Term mode USES_REGS);
 extern bool Yap_multiple(struct pred_entry *ap, Term mode USES_REGS);
 extern void Yap_init_consult(int, const char *, const char *);
-extern void Yap_end_consult(void);
+extern void Yap_end_consult(const char * );
 extern void Yap_Abolish(struct pred_entry *);
 extern void Yap_BuildMegaClause(struct pred_entry *);
 extern void Yap_EraseMegaClause(yamop *, struct pred_entry *);

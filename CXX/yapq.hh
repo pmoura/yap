@@ -272,10 +272,11 @@ private:
   void doInit(YAP_file_type_t BootMode, YAPEngineArgs *cargs);
   YAPError e;
   PredEntry *rewriteUndefEngineQuery(PredEntry *ap, Term &t, Term tmod);
-
+  
 public:
   ///< construct a new engine; may use a variable number of arguments
   std::string port = "call";
+
   YAPEngine(YAPEngineArgs * cargs) {
     engine_args = cargs;
     // doInit(cargs->boot_file_type);

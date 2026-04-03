@@ -4085,7 +4085,7 @@ static void ErDBE(DBRef entryref USES_REGS) {
 
 static void complete_lu_erase(LogUpdClause *clau) {
   DBRef *cp;
-  fprintf(stderr,"ap=%p, cl=%p, rcount=%d\n",clau->ClPred, clau, clau->ClRefCount);
+  // fprintf(stderr,"ap=%p, cl=%p, rcount=%d\n",clau->ClPred, clau, clau->ClRefCount);
   if (clau->ClFlags & FactMask)
     cp = NULL;
   else

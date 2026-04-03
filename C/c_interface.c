@@ -2138,8 +2138,7 @@ X_API void YAP_EndConsult(int sno, int *osnop, const char *full, char *dir) {
   BACKUP_MACHINE_REGS();
   Yap_CloseStream(sno);
   int lvl = push_text_stack();
-  Yap_ChDir(dir);
-  Yap_end_consult();
+  Yap_end_consult(dir);
   __android_log_print(ANDROID_LOG_INFO, "YAPDroid ", " closing %s:%s(%d), %d",
                       CurrentModule == 0
                           ? "prolog"
@@ -3138,3 +3137,4 @@ void yap_init(void) {}
 /**
 @}
 */
+\

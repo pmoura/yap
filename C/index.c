@@ -576,7 +576,7 @@ static char SccsId[] = "%W% %G%";
 
    +
    Try to keep together all clauses whose first argument is not a
-   variable, that will decrease the number of tests since the other clauses are
+v   variable, that will decrease the number of tests since the other clauses are
    always tried.
 
    +
@@ -1562,7 +1562,7 @@ static UInt groups_in(ClauseDef *min, ClauseDef *max, GroupDef *grp,
       } while (min <= max && (!IsVarTerm(min->Tag)));
       if (min <= max && min->Tag == (_var + 1) * sizeof(CELL)) {
         min++;
-        if (min < max)
+        if (min <= max)
           goto restart_loop;
       }
       grp->LastClause = min - 1;

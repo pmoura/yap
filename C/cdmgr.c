@@ -2319,21 +2319,20 @@ if (IsVarTerm(t))
   Yap_unify(t,MkAddressTerm(LOCAL_LastAssertedPred));
  else
    LOCAL_LastAssertedPred=AddressOfTerm(t);
-  return true;
+ return true;
 }
 
-static void end_consult(USES_REGS1) {
-  char *dir = RepAtom(AtomOfTerm(Deref(ARG1)))->StrOfAE;
+void end_consult( const char *dir) {
   Yap_ChDir(dir);
 }
 
-void Yap_end_consult(void) {
+void Yap_end_consult(const char *dir) { 
   CACHE_REGS
-  end_consult(PASS_REGS1);
+    end_consult(dir PASS_REGS);
 }
 
 static Int p_endconsult(USES_REGS1) { /* '$end_consult'		 */
-  end_consult(PASS_REGS1);
+  end_consult(RepAtom(AtomOfTerm ((Deref(ARG1))))->StrOfAE);                                                                                                                                                                                                                                      
   return (TRUE);
 }
 
@@ -2819,6 +2818,10 @@ static Int p_is_dynamic(USES_REGS1) { /* '$is_dynamic'(+P)	 */
  *  sets the multi-file flag
  * */
 static Int new_meta_pred(USES_REGS1) {
+
+
+
+
   PredEntry *pe;
   arity_t arity;
   Atom at;
@@ -2826,6 +2829,10 @@ static Int new_meta_pred(USES_REGS1) {
   pe = Yap_new_pred(Deref(ARG1), Deref(ARG2), false, "meta_predicate");
   if (EndOfPAEntr(pe))
     return FALSE;
+  if (pe == PredComma) {
+  pe->PredFlags |= MetaPredFlag;
+  pe->PredFlags &= ~UndefPredFlag;
+  }
   arity = pe->ArityOfPE;
   if (arity == 0)
     at = (Atom)pe->FunctorOfPred;
