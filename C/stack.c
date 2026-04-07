@@ -1751,6 +1751,8 @@ char * Yap_dump_stack(FILE *f) {
         }
 #endif
     /* check if handled */
+    if (CP == YESCODE && (!B || !B->cp_b))
+      return NULL;
     // if (handled_exception(PASS_REGS1))
     //  return;
 	fprintf( f, "%% Stacks:\n%% --> %-15s                        %14s <-- | --> Trail\n","Global","Local"  );

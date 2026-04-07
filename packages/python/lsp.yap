@@ -9,7 +9,7 @@
 highlight_text/2,pred_def/4,
 pred_def/2,
 pred_refs/4,
-complete/4,
+complete/2,
 highlight_file/2,
 add_dir/2
   ]).
@@ -128,9 +128,8 @@ pred_refs(Ob,URI,Line,Ch) :-
 	).
 
 
-complete(Self,_Line,_Pos,Prefix) :-
-    completions(Prefix,FCs),
-    ( var(Self)-> Self = FCs ; Self.items := FCs ).
+complete(Prefix, FCs) :-
+    completions(Prefix,FCs).
 
     add_dir(Self,URI):-
 	string_concat(`file://`, FS, URI),
@@ -149,41 +148,37 @@ complete(Self,_Line,_Pos,Prefix) :-
 :- dynamic lsp/1.
 
 
-enter_file(Self,URI) :-
-    assert(lsp(on)),
-    asserta(state(Self,URI)),
-    assert((user:term_expansion(G, user:input(G)) :- writeln(user_error, processing:G))).
+user:term_expansion(G, []) :-
+    lsp(on),
+writeln(user_error,G).
 
 exit_file(_Self,_) :-
-    retractall(lsp(_)),
-    retractall(state(_,_)),
-retractall(user:term_expansion(_, _)).
+    retractall(lsp(_)).
 
 
 validate_file( Self,File) :-
-    atom_string(File, SFile),
-    string_concat("file://",SFile,URI),
+%    atom_string(File, SFile),
+%    string_concat("file://",SFile,URI),
     absolute_file_name(File, Path,
 		       [ file_type(prolog),
 			 access(read),
 expand(true),
 			 file_errors(fail)
 		       ]),
-    enter_file(Self,URI),
+assert(lsp(on)),
     load_files(Path,[syntax_errors(warning)]),
-    exit_file(Self,URI).
+retract(lsp(_)).
 
-validate_text(Self,URI,S) :-
-    string_concat("file://",SFile,URI),
-    atom_string(File, SFile),
+validate_text(URI,S,Ts) :-
+    atomic_concat('file://', File, URI),
     open(string(S),read,Stream),
     set_stream(Stream,[file_name(File)]),
-    enter_file(Self,URI),
-    load_files(File,[stream(Stream),syntax_errors(warning)]),
-    findall(Msg, retract(new_message(Msg)),Msgs),
-    exit_file(Self,URI),
-    Self := Msgs.
-
+assert(lsp(on)),
+    load_files(File,[stream(Stream)]),
+%close(Stream),
+retract(lsp(_)),
+findall(T,m(T),Ts),
+writeln(user_error,out:Ts).
 
 q_msg(informational, _, _) :-
     !,
@@ -191,19 +186,33 @@ q_msg(informational, _, _) :-
 q_msg(help, _, _) :-
     !,
     fail.
-q_msg(warning, error(style_check(singletons,[VName,Line,_Column,_F0],_),_Desc),t("warning",S, Line)) :-
+q_msg(warning, error(style_check(singletons,[VName,Line,Column,_F0],_),_Desc),t("warning",S, Line,Column, Line,EndCol)) :-
     !,
-    format(string(S), 'singleton variable ~s.~n ', [VName]).
-q_msg(warning, error(style_check(multiple,_,_I ) ,Desc ), t("warning",S, L)) :-
+    format(string(S), 'singleton variable ~s.~n ', [VName]),
+    atom_length(VName, Len),
+ EndCol is Column+Len.
+q_msg(warning, error(style_check(multiple,[F0|L],I ) ,_Desc ), t("warning",S, L,Column,L,EndCol)) :-
     !,
-    exception_property(parserLine, Desc, L),
-    format(string(S), 'previously defined.~n',[]).
-q_msg(warning, error(style_check(discontiguous,_,_I ), Desc), t("warning".S, L)) :-
+Column=0,
+    format(string(S), '~w previously defined at ~s.~n',[I,F0]),
+I = _:Name/_,
+    atom_length(Name, Len),
+ EndCol is Column+Len.
+q_msg(warning, error(style_check(discontiguous,_,_I ), _Desc), t("warning",S, L,Column, L, EndCol)) :-
     !,
-    exception_property(parserLine, Desc, L),
+Column=0,
+    format(string(S), 'discontiguous definion for ~w.~n',[I]),
+I = _:Name/_,
+    atom_length(Name, Len),
+ EndCol is Column+Len.
     S = "discontiguous.~n".
-q_msg(_error, error(syntax_error(_Msg), Desc),  t("error","syntax error", L)) :-
-    !,	    
+q_msg(_error, error(syntax_error(_Msg), Desc),  t("error","syntax error", L,0,L1,0)) :-
+    !,
+L1 is L+1,
+     exception_property(parserLine, Desc, L).
+q_msg(_error, error(_,_Desc),  t("error","unknown error", 0,0,0,0)) :-
+    !,
+L1 is L+1,
      exception_property(parserLine, Desc, L).
 
 add_file(Self, D, File) :-
@@ -249,16 +258,9 @@ highlight_and_convert_stream(Self,Stream) :-
     ).
 
 user:portray_message(A,B):-
-    state(Self,URI),
     q_msg(A,B,T),
     !,
-    (
-      var(Self)
-      ->
-      writeln(T)
-    ;
-      % assertz(lsp(URI,t(A,S,Line,Column)),
-      assert(new_message( T, URI))
-    ),
-    !.
+    assert(m(T)).
+
+
 

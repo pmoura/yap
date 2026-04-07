@@ -24,7 +24,7 @@ completer(S, Cs) :-
 	scan_stream(St, Tokens),
 	close(St),
 	strip_final_tokens(Tokens, MyTokens),
-	setof( Completion, complete(MyTokens, Completion), Cs).
+	setof( Completion, complete(MyTokens, Completion), Cs), writeln(user_error,Cs).
 
 
 strip_final_tokens([], []) :- !.
@@ -36,20 +36,25 @@ complete([atom(E),l, atom(C),l,A|_],Completion) :-
 	 isconsult(E),
 	  library(C,Lib),
 	  %D=l,
-	check_library( A, Lib, Completion).
+	check_library( A, Lib, ACompletion),
+atom_string(ACompletion, Completion).
 complete([atom(E),l,atom(C),l,-,'['|<-],Completion) :-
 	 isconsult(E),
 	  library(C,Lib),
-	check_library( '', Lib, Completion).
+	check_library( '', Lib, ACompletion),
+atom_string(ACompletion, Completion).
 complete([atom(C),l,atom(A)|_],Completion) :-
 	 isconsult(C),
-	file_or_library( A, Completion).
+	file_or_library( A, ACompletion),
+atom_string(ACompletion, Completion).
 complete([atom(A),l,-,'['|_],Completion) :-
 	 isconsult(A),
-	file_or_library( A, Completion).
+	file_or_library( A, ACompletion),
+atom_string(ACompletion, Completion).
 complete( [atom(F)|_], Completion) :-
 	predicate( F, Pred, Arity ),
-	cont( Arity, F, Pred, Completion).
+	cont( Arity, F, Pred, ACompletion),
+atom_string(ACompletion, Completion).
 
 isconsult( atom(use_module) ).
 isconsult( atom(ensure_loaded) ).

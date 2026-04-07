@@ -78,22 +78,41 @@ class YAPEngine;
   }
 
 #ifdef SWIGPYTHON
-  %typemap(typecheck) Term*  {
-    $1 = PySequence_Check($input);
-  }
+  /* %typemap(typecheck) Term*  { */
+  /*   $1 = PySequence_Check($input); */
+  /* } */
 
   // Map a Python sequence into any sized C double array
   %typemap(in) Term*  {
     int i;
     if (!PySequence_Check($input)) {
-      PyErr_SetString(PyExc_TypeError,"Expecting a sequence");
-      $1 = nullptr;
+      // PyErr_SetString(PyExc_TypeError,"Expecting a sequence");
+      $1 = Term(pythonToYAP($input));
       } else {
         int sz = PyObject_Length($input);
         std::vector<Term> v(sz);
         for (i =0; i < sz; i++) {
           PyObject *o = PySequence_GetItem($input,i);
           v[i] = Term(pythonToYAP(o));
+          //Py_DECREF(o);
+        }
+        $1 = &v[0];
+      }
+    }
+
+  // Map a Python sequence into any sized C double array
+  %typemap(in) YAPTerm*  {
+    int i;
+    if (!PySequence_Check($input)) {
+      // PyErr_SetString(PyExc_TypeError,"Expecting a sequence");
+      YAPTerm *t = new YAPTerm(pythonToYAP($input));
+      $1 = t;
+      } else {
+        int sz = PyObject_Length($input);
+        std::vector<YAPTerm> v(sz);
+        for (i =0; i < sz; i++) {
+          PyObject *o = PySequence_GetItem($input,i);
+          v[i] = YAPTerm(pythonToYAP(o));
           //Py_DECREF(o);
         }
         $1 = &v[0];
@@ -137,9 +156,15 @@ class YAPEngine;
       %typecheck(0) YAPTerm { $1 = !PyUnicode_Check($input); }
 
 
-      %typemap(out) YAP_Term {  return $result = yap_to_python($1, false, 0, true);    }
+      %typemap(out) YAP_Term {  $result = yap_to_python($1, false, 0, true);
+  Py_IncRef($result);
+  return $result;
+}
 
-      %typemap(out) Term {  return $result = yap_to_python($1, false, 0, true);  }
+      %typemap(out) Term {  $result = yap_to_python($1, false, 0, true);
+  Py_IncRef($result);
+  return $result;
+}
 
       %typemap(out) std::vector<Term> {
         size_t len = $1.size();
@@ -149,7 +174,21 @@ class YAPEngine;
           PyList_SetItem($result,i,o);
 
         }
-        return $result;  }
+  Py_IncRef($result);
+  return $result;
+}
+      %typemap(out) YAPTerm * {
+  $result =  yap_to_python(Deref($1->term()), false, 0, true);
+  Py_IncRef($result);
+  return $result;
+}
+      %typemap(out) YAPTerm  {
+ $result = yap_to_python(Deref($1.term()), false, 0, true);
+  Py_IncRef($result);
+  return $result;
+
+}
+
 
 
 

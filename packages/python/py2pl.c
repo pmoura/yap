@@ -325,10 +325,13 @@ assign_obj(PyObject* ctx, PyObject *val, YAP_Term yt, bool eval) {
 	  ctx = yap_to_python(HeadOfTerm(yt), eval, ctx, false);
 	  yt = TailOfTerm(yt);
 	}
+	 ctx = yap_to_python(HeadOfTerm(yt), eval, ctx, false);
+	 return assign_obj(ctx, val, TailOfTerm(yt), eval);
       }}
   if (IsPairTerm(yt))     {
       Term t0 = yt;
       Term *tail;
+      ctx=NULL;
       if ((len = Yap_SkipList(&t0, &tail)) > 0 && *tail == TermNil) {
 	if (!PyList_Check(val) || PyList_GET_SIZE(val)!=len)
 	  return false;
@@ -346,10 +349,23 @@ assign_obj(PyObject* ctx, PyObject *val, YAP_Term yt, bool eval) {
   if (IsAtomTerm(yt)) {
     const char *s;
     s=AtomTermName(yt);
+    fprintf(stderr,"s=%s\n",s);
     return assign_symbol(s,ctx,val);
   }
-  if (IsApplTerm(yt) && FunctorOfTerm(yt) == FunctorEmptySquareBrackets) {
-    Term key = HeadOfTerm(ArgOfTerm(1,yt));
+  if (IsApplTerm(yt)) {
+    Functor fun=FunctorOfTerm(yt);
+    if ( fun == FunctorPythonObject ||
+	  fun == FunctorPointer ||
+	  fun == FunctorObject
+	  ) {
+	PyObject * *ptr;
+      
+	ptr = YAP_PointerOfTerm(YAP_ArgOfTerm(1, t) );
+	*ptr = val;
+	return true;
+    }
+    if  (fun == FunctorEmptySquareBrackets) {
+      Term key = HeadOfTerm(ArgOfTerm(1,yt));
     ctx = yap_to_python(ArgOfTerm(2,yt), eval, ctx, false);
     if (IsApplTerm(key) && FunctorOfTerm(key)==FunctorModule) {
       Int k,l;
@@ -373,8 +389,8 @@ assign_obj(PyObject* ctx, PyObject *val, YAP_Term yt, bool eval) {
     return set_item( key,  ctx, val, eval, false);
   }
 
-  if (IsApplTerm(yt) && PyTuple_Check(val) &&
-      ArityOfFunctor(FunctorOfTerm(yt)) ==
+  if ( PyTuple_Check(val) &&
+      ArityOfFunctor(fun) ==
     (len = PyTuple_GET_SIZE(val))) {
     int i;
   for (i=0; i<len;i++) {
@@ -382,6 +398,7 @@ assign_obj(PyObject* ctx, PyObject *val, YAP_Term yt, bool eval) {
     assign_obj(ctx, p,ArgOfTerm(i+1,yt), true);
   }
   return true;
+  }
   }
   return false;
 }

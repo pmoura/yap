@@ -16,23 +16,18 @@ static PyObject *read_symbol( PyObject *ctx, const char *s) {
   PyObject *out;
   if (!ctx)
     return NULL;
-#if PY_VERSION_HEX >= 0x030D0000
-  if ((PyObject_GetOptionalAttrString(ctx, s, &out))>0) {
-    return out;
-  }
-#else
-  if ((out=PyObject_GetAttrString(ctx, s))) {
-    return out;
-  }
-#endif
+  PyObject *py_s = PyUnicode_FromString(s);
   if( PyModule_Check(ctx)) {
     ctx = PyModule_GetDict(ctx);
   }
   if ( PyDict_Check(ctx)) {
-    if ((out = PyDict_GetItemString(ctx, s))) {
+    if ((out = PyDict_GetItem(ctx, py_s))) {
       Py_INCREF(out);
       return out;
     }
+  }
+  if ((out=PyObject_GenericGetAttr(ctx, py_s))) {
+    return out;
   }
   if (PyErr_Occurred())
     PyErr_Clear(); 
@@ -56,33 +51,57 @@ static PyObject *Lookup(PyObject *ctx, PyObject *pArgs,const char *s) {
     out = PyDict_New();
     return out;
   } else if ((out = op( s, pArgs))) {
-    return out;
+      Py_IncRef(out);
+      PyErr_Clear();
+      return out;
   }
   if (ctx) {
     out = read_symbol(ctx, s);
-    return out;
+      Py_IncRef(out);
+      PyErr_Clear();
+      return out;
   } else {
-    if ((out = PyImport_ImportModule(s)))
-	return out;
-  if (py_Main && (out = read_symbol(py_Main ,s))!=NULL)
+    if ((out = PyImport_ImportModule(s))) {
+      Py_IncRef(out);
+      PyErr_Clear();
       return out;
-  if (py_User && (out = read_symbol(py_User ,s))!=NULL)
-      return out;
-    if ((out = read_symbol(PyEval_GetBuiltins(),s))!= NULL)
-      return out;
-   if (	   (out = read_symbol(PyEval_GetLocals(),s))!=NULL)
-      return out;
-    if (           (out = read_symbol(PyEval_GetGlobals(),s))!=NULL)
-      return out;
+    }
+    if (py_Main && (out = read_symbol(py_Main ,s))!=NULL) {
+      Py_IncRef(out);
     PyErr_Clear();
+      return out;
+
+    }
+    if (py_User && (out = read_symbol(py_User ,s))!=NULL) {
+       Py_IncRef(out);
+    PyErr_Clear();
+       return out;
+    }
+    if ((out = read_symbol(PyEval_GetBuiltins(),s))!= NULL) {
+       Py_IncRef(out);
+    PyErr_Clear();
+       return out;
+    }
+/********    if (	   (out = read_symbol(PyEval_GetLocals(),s))!=NULL) {
+       Py_IncRef(out);
+    PyErr_Clear();
+       return out;
+    }
+    if (           (out = read_symbol(PyEval_GetGlobals(),s))!=NULL) {
+       Py_IncRef(out);
+    PyErr_Clear();
+       return out;
+    }
     if (       (out = read_symbol(py_User,s))!=NULL)
       return out;
     PyErr_Clear();
     if (       (out = read_symbol(py_Context,s))!=NULL)
       return out;
     PyErr_Clear();
-  }
+    }
+    */
   return NULL;
+  }
 }
 
 
@@ -92,28 +111,29 @@ PyObject *PythonLookup(const char *s,PyObject * pArgs,PyObject *ctx) {
   return o;
 }
 
-PyObject *assign_symbol(const char *s, PyObject *ctx, PyObject *v) {
+bool assign_symbol(const char *s, PyObject *ctx, PyObject *v) {
   PyObject *dict;
+  ctx = Lookup(ctx, NULL, s);
   if (!ctx) {
     ctx = py_Main;
   }
-  if (!ctx) {
-    ctx = py_Main;
-  }
+    PyObject *py_s = PyUnicode_FromString(s);
   if (PyModule_Check(ctx)) {
     dict = PyModule_GetDict(ctx);
   } else if (PyDict_Check(ctx)) {
     dict = ctx;
   } else {
-    dict = NULL;
+    dict = PyObject_GenericGetDict(ctx,NULL);
   }
-  if (dict && (PyDict_SetItemString(dict, s, v) >= 0)) {
-    return v;
+  if (dict && (PyDict_SetItem(dict, py_s, v) >= 0)) {
+    Py_INCREF(v);
+    return true;
   }
-  if (ctx && (PyObject_SetAttrString(ctx, s, v) >= 0)) {
-    return v;
+  if (ctx && (PyObject_GenericSetAttr(ctx, py_s, v) >= 0)) {
+    Py_INCREF(v);
+    return true;
   }
-  return NULL;
+  return false;
 
 }
 
@@ -783,7 +803,7 @@ static PyObject *bip_int(term_t t) {
 
 
 	PyObject *compound_to_pytree(YAP_Term t, PyObject *context, bool cvt) {
-	  PyObject *o = py_User;
+	  PyObject *o =context;
 	  YAP_Functor fun;
 	  YAP_Atom name;
 	  size_t arity;
@@ -791,12 +811,8 @@ static PyObject *bip_int(term_t t) {
 	  if (YAP_IsVarTerm(t)) {
 	    return yap_to_python(t, false, context, cvt);
 	  }
-	  if (YAP_IsAtomTerm(t) || YAP_IsNumberTerm(t)) {
+	  if (YAP_IsAtomTerm(t) || YAP_IsNumberTerm(t)||IsPairTerm(t)){
 	    return yap_to_python(t, false, context, cvt);
-	  } else if (IsPairTerm(t)) {
-	    fun = FunctorDot;
-	    arity=2;
-	    name = AtomDot;
 	  } else {
 	    fun = YAP_FunctorOfTerm(t);
 	    arity = YAP_ArityOfFunctor(fun);
@@ -851,26 +867,20 @@ static PyObject *bip_int(term_t t) {
 #define bad "<0>"
  
 	PyObject *compound_to_pyeval(YAP_Term t, PyObject *context, bool cvt) {
-	  PyObject *o = py_User;
+	  PyObject *o = context;
 	  YAP_Atom name;
 	  size_t arity;
 	  //Yap_DebugPlWriteln(t);
 	  Functor fun;
   
 	  //  o = find_obj(context, NULL, t, true);
-	  if (YAP_IsAtomTerm(t) || YAP_IsNumberTerm(t)) {
+	  if (YAP_IsAtomTerm(t) || YAP_IsNumberTerm(t)||IsPairTerm(t)) {
 	    return yap_to_python(t, false, o, false);
-	  } else if (IsApplTerm(t)||IsPairTerm(t)) {
+	} else if (IsApplTerm(t)){
 	    PyObject *rc;
-	    if(IsPairTerm(t)) {
-	      fun = FunctorDot;
-	      arity=2;
-	      name = AtomDot;
-	    } else {
 	      fun = FunctorOfTerm(t);
 	      name = NameOfFunctor(fun);
 	      arity = ArityOfFunctor(fun);
-	    }
 	    const char *s = AtomName(name);
 	    if (!strcmp(s,"t") || !strcmp(s,"tuple")) {
 	      YAP_Term tt = t, tleft;

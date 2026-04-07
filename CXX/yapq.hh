@@ -371,8 +371,8 @@ public:
   //> call a deterninistic predicate: the user will construct aterm of
   //> arity N-1. YAP adds an extra variable which will have the
   //> output.
-  Term fun(Term t);
-  YAPTerm funCall(YAPTerm t) { return YAPTerm(fun(t.term())); };
+  Term fun(Term t, Term tmod=CurrentModule,bool recover=false) ;
+  YAPTerm fun(YAPTerm t) { return YAPTerm(fun(t.term())); }
 
   
 #if 0

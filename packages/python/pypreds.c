@@ -260,7 +260,7 @@ static foreign_t assign_python(term_t exp, term_t name) {
   //stackp = python_acquire_GIL();
     PyErr_Clear();
     bool b;
-    Term t = Yap_GetFromHandle(name);
+  Term t = Yap_GetFromHandle(name);
   if (IsVarTerm(t)) {
     // if (context == NULL) // prevent a.V= N*N[N-1]
     b = Yap_unify(t,pythonToYAP(e));

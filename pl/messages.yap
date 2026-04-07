@@ -396,7 +396,7 @@ location( Desc, Level, _, LC ) -->
     prolog_caller( Desc, Level, LC).
 
 
-prolog_caller( Desc, Level, _LC ) -->
+prolog_caller( Desc, Level, LC ) -->
     {
      query_exception(prologPredLine, Desc, LN),
      query_exception(prologPredFile, Desc, FileName),
@@ -406,7 +406,8 @@ prolog_caller( Desc, Level, _LC ) -->
     },
     !,
     [  '~N~s:~d:0: ~a executing ~s:~s/~d:'-[FileName, LN,Level,Module,Name,Arity] ],
-     [nl].
+     [nl],
+     c_caller( Desc, Level, LC).
 prolog_caller( Desc, Level, LC ) -->
     {
      query_exception(prologPredFile, Desc, FileName),

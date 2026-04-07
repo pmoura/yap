@@ -71,8 +71,8 @@ class Engine( YAPEngine ):
             args.setYapShareDir(join(yap_lib_path, "prolog"))
             args.setYapPLDIR(yap_lib_path)
             args.setSavedState(join(yape_lib_path, "startup.yss"))
-        data = []
         YAPEngine.__init__(self, args)
+        self.data = []
         self.load_library( "yapi")
 
     def run(self, g, m=None, release=False):
@@ -83,7 +83,13 @@ class Engine( YAPEngine ):
 
     def set_prolog_flag(self, name, v):
         self.run(set_prolog_flag(name, v), None, False)
-            
+
+    def set_data(self, v):
+        self.data = v
+
+    def get_data(self):
+        return self.data
+
 class EngineArgs( YAPEngineArgs ):
     """ Interface to EngineOptions class"""
     def __init__(self, args=None,**kwargs):
@@ -91,16 +97,16 @@ class EngineArgs( YAPEngineArgs ):
 
 
 
-class v(YAPVarTerm):
+class V(YAPVarTerm):
     """
     Create a new Prolog variable
     """
     def __init__(self):
         YAPVarTerm()
 
-    def binding(self):
-        return self.term()
-
+    def t(self):
+        t = self.term()
+        return t
 
 class YAPShell:
     """

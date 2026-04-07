@@ -47,6 +47,10 @@
 #include <fpu_control.h>
 #endif
 
+#if HAVE_EXECINFO_H
+#include <execinfo.h>
+#endif
+
 #define SIG_PROLOG_OFFSET 32 /* Start of Prolog signals */
 
 #define SIG_EXCEPTION (SIG_PROLOG_OFFSET + 0)
@@ -202,30 +206,6 @@ int Yap_signal_index(const char *name) {
 }
 
 #if HAVE_SIGSEGV
-static void SearchForTrailFault(void *ptr, int sure) {
-
-/* If the TRAIL is very close to the top of mmaped allocked space,
-   then we can try increasing the TR space and restarting the
-   instruction. In the worst case, the system will
-   crash again
-*/
-#if OS_HANDLES_TR_OVERFLOW && !USE_SYSTEM_MALLOC
-  if ((ptr > (void *)LOCAL_TrailTop - 1024 &&
-    if (!Yap_growtrail(64 * 1024, TRUE)) {
-      Yap_Error(RESOURCE_ERROR_TRAIL, TermNil,
-                "YAP failed to reserve %ld bytes in growtrail", K64);
-    }
-    /* just in case, make sure the OS keeps the signal handler. */
-    /*    my_signal_info(SIGSEGV, HandleSIGSEGV); */
-  } else
-#endif /* OS_HANDLES_TR_OVERFLOW */
-      if (sure)
-    Yap_Error(SYSTEM_ERROR_FATAL, TermNil,
-              "tried to access illegal address %p!!!!", ptr);
-  else
-    Yap_Error(SYSTEM_ERROR_FATAL, TermNil,
-              "likely bug in YAP, segmentation violation");
-}
 
 /* This routine believes there is a continuous space starting from the
    HeapBase and ending on TrailTop */
@@ -248,13 +228,40 @@ static void HandleSIGSEGV(int sig, void *sipv, void *uap) {
 #elif __linux__
   siginfo_t *sip = sipv;
   ptr = sip->si_addr;
-  sure = TRUE;
+  sure = true;
 #endif
-  SearchForTrailFault(ptr, sure);
-  
-}
-#endif /* SIGSEGV */
 
+/* If the TRAIL is very close to the top of mmaped allocked space,
+   then we can try increasing the TR space and restarting the
+   instruction. In the worst case, the system will
+   crash again
+*/
+#if OS_HANDLES_TR_OVERFLOW && !USE_SYSTEM_MALLOC
+  if ((ptr > (void *)LOCAL_TrailTop - 1024 &&
+    if (!Yap_growtrail(64 * 1024, TRUE)) {
+      Yap_Error(RESOURCE_ERROR_TRAIL, TermNil,
+                "YAP failed to reserve %ld bytes in growtrail", K64);
+    }
+    /* just in case, make sure the OS keeps the signal handler. */
+    /*    my_signal_info(SIGSEGV, HandleSIGSEGV); */
+  } else
+#endif /* OS_HANDLES_TR_OVERFLOW */
+      if (sure)
+    fprintf(stderr,  "%% tried to access illegal address %p!!!!", ptr);
+  else 
+    fprintf(stderr, "%% likely bug in YAP, segmentation violation");
+#if HAVE_BACKTRACE
+      void *callstack[256];
+      int i;
+      int frames = backtrace(callstack, 256);
+backtrace_symbols_fd(callstack, frames, 2);
+Yap_dump_stack(stderr);
+#endif /* SIGSEGV */
+       exit(SIGSEGV);
+  }
+
+#endif
+       
 /* by default Linux with glibc is IEEE compliant anyway..., but we will pretend
  * it is not. */
 bool Yap_set_fpu_exceptions(Term flag) {

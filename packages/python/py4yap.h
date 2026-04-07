@@ -335,13 +335,13 @@ extern foreign_t python_builtin(term_t out);
 extern install_t install_pypreds(void);
 extern install_t install_pl2pl(void);
 
-X_API extern bool loadt_python(void);
+X_API extern bool load_python(void);
 X_API extern bool do_init_python(void);
 //extern PyObject PyInit_yap(void);
 
 extern PyObject *PythonLookup(const char *s, PyObject * pArgs, PyObject *o);
 
-extern PyObject *assign_symbol(const char *s, PyObject *, PyObject *);
+extern bool assign_symbol(const char *s, PyObject *, PyObject *);
 
 
 X_API extern PyObject *yap_to_python(Term t, bool eval, PyObject *o, bool cvt);
