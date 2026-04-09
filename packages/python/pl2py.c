@@ -199,6 +199,7 @@ switch (YAP_TagOfTerm(t)) {
 #endif
     //      char *p = malloc(strlen(s)+1);
     // strcpy(p, s);
+    Py_IncRef(pobj);
     return CHECKNULL(t, pobj);
   } break;
   case YAP_TAG_INT: 
@@ -238,7 +239,6 @@ switch (YAP_TagOfTerm(t)) {
           }
           return out;
       } else {
-	o = NULL;
           while (IsPairTerm(t)) {
               Term ai = HeadOfTerm(t);
               o = yap_to_python(ai, eval, o, false);
@@ -386,7 +386,6 @@ switch (YAP_TagOfTerm(t)) {
 	    }
 	  }
 	}
-	return rc;
       }
       if (eval)
 	return compound_to_pyeval(t, o, cvt);
@@ -420,17 +419,13 @@ PyObject *deref_term_to_python(term_t t) {
     rc = term_to_python(t, true, NULL, false);
   }
   PL_reset_term_refs(t0);
-    Py_IncRef(rc);
   return rc;
 }
 
 PyObject *term_to_python(term_t t, bool eval, PyObject *o, bool cvt) {
   //
   YAP_Term  yt = YAP_GetFromSlot(t);
-  PyObject *rc = yap_to_python(yt, eval,o,cvt);
-   Py_IncRef(rc);
-  return rc;
-  
+  return yap_to_python(yt, eval,o,cvt);
 }
 
 void YAPPy_ThrowError__(const char *file, const char *function, int lineno,
