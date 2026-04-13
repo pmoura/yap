@@ -72,6 +72,5 @@ prolog:ctrace(G) :-
 	       stop_low_level_trace).
 
 
-
 %% @}
 

@@ -386,6 +386,7 @@ switch (YAP_TagOfTerm(t)) {
 	    }
 	  }
 	}
+	return rc;
       }
       if (eval)
 	return compound_to_pyeval(t, o, cvt);

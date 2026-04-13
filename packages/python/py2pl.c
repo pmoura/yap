@@ -2,7 +2,6 @@
 
 #include "YapCompoundTerm.h"
 #include "pyerrors.h"
-#include "refcount.h"
 
 #include <frameobject.h>
 

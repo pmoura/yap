@@ -392,15 +392,15 @@ static Int scan_stream(USES_REGS1) {
 	t = t->TokNext;
 	continue;
       }
-      if (t->Tok == eot_tok) {
-  LOCAL_tokptr = NULL;
-  LOCAL_ErrorMessage = "YAP scanner found an empty token (most likely a single \'.\')";
-     if ((st->status & Past_Eof_Stream_f)==0) {
-      post_process_eof(st);
-    }
-      return YAP_SCANNING_ERROR;
-	}
       Term tt = tokToPair(t);
+      if (t->Tok == eot_tok) {
+	if ((st->status & Past_Eof_Stream_f)==0) {
+	  LOCAL_ErrorMessage = "trying to scan after end of input";
+	  post_process_eof(st);
+	  return YAP_SCANNING_ERROR;
+	}
+	break;
+      }
       if (tout == TermNil) {
 	tout = tt;
 	end = TailOfTerm(tout);

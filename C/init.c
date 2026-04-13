@@ -1252,11 +1252,11 @@ static void InitCodes(struct yap_boot_params *yapi)
   // Yap_InitFlags(); moved to HEAPFIELDS
   /* make sure we have undefp defined */
   /* predicates can only be defined after this point */
-  {
-    /* make sure we know about the module predicate */
-    PredEntry *modp = RepPredProp(PredPropByFunc(FunctorModule, PROLOG_MODULE));
-    modp->PredFlags |= MetaPredFlag;
-  }
+  /* { */
+  /*   /\* make sure we know about the module predicate *\/ */
+  /*   PredEntry *modp = RepPredProp(PredPropByFunc(FunctorModule, PROLOG_MODULE)); */
+  /*   modp->PredFlags |= MetaPredFlag; */
+  /* } */
 #ifdef YAPOR
   Yap_heap_regs->getwork_code->y_u.Otapl.p =
       RepPredProp(PredPropByAtom(AtomGetwork, PROLOG_MODULE));

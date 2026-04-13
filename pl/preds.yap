@@ -394,13 +394,8 @@ or built-in.
 
 */
 predicate_property(Pred,Prop) :-
-    '$yap_strip_module'(Pred, M, P),
-    (var(M)
-    ->
-	'$all_current_modules'(M)
-       ;
-      true
-    ),
+    '$yap_strip_module'(Pred, M0, P),
+'$module_for_system_predicate'(M0,M),
     (var(P) %
     ->
     module_predicate(M,N,Ar,_),
@@ -547,28 +542,42 @@ current_predicate(A,T0) :-
 Defines the relation:  indicator _P_ refers to a currently defined system predicate.
 */
 system_predicate(T0) :-
-    '$yap_strip_module'(T0, M, T),
-        (      var(M) -> '$all_current_modules'(M); M=prolog,  must_be_atom(M)
-    ),
+    '$yap_strip_module'(T0, M0, T),
+'$module_for_system_predicate'(M0,M),
     (
-      var(T) -> module_predicate(_,A,Ar,system)
+      '$unbound_system_predicate'(T,A,Ar) -> module_predicate(M,A,Ar,system)
 	;
-	T = A//Ar, nonvar(A) ->
-	atom_functor(A,Ar),
-	functor_predicate(M,A,Ar0,system),
-	Ar is Ar0+2
+	T = A//Ar0 ->
+	atom_functor(A,Ar0),
+	functor_predicate(M,A,ArF,system),
+	Ar is ArF-2
     ;
-    T = A/Ar, nonvar(A) -> 
+    T = A/Ar -> 
 	atom_functor(A,Ar),
 	functor_predicate(M,A,Ar,system);
 	throw_error(type_error(predicate_indicator,T),
                 system_predicate(T))
     ),
-    predicate_property(M:T, built_in).
+     functor(G,A,Ar),
+    '$predicate_type'(G,M,system_procedure).
+
+'$module_for_system_predicate'(_,prolog).
+'$module_for_system_predicate'(M,M) :-
+     '$all_current_modules'(M).
+
+'$unbound_system_predicate'(T,A,Ar) :-
+    var(T),
+!,
+T=A/Ar.
+'$unbound_system_predicate'(A/Ar,A,Ar) :-
+    var(A),
+!.
+'$unbound_system_predicate'(A//Ar,A,Ar) :-
+    var(A),
+!.
 
 
-
-/** @pred  system_predicate( ?A, ?P )
+    /** @pred  system_predicate( ?A, ?P )
 
   Succeeds if _A_ is the name of the system predicate _P_. It can be
   used to test or  to enumerate all system predicates.
@@ -578,7 +587,7 @@ Defined as if:
 ```
 system_predicate(A, P0) :-
    current_predicate(A,P0),
-   predicate_property(P0,built_n).
+   predicate_property(P0,built_in).
 ```
 
 */
@@ -587,18 +596,11 @@ system_predicate(A, P0) :-
     may_bind_to_type(atom,A),
     may_bind_to_type(callable,P0),
     '$yap_strip_module'(P0, M0, P),
-    '$current_predicate_module'(M0, M),
-    (
-	nonvar(P)
-	  ->
-	  functor(P,N,A),
-	  functor_predicate(M,N,A,system)
-    ;
-    module_predicate(A, Na, Ar, system),
-	  functor(P,Na,Ar)
-    ),
-    predicate_property(M:P, built_in).
-
+(var(P) -> system_predicate(M0:A/Ar), functor(P,A,Ar)
+;
+functor(P,A,Ar),
+system_predicate(M0:A/Ar)
+).
     
 '$current_predicate_module'(M, M) :-
     var(M),

@@ -269,7 +269,7 @@ translate_message(throw(BALL)) -->
     !,
     [ 'WARNING: throw of  ~W had no catch' - [BALL,[]] ].
 translate_message( Term ) -->
-    message(Term), !.
+    message(Term), ! .
 translate_message(error(style_check(singletons,Culprit,Cl),Exc))-->
     !,
     {
@@ -1366,6 +1366,9 @@ error_descriptor( V, List) :-
     V=List
     ).
 
+query_exception(_K0,[],_V) :-
+    !,
+    fail.
 query_exception(K0,[H|L],V) :-
     (atom(K0) -> K=K0 ;  atom_to_string(K, K0) ),
     !,
