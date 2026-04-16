@@ -1835,23 +1835,14 @@ static Int string_length(USES_REGS1) {
   size_t len;
 
   int l = push_text_stack();
-  if (Yap_IsGroundTerm(t2)) {
-
-    if (!IsIntegerTerm(t2)) {
+    if (!IsVarTerm(t2) && !IsIntegerTerm(t2)) {
+      {
+        pop_text_stack(l);
       Yap_ThrowError(TYPE_ERROR_INTEGER, t2, "string_length/2");
-      {
-        pop_text_stack(l);
         return false;
       };
     }
-    if (FALSE && (Int)(len = IntegerOfTerm(t2)) < 0) {
-      Yap_ThrowError(DOMAIN_ERROR_NOT_LESS_THAN_ZERO, t2, "string_length/2");
-      {
-        pop_text_stack(l);
-        return false;
-      };
-    }
-  }
+
 restart_aux:
   t1 = Deref(ARG1);
   len = Yap_StringToUnicodeLength(t1 PASS_REGS);

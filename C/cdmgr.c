@@ -232,8 +232,12 @@ restart:
       goto restart;
     }
     PredEntry *ap = RepPredProp(Yap_GetPredPropByFunc(fun, tmod));
-    while (ap->PredFlags & ProxyPredFlag)
+    if (!ap) {
+      return NULL;
+    }
+    while (ap &&  ap->PredFlags & ProxyPredFlag) {
       ap = ap->PredIsProxyFor ;
+    }
     arity_t  arity = ap->ArityOfPE, i;
     CELL *pt = RepAppl(t) + 1;
       for (i = 0; i < arity; ++i)
@@ -2169,9 +2173,12 @@ bool Yap_Compile(Term t, Term t1, Term tsrc, Term mod, Term pos, Term tref USES_
   }
   Yap_track_cpred( 0, P, 0,   &info);
 
-
+  if (!p) {
+    return false;
+  }
     if (p->cs.p_code.NOfClauses == 0) {
       if (trueGlobalPrologFlag(SOURCE_FLAG) &&
+	  
 	  !(p->PredFlags & (LogUpdatePredFlag|ProxyPredFlag)))	{
 	p->PredFlags |= SourcePredFlag;
       }

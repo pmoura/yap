@@ -41,6 +41,8 @@
 % register(true, false) => implemented
 %
 
+:- dynamic user:'$is_stream'/1.
+    
 '$lf_option'(derived_from, 2, false).
 '$lf_option'(encoding, 3, default).
 '$lf_option'(if, 5, true).
@@ -244,64 +246,63 @@
 '$load_files'(_V0, _M0, _O, _Call) :-
     current_prolog_flag(compiler_skip,true),
     !.
-'$load_files'(V0, M0, O, Call) :-
-    '$yap_strip_module'(M0:V0, M, V),
-    '$load_files_'(V, M, O, Call).
-
-'$load_files_'(V, M, _O, Call) :-
+'$load_files'(V, M, _O, Call) :-
     (var(V);var(M)),
     !,
     throw(error(instantiation_error, Call)).
-'$load_files_'([], _M,_O,_Call) :- !.
-'$load_files_'([H|T], M,O,Call) :- !,
+'$load_files'(M0:V0, _M0, O, Call) :-
+    strip_module(M0:V0, M, V),
+    !,
+    '$load_files'(V, M, O, Call).
+'$load_files'([], _M,_O,_Call) :- !.
+'$load_files'([H|T], M,O,Call) :- !,
     (
-	'$load_files'(H, M,O,Call),
-	fail
+    strip_module(M:H,M1,H1),
+	'$load_files'(H1, M1,O,Call),
+	fail 
     ;
-    '$load_files'(T, M,O,Call)
+    strip_module(M:T,M1,T1),
+    '$load_files'(T1, M1,O,Call)
     ).
-'$load_files_'(string(S), M,Opts, Call) :-
-    string(S),
+
+    '$load_files'(String, M,Opts, Call) :-
+    string(String),
 !,
-File = '__string__',
-open(string(S),read,Stream),
-  '$load_stream__'(prolog, File,Stream, (File), M, [stream(Stream)|Opts], Call).
-'$load_files_'(user, M,Opts, Call) :-
+    atom_string(Name,String),
+'$load_files'(Name, M,Opts, Call).
+'$load_files'(user, M,Opts, Call) :-
     !,
-     '$load_stream__'(prolog,  user, user_input, user_input, M, Opts, Call).
-'$load_files_'(user_input, M,Opts, Call) :-
+    assert(user:'$is_stream'( user_input )),
+    File = user_input,
+    '$load_stream'(prolog,  user, File,  File, M, Opts, Call).
+'$load_files'(user_input, M,Opts, Call) :-
     !,
-    '$load_stream__'(prolog,  user_input, user_input,  user_input, M, Opts, Call).
-'$load_files_'(-F, M,Opts, Call) :-
+    assert(user:'$is_stream'( user_input)),
+    '$load_stream'(prolog,  user_input, File,  File, M, Opts, Call).
+'$load_files'(-F, M,Opts, Call) :-
     !,
     '$load_files'( F, M, [consult(reconsult)|Opts], Call).
-'$load_files_'(File, M,Opts, Call) :-
+'$load_files'(File, M,Opts, Call) :-
     '$memberchk'(consult(db),Opts),
     !,
     dbload(File, M, Call).
-'$load_files_'(File, M,Opts, Call) :-
+'$load_files'(File, M,Opts, Call) :-
     '$memberchk'(consult(exo),Opts),
     !,
     exoload(File, M, Call).
+
 %% Prolog stream
-'$load_files_'(File, M,Opts, Call) :-
-    atom(File),
+
+'$load_files'(Id, M,Opts, Call) :-
+     atom(Id),
     '$memberchk'(stream(Stream),Opts),
     !,
-  '$load_stream__'(prolog, File,Stream, (File), M, Opts, Call).
+    set_stream(Stream,[file_name(Id)]),
+  '$load_stream'(prolog, Id,Stream,Id, M, Opts, Call).
 
-'$load_files_'(File, M, Opts, Call) :-
-%   writeln(+M:File),
-/*   current_prolog_flag(autoload,OldAutoload),
-    (
-     '$memberchk'(autoload(Autoload), Opts)
-      ->
-       set_prolog_flag(autoload,Autoload) ;
-       			   true), 
-*/
+'$load_files'(File, M, Opts, Call) :-
    ( '$memberchk'(expand(Expand),Opts) -> true ; Expand = true ),
-    (
-	absolute_file_name(File, Y, [access(read),file_type(prolog),file_errors(fail),solutions(first)]) 
+ (   absolute_file_name(File, Y, [access(read),file_type(prolog),file_errors(fail),solutions(first)]) 
     ->
 	Type = prolog
     ;
@@ -318,19 +319,23 @@ open(string(S),read,Stream),
     ;
     open(Y, read, Stream, [])
     ),
-    '$load_file__'(Type,File,Stream,Y, M, Opts, Call),
+    writeln(M),
+    '$load_file'(Type,File,Stream,Y, M, Opts, Call),
 %    set_prolog_flag(autoload,OldAutoload),
     close(Stream).
 
-'$load_stream__'(Type,File,Stream, Y, M, Opts, Call) :-
+'$load_stream'(Type,File,Stream, Y, M, Opts, Call) :-
     '$mk_opts'(Opts,File,Stream,M,Call,TOpts),
     b_setval('$opts',Opts),
+writeln(start:File),
     '$lf'(always, Type, File, Y,  Stream, M, Call, Opts, TOpts),
+    retractall(user:'$is_stream'( File)),
+writeln(close:File),
      close(Stream),
      !.
 
     
-'$load_file__'(Type,File,Stream, Y, M, Opts, Call) :-
+'$load_file'(Type,File,Stream, Y, M, Opts, Call) :-
     '$mk_opts'(Opts,File,Stream,M,Call,TOpts),
     '$mk_file_opts'(TOpts) ,
     (
@@ -673,7 +678,8 @@ include(Fs) :-
     print_message(informational, loaded(included, Y, Mod, T, H)),
     working_directory(_Dir, Dir0).
 
-'$stream_and_dir'(user,user_input,Dir,user_input) :-
+'$stream_and_dir'(F,F,Dir,_Stream) :-
+    user:'$is_stream'(F),
 	!,
         working_directory(_Dir, Dir).
 '$stream_and_dir'(user_input,user_input,Dir,user_input) :-

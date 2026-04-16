@@ -630,8 +630,6 @@ lookup atom in atom table */
   Prop Yap_NewPredPropByFunctor(FunctorEntry *fe, Term cur_mod) {
     PredEntry *p = (PredEntry *)Yap_AllocAtomSpace(sizeof(*p));
 
-    if (AbsFunctorProp(fe) == FunctorColon)
-      fprintf(stderr,"The Horror\n");
     if (p == NULL) {
       return NULL;
     }

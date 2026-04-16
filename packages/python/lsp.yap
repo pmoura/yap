@@ -7,10 +7,11 @@
 	      validate_file/2,
 	      validate_text/3,
 symbol_at/3,
-defi/2,
+definition/3,
 refs/2,
 file_symbols/2,
 workspace_symbols/1,
+analyse/4,
 complete/2]).
 
     /*
@@ -24,7 +25,7 @@ add_dir/2
     
 :- set_prolog_flag(double_quotes, string).
 
-:- dynamic state/2, lsp_on/0, use/9, def/6.
+:- dynamic state/2, lsp_on/0, use/9, def/6, dec/6.
 
 :- use_module(library(lists)).
 :- use_module(library(maplist)).
@@ -46,13 +47,18 @@ add_dir/2
 file_symbols(URI, All) :-
     string_concat("file://", FileS, URI),
     string_to_atom(FileS, File),
-    findall(t(Name,Line), def(Name,_,_,Line,File,_),All).
+    findall(t(Name,Line), defa(Name,Line,File),All).
 
+defa(Word,Line,File) :-
+    def(Name,_,_,Line,File,_),
+    atom_string(Name,Word).
+    
 workspace_symbols(All) :-
     findall(t(Name,Line,URI), symbol_in_def(Name,Line,URI), All).
 
-symbol_in_def(Name,Line,URI) :-
+symbol_in_def(Word,Line,URI) :-
     def(Name,_,_,Line,File,_),
+    string_to_atom(Word,Name),
     string_to_atom(FileS, File),
     string_concat("file://", FileS, URI).
 
@@ -61,8 +67,8 @@ symbol_in_def(Name,Line,URI) :-
     
 complete(Prefix, FCs) :-
     completions(Prefix,FCs),
-!.
-complete(_Prefix, []).
+    !.
+    complete(_Prefix, []).
 
 %%
 %% @pred validate_uri(Self,URI)
@@ -73,18 +79,33 @@ complete(_Prefix, []).
 
 :- dynamic lsp/1, m/1.
 
-
+    /**
+    read the line and store some info.
+    */
 user:term_expansion(G, g) :-
     lsp(on),
-!,
-    prolog_load_context(term_position, '$stream_position'(_A,Line,_B,_C)),
-    prolog_load_context(file, F),
-    prolog_load_context(module,M),
-analyse(G,Line,F,M).
+    !, 
+    prolog_load_context(file, F ),
+    prolog_load_context(term_position, Pos ),
+    arg(2, Pos, Line),
+    current_source_module(M,M),
+    analyse(G,Line,F,M).
 
+analyse((A0:- B),Line,File,Module) :-
+    strip_module(Module:A0,MH,A),
+    functor(A,Na,Ar),
+    (    
+    def(Na,Ar,MH,_,_,predicate)
+       ->
+    true
+       ;
+    assert(def(Na,Ar,MH,Line,File,predicate))
+    ),
+    body(B,Line,File,Module,MH:Na/Ar).
 analyse(( :- module(M,Ls)),L,F,M0) :-
     assert(def(''.0,M,L,F,module)),
     assert(use('',0,M,'',0,M0,L,F,module)),
+    current_source_module(M0,M),
     maplist(mod(L,F,M),Ls).
 analyse(( :- op(A,B,C)), _Line,_File,M) :- 
     op(A,B,M:C).
@@ -106,17 +127,6 @@ analyse(( :- _), _Line,_File,_M) :-
     !.
 analyse(( :- use_module(_A,_B,_C)), _Line,_File,_M) :- 
     !.
-analyse((A0:- B),L,F,M) :-
-    strip_module(M:A0,MH,A),
-    functor(A,Na,Ar),
-    (
-    def(Na,Ar,MH,_,_,predicate)
-       ->
-    true
-    ;
-    assert(def(Na,Ar,MH,L,F,predicate))
-    ),
-    body(B,L,F,M,M:Na/Ar).
 
 body(A,_L,_F,_M,_) :-
     var(A),
@@ -151,32 +161,32 @@ mod(Line,File,M, op(A,B,C)) :-
 
 validate_file(File, Errors) :-
 %    atom_string(File, SFile),
-%    string_concat("file://",SFile,URI),
-writeln(ok),
+    %    string_concat("file://",SFile,URI),
+    current_source_module(DefaultModule,user),
    absolute_file_name(File, Path,
-		       [ file_type(prolog),
+    [ file_type(prolog),
 			 access(read),
 expand(true),
 			 file_errors(fail)
 		       ]),
-assert(lsp(on)),
+    assert(lsp(on)),
     load_files(Path,[]),
-retractall(lsp(_)),
-findall(T,retract(m(T)),Errors).
-
+    retractall(lsp(_)),
+    findall(T,retract(m(T)),Errors),
+    current_source_module(_,DefaultModule).
+    
 validate_text(URI,S,Ts) :-
-    atomic_concat('file://', File, URI),
-retractall(def(_,_,_,_,File,_)),
+    string_concat("file://", FileAsS, URI),
+    atom_string(FileAsS, File),
+    retractall(def(_,_,_,_,File,_)),
     retractall(use(_,_,_,_,_,_,_,File,_)),
-retractall(dec(_,_,_,File._)),
+    retractall(dec(_,_,_,_,File,_)),
     open(string(S),read,Stream),
-    set_stream(Stream,[file_name(File)]),
-assert(lsp(on)),
+    assert(lsp(on)),
     load_files(File,[stream(Stream)]),
-%close(Stream),
-retractall(lsp(_)),
-findall(T,retract(m(T)),Ts).
-
+    %close(Stream),
+    retractall(lsp(_)),
+    findall(T,retract(m(T)),Ts).
 
 q_msg(informational, _, _) :-
     !,
@@ -199,7 +209,7 @@ I = _:Name/_,
 q_msg(warning, error(style_check(discontiguous,_,_I ), _Desc), t("warning",S, L,Column, L, EndCol)) :-
     !,
 Column=0,
-    format(string(S), 'discontiguous definion for ~w.~n',[I]),
+    format(string(S), 'discontiguous definition for ~w.~n',[I]),
 I = _:Name/_,
     atom_length(Name, Len),
  EndCol is Column+Len,
@@ -224,33 +234,41 @@ relative_to(D),
 	 )),
     !,
     validate_file(Self,Path).
-add_file(_,_,_).
+    add_file(_,_,_).
 
-symbol_at(Line, Pos, Symbol) :-
+    
+symbol_at(Line, Pos, Word) :-
     open(string(Line),read,Stream,[alias(data)]),
     scan_stream(Stream,Ts),
     close(Stream),
     at(Ts, Pos, Symbol),
-    !.
+    !,
+    atom_string(Symbol,Word).
     
-at([t(atom(Name), _Line, PosS, Sz, _Ch)|_], Pos, Name ) :-
+at([t(atom(Name), _Line, PosS, Sz)|_], Pos, Name ) :-
     PosS =< Pos,
     PosS+Sz >  Pos,
     !.
-at([t(_, _Lne, PosS, _Sz, _Ch)|Toks], Pos, Name ) :-
+
+    at([t(_, _Line, PosS, _Sz)|Toks], Pos, Name ) :-
     PosS <  Pos,
     !,
     at(Toks, Pos, Name ).
 
-defi(NA,t(URI,L)) :-
+definition(Line,Pos,t(URI,L,1,Sz)) :-
+    symbol_at(Line, Pos, Word),
+    string_length(Word,Sz),
+    atom_string(NA,Word),
     def(NA,_Ar,_MH,L,File,predicate),
-    string_to_atom(FileS, File),
+    atom_string(File, FileS),
     string_concat("file://", FileS, URI).
 
-    refs(NA,L) :-
-    findall(t(URI,L), ref(NA,URI,L), L).
+    refs(Line,Pos,L) :-
+        symbol_at(Line, Pos, Word),
+    string_to_atom(Word, Na0),
+    findall(t(URI,L),ref(Na0,URI,L), L).
 
-ref(Na0,URI,L) :-
+    ref(Na0,URI,L) :-
     use(_NA,_Ar,_M,Na0,_Ar0,_M0,L,File,predicate),
     string_to_atom(FileS, File),
     string_concat("file://", FileS, URI).
@@ -273,7 +291,7 @@ highlight_text(Text, LTsf):-
     open(string(Text),read,Stream,[alias(data)]),
     highlight_and_convert_stream(Stream, LTsf).
 
-highlight_and_convert_stream(Stream, LTsf) :-
+    highlight_and_convert_stream(Stream, LTsf) :-
     scan_stream(Stream,Ts),
     close(Stream),
     symbols(Ts,LTsf).

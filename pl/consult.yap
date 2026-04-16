@@ -285,7 +285,7 @@ db_files(Fs) :-
   compiler parameters and to track the state of the compiler. One
   important example is the number of directivees that allow setting up
   properties of predicates. It is also possible to enable or disable
-  waraanings about possible issues with the code in the program, sich
+  warnings about possible issues with the code in the program, such
   as the occurrence .
 
 This section presents a set of built-ins predicates designed to set the
@@ -533,6 +533,10 @@ prolog_load_context_(term_position, Term ) :-
 	Prefix=F0
     ),
     (
+    user:'$is_stream'(F0)
+       ->
+F0 = F
+;
 	absolute_file_name(Prefix,F,[access(read),file_type(qly),file_errors(fail),solutions(first),expand(true)])
     ;
     F0 = F
@@ -613,14 +617,10 @@ make :-
 	fail.
 make.
 
-unload_file(user) :-
+unload_file(File) :-
+    retract(user:'$is_stream'(File)),
     !,
-    '$unload_file'(user_input).
-unload_file(user_input) :-
-    !,
-    '$unload_file'(user_input).
-unload_file(string(_)) :-
-    !.
+    unload_file_(File).
 unload_file(F) :-
     absolute_file_name(F,[access(read),file_type(prolog),file_errors(fail),solutions(first),expand(true)],File),
     unload_file_(File).
@@ -923,6 +923,9 @@ prolog_library(File) :-
     ensure_loaded(library(File)),
     set_prolog_flag(verbose_load,Old).
 
+'$full_filename'(File,File) :-
+    user:'$is_stream'(File),
+    !.
 '$full_filename'(File0,File) :-
 	absolute_file_name(File0,[access(read),file_type(prolog),file_errors(fail),solutions(first),expand(true)],File).
 

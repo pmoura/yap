@@ -103,7 +103,9 @@ restart:
       goto restart;
     }
     ap = RepPredProp(Yap_GetPredPropByFunc(fun, tmod));
-    while (ap && ap->PredFlags & ProxyPredFlag)
+    if (!ap)
+      return;
+    while ( ap->PredFlags & ProxyPredFlag)
       ap = ap->PredIsProxyFor ;
  ts = RepAppl(t) + 1;
   } else {
@@ -789,7 +791,7 @@ Term YAPEngine::fun(Term t, Term tmod, bool release) {
       return Yap_PopHandle(h);;
  } else {
    YAPCatchError();
-   return false;
+   return MkAtomTerm(Yap_LookupAtom("none"));
  }
 }
 
