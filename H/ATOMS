@@ -475,10 +475,6 @@ A	Ttys			N	"ttys"
 A	Txt			N	"txt"
 A	TypeError		N	"type_error"
 A	Undefined		N	"undefined"
-A	UndefinedProcedure	N	"undefined_procedure"
-A	UndefinedQuery		N	"undefined_query"
-A	Undefp			F	"$undefp"
-A	Undefp0			F	"$undefp0"
 A	Underflow		N	"underflow"
 A	Underscore		N	"_"
 A	UnificationStack	N	"unification_stack"
@@ -722,10 +718,9 @@ F	TimeoutError		TimeoutError	2
 F	TraceMetaCall		TraceMetaCall	3
 F	TypeError		TypeError	2
 F	UMinus			Minus		1
-F   UndefinedQuery  	UndefinedQuery  3
-F   UnknownPredicateHandler  	UnknownPredicateHandler  3
+	Undefined		Undefined	2
 F	UPlus			Plus		1
-F   UserDefinedError UserDefinedError 1
+F	UserDefinedError	UserDefinedError 1
 F	Var			Var		1
 F	Variables		Variables	1
 F	VariableNames		VariableNames	1

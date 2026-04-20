@@ -2004,6 +2004,7 @@ void Yap_InitYaamRegs(int myworker_id, bool full_reset)
     {
       HR = Yap_ArenaLimit(REMOTE_GlobalArena(myworker_id));
     }
+
 #ifdef FROZEN_STACKS
   H_FZ = HR;
 #ifdef YAPOR_SBA
@@ -2017,7 +2018,7 @@ void Yap_InitYaamRegs(int myworker_id, bool full_reset)
   REMOTE_GcPhase(myworker_id) = Yap_NewTimedVar(MkIntTerm(0L));
   REMOTE_WokenGoals(myworker_id) = Yap_NewTimedVar(TermTrue);
   REMOTE_AttsMutableList(myworker_id) = Yap_NewTimedVar(TermNil);
-
+      Yap_ResetException(NULL);
   CalculateStackGap(PASS_REGS1);
   /* the first real choice-point will also have AP=FAIL */
   /* always have an empty slos for people to use */

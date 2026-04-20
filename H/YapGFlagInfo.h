@@ -82,13 +82,19 @@ YAP_FLAG(BACK_QUOTES_FLAG, "back_quotes", true, bckq, "string", NULL),
 YAP_FLAG(UNKNOWN_FLAG, "unknown", true, undefph, "error", Yap_unknown),
   /**<
 
-    Corresponds to calling the unknown/2 built-in. Possible ISO values
-    are `error`, `fail`, and `warning`. Yap includes the following extensions:
-    `fast_fail` does not invoke any handler.
-									 */
-     
-  
+    Indicates what to when calling an undefined built-in. Possible ISO values
+    are `error`, `fail`, and `warning`.
 
+YAP recognises the following handlers:
+- `fail`: just fail;
+- `warning`: print-out a warning and fail;
+- `error`: throw-out n error;
+- `debug` : call the debugger on the failed goal
+- `fast_fail`: fail immediately; do not invoke any handler, including unknown_predicate_handler/3.
+- `unknown_predicate_handler`: call the user defined unknown_predicate_handler/3.
+
+   */
+      
 YAP_FLAG(ADDRESS_BITS_FLAG, "address_bits", false, nat, BITNESS, NULL),
   /**<      Number of address bits in the machine, either 64 or 32 bits.
   */

@@ -1050,7 +1050,7 @@ static Term scan_to_list(TokEntry * t)
            (!v2 || Yap_unify(v2, fe->np)) &&
       (!v3 || Yap_unify(v3, fe->sp)) &&
 (! vs ||  !fe->scan || Yap_unify(vs, fe->scan)) &&
-                 (!fe->tp || Yap_unify(fe->tp, tpos));
+                 (!tpos || !fe->tp || Yap_unify(fe->tp, tpos));
   }
   return true;
 }
@@ -1139,7 +1139,7 @@ static parser_state_t scanEOF(FEnv *fe, int inp_stream, TokEntry *tokstart) {
       fe->t = 0;
     if (fe->vprefix && !Yap_unify(TermNil, fe->vprefix))
       fe->t = 0;
-    if (fe->tp && !Yap_unify(fe->tp, StreamPosition(inp_stream)))
+    if (fe->tp && !Yap_unify(fe->tp, StreamPositionAtStart(inp_stream)))
       fe->t = 0;
 #if DEBUG
     if (GLOBAL_Option['p' - 'a' + 1]) {
@@ -1155,7 +1155,6 @@ static parser_state_t initparser(Term opts, FEnv *fe, REnv *re, int inp_stream,
   CACHE_REGS
     fe->t0=fe->t=0;
   fe->user_file_name = Yap_StreamUserName(inp_stream);
-  fe->tp = StreamPosition(inp_stream);
   fe->reading_clause = clause;
 
   fe->top_stream = inp_stream+1;
@@ -1575,11 +1574,6 @@ static xarg *setClauseReadEnv(Term opts, FEnv *fe, struct renv *re, int sno) {
   fe->enc = GLOBAL_Stream[sno].encoding;
   fe->sp = 0;
   fe->qq = 0;
-  if (args && args[READ_TERM_POSITION].used) {
-    fe->tp = args[READ_TERM_POSITION].tvalue;
-  } else {
-    fe->tp = 0;
-  }
   fe->sp = 0;
   if (args && args[READ_COMMENTS].used) {
     fe->scanner.store_comments = (args[READ_COMMENTS].used);
@@ -1670,7 +1664,7 @@ static Int read_clause(
 }
 
 /**
- * start input for a meta-clause. Should obtain:
+ * start input for a mega-clause. Should obtain:
  *   - predicate name
  *   - predicate arity
  *   - address for 256 cluses.

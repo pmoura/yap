@@ -2343,6 +2343,7 @@ X_API CELL *YAP_TopOfLocalStack(void) {
 }
 
 X_API void *YAP_Predicate(YAP_Atom a, UInt arity, Term m) {
+  
   if (arity == 0) {
     return ((void *)RepPredProp(PredPropByAtom(a, m)));
   } else {
@@ -3137,4 +3138,4 @@ void yap_init(void) {}
 /**
 @}
 */
-\
+

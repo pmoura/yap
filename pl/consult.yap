@@ -522,8 +522,8 @@ prolog_load_context_(term, Term ) :-
     b_getval('$current_clause', T),
     nonvar(T),
     T = [Term|_].
-prolog_load_context_(term_position, Term ) :-
-    stream_property( loop_stream, position(Term)).
+prolog_load_context_(term_position, Position ) :-
+    '$position_before_read_term'(loop_stream, Position).
 
 % if the file exports a module, then we can
 % be imported from any module.

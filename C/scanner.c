@@ -967,9 +967,10 @@ TokEntry *Yap_tokenizer(void *st_, void *params_) {
       p->TokNext = t;
     p = t;
   restart:
-    t->TokLinePos = GetCurInpLineStart(st);
-    t->TokLine = GetCurInpLine(st);
-    t->TokOffset = GetCurInpOffset(st);
+    /* where the terma ctually starts */
+    LOCAL_StartLinePos = t->TokLinePos = GetCurInpLineStart(st);
+    LOCAL_StartLineCount = t->TokLine = GetCurInpLine(st);
+    LOCAL_StartLinePos = t->TokOffset = GetCurInpOffset(st);
     switch (chtype(ch)) {
     case CC:
       charp = (unsigned char *)TokImage;
@@ -1452,7 +1453,7 @@ t->Tok = Ord(kind = Name_tok);
 }
 
 /**
- * terminate scanning: just closes the comment store.
+ * terminate scanning: just closes the comemnt store.
  */
 void Yap_clean_tokenizer(void) {
 }

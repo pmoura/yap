@@ -150,6 +150,7 @@ body(A,L,F,M,M0:Na0/Ar0) :-
     functor(A,NA,Ar),
     assert(use(NA,Ar,M,Na0,Ar0,M0,L,F,predicate)).
 
+
 mod(Line,File,M,N/A) :- assert(dec(N,A,M,Line,File,export(predicate))).
 mod(Line,File,M,N//A) :-
  A1 is A+ 2,

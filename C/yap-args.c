@@ -202,7 +202,7 @@ static bool load_file(const char *b_file USES_REGS) {
     // Yap_GetNèwSlot(t);
     if (t == TermEof || t == TermNil) {
       continue;
-    } else if (t == 0) {
+    } else if (t == 0 && LOCAL_ActiveError->errorNo ) {
       fprintf(stderr, "%s:%d:%d error: %s\n",
 	      Yap_AbsoluteFile(b_file, true), GLOBAL_Stream[c_stream].linecount, GLOBAL_Stream[c_stream].charcount- GLOBAL_Stream[c_stream].linestart, Yap_errorName( LOCAL_ActiveError->errorNo));
       extern void Yap_PrintException(void *);

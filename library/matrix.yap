@@ -282,7 +282,7 @@ matrices of integers and of floating-point numbers should have the same
 /** @infixpred ?_LHS_ <==  ?_RHS_ is semidet
 
 
- Dispatcher, with a special cases for matrices as the RH
+ Dispatcher, with a special cases for matrices as thae RH
  may depend on the LHS.
 
 
@@ -343,7 +343,7 @@ var(V),
     matrix_new(M, N, [fill(Op)]).
 (N <== matrix(M)) :-
     !,
-     matrix_new(M,N,[]).
+    matrix_new(M,N,[]).
 (N <== zeros(M)) :-
     number(M),
     !,
@@ -559,7 +559,7 @@ The result is `V=2`. YAP converts _B_ to a matrix, adds the matrix _A_ and the _
 compute('[]'(Is,M),V) :-
     compute(M, MV),
     maplist(compute,Is,	IVs),
-   !,
+    !,
     matrix_get(MV,IVs,V).
 
 
@@ -648,7 +648,7 @@ compute(-B, C) :-
 	number(NB)
     ->
     C is -NB
-    ;
+	;
     matrix_op_to_all(B, 2, -1, C)  /**> sq */
     ), !.
 
@@ -663,10 +663,10 @@ compute(A+B, C) :-
 	number(NB)
 	->
 	    C is NA+NB
-	;
+	    ;
     matrix_op_to_all(NA, 0, NB, C)  /**> sq */
     )
-     ;
+	;
     matrix_op(NA, NB, 0, C)  /**> sq */
     ).
 
@@ -681,10 +681,10 @@ compute(A-B, C) :-
 	number(NB)
 	->
 	    C is NA-NB
-	;
+	    ;
     matrix_op_to_all(NA, 1, NB, C)  /**> sq */
     )
-    ;
+	;
     matrix_op(NA, NB, 1, C)  /**> sq */
     ).
 compute(A*B, C) :-
@@ -698,10 +698,10 @@ compute(A*B, C) :-
 	number(NB)
 	->
 	    C is NA*NB
-	;
+	    ;
     matrix_op_to_all(NA, 2, NB, C)  /**> sq */
     )
-    ;
+	;
     matrix_op(NA, NB, 2, C)  /**> sq */
     ).
 compute(A/B, C) :-
@@ -712,28 +712,28 @@ compute(A/B, C) :-
 	number(NA)
     ->
     C is NA/NB
-    ;
+	;
 	number(NB)
     ->
     matrix_op_to_all(NA, 3, NB, C)  /**> sq */
-    ;
+	;
     matrix_op(NA, NB, 3, C)  /**> sq */
     ).
 compute(Cs,Exp) :-
     Cs =.. [Op,X],
-  compute(X,NX),
-  N=..[Op,NX],
-  catch( Exp is N,_,fail),
-!.
+    compute(X,NX),
+    N=..[Op,NX],
+    catch( Exp is N,_,fail),
+    !.
 
 
 compute(Cs,Exp) :-
   Cs =.. [Op,X,Y],
-  compute(X,NX),
-  compute(Y,NY),
-  N=..[Op,NX,NY],
-  catch( Exp is N,_,fail),
- !.
+    compute(X,NX),
+    compute(Y,NY),
+    N=..[Op,NX,NY],
+    catch( Exp is N,_,fail),
+    !.
 
 
 
@@ -958,7 +958,7 @@ run(G,V) :-
 
 matrix_seq(A, B, Dims, M) :-
 	ints(A, B, L),
-	matrix_new_matrix(ints, Dims,0, L, M).
+    matrix_new_matrix(ints, Dims,0, L, M).
 
 ints(A,B,O) :-
 	( A > B -> O = [] ; O = [A|L], A1 is A+1, ints(A1,B,L) ).
@@ -982,11 +982,11 @@ set__(M,V) :-
     number(V)
     ->
     matrix_set_all(M,V)
-    ;
+	;
     is_list(V)
     ->
     foldl(set_l(M),V,0,_)
-    ;
+	;
     is_matrix(V) ->
     matrix_copy(V,M)
     ).
@@ -1025,11 +1025,11 @@ index(Range, V, M, Base, Indx) :- var(V), !,
 	Max is (M-1)+Base,
 	index(Range, Base..Max, M, Base, Indx).
 index(Range, '*', M, Base, Indx) :- !,
-	Max is (M-1)+Base,
-	index(Range, Base..Max, M, Base, Indx).
+    Max is (M-1)+Base,
+    index(Range, Base..Max, M, Base, Indx).
 index(Range, Exp, M, _Base, Indx) :- !,
-	index(Exp, M, Indx0),
-	( integer(Indx0) -> Indx = Indx0 ;
+    index(Exp, M, Indx0),
+    ( integer(Indx0) -> Indx = Indx0 ;
 	  Indx0 = [Indx] -> true ;
 	  Indx0 = Indx, Range = range ).
 
@@ -1038,24 +1038,24 @@ index(I..J, _M, [I|O] ) :- !,
 	I1 is I, J1 is J,
 	once( foldl(inc, O, I1, J1) ).
 index(I:J, _M, [I|O] ) :- !,
-	I1 is I, J1 is J,
-	once( foldl(inc, O, I1, J1) ).
+    I1 is I, J1 is J,
+    once( foldl(inc, O, I1, J1) ).
 index(I+J, M, O ) :- !,
-	index(I, M, I1),
-	index(J, M, J1),
-	add_index(I1, J1, O).
+    index(I, M, I1),
+    index(J, M, J1),
+    add_index(I1, J1, O).
 index(I-J, M, O ) :- !,
-	index(I, M, I1),
-	index(J, M, J1),
-	sub_index(I1, J1, O).
+    index(I, M, I1),
+    index(J, M, J1),
+    sub_index(I1, J1, O).
 index(I*J, M, O ) :- !,
-	index(I, M, I1),
-	index(J, M, J1),
-	O is I1*J1.
+    index(I, M, I1),
+    index(J, M, J1),
+    O is I1*J1.
 index(I rem J, M, O ) :- !,
-	index(I, M, I1),
-	index(J, M, J1),
-	O is I1 rem J1.
+    index(I, M, I1),
+    index(J, M, J1),
+    O is I1 rem J1.
 index(I, M, NI ) :-
 	maplist(indx(M), I, NI).
 
@@ -1063,28 +1063,28 @@ indx(M, I, NI) :- index(I, M, NI).
 
 add_index(I1, J1, O) :-
 	integer(I1),
-	integer(J1),
-	O is I1+J1.
+    integer(J1),
+    O is I1+J1.
 add_index(I1, J1, O) :-
 	integer(I1), !,
-	maplist(plus(I1), J1, O).
+    maplist(plus(I1), J1, O).
 add_index(I1, J1, O) :-
 	integer(J1), !,
-	maplist(plus(J1), I1, O).
+    maplist(plus(J1), I1, O).
 add_index(I1, J1, O) :-
 	ord_union(I1, J1, O).
 
 sub_index(I1, J1, O) :-
 	integer(I1),
-	integer(J1), !,
-	O is I1-J1.
+    integer(J1), !,
+    O is I1-J1.
 sub_index(I1, J1, O) :-
 	integer(I1), !,
-	maplist(rminus(I1), J1, O).
+    maplist(rminus(I1), J1, O).
 
 sub_index(I1, J1, O) :-
 	integer(J1), !,
-	maplist(minus(J1), I1, O).
+    maplist(minus(J1), I1, O).
 sub_index(I1, J1, O) :-
 	ord_subtract(I1, J1, O).
 
@@ -1212,15 +1212,15 @@ fill_indices([I|L],[D|Dims]) :-
 
 slice([], [[]]).
 slice([[H|T]|Extra], Els) :- !,
-	slice(Extra, Els0),
-	foldl(add_index_prefix( Els0 ), [H|T], Els, [] ).
+    slice(Extra, Els0),
+    foldl(add_index_prefix( Els0 ), [H|T], Els, [] ).
 slice([H|Extra], Els) :- !,
-	slice(Extra, Els0),
-	add_index_prefix( Els0 , H, Els, [] ).
+    slice(Extra, Els0),
+    add_index_prefix( Els0 , H, Els, [] ).
 
 add_index_prefix( [] , _H ) --> [].
 add_index_prefix( [L|Els0] , H ) -->  [[H|L]],
-	add_index_prefix( Els0 , H ).
+    add_index_prefix( Els0 , H ).
 
 
 /** @pred matrix_type(+ _Matrix_,- _Type_)
@@ -1313,17 +1313,17 @@ size(N0, N1, N2) :-
 % use 1 to get access to matrix
 m_get('$matrix'(Dims, _, Sz, Bases, M), Indx, V) :-
 	foldl2(indx, Indx, Dims, Bases, Sz, _, 1, Offset),
-	arg(Offset, M, V).
+    arg(Offset, M, V).
 
 
 indx( I, Dim, Base, BlkSz, NBlkSz, I0, IF) :-
 	NBlkSz is BlkSz div Dim ,
-	IF is (I-Base)*NBlkSz + I0.
+    IF is (I-Base)*NBlkSz + I0.
 
 offset( I, Dim, BlkSz, NBlkSz, Base, I0, IF) :-
 	NBlkSz is BlkSz div Dim,
-	I is I0 div NBlkSz + Base,
-	IF is I0 rem NBlkSz.
+    I is I0 div NBlkSz + Base,
+    IF is I0 rem NBlkSz.
 
 first(V,V) :-
     var(V),

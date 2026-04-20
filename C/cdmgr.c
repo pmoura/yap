@@ -2975,23 +2975,6 @@ static Int p_set_pred_owner(USES_REGS1) { /* '$set_pred_module'(+P,+File)
  * Set handler for undefined predicates.
  */
 
-static Int undefp_handler(USES_REGS1) { /* '$undefp_handler'(P,Mod)	 */
-  PredEntry *pe;
-  Term mod = CurrentModule;
-  if (ARG1 == MkIntTerm(0)) {
-    UndefHook = NULL;
-    return true;
-  }
-  pe = Yap_get_pred(Deref(ARG1), mod, "undefined/1");
-  if (EndOfPAEntr(pe))
-    return false;
-  if (pe->OpcodeOfPred == UNDEF_OPCODE) {
-    return false;
-  }
-  UndefHook = pe;
-  return true;
-}
-
 static Int p_undefined(USES_REGS1) { /* '$undefined'(P,Mod)	 */
   PredEntry *pe;
 
@@ -4612,8 +4595,6 @@ void Yap_InitCdMgr(void) {
   Yap_InitCPred("$number_of_clauses", 3, number_of_clauses,
                 SafePredFlag | SyncPredFlag);
   Yap_InitCPred("$undefined", 2, p_undefined, SafePredFlag | TestPredFlag);
-  Yap_InitCPred("$undefp_handler", 1, undefp_handler,
-                SafePredFlag | TestPredFlag);
   Yap_InitCPred("$optimizer_on", 0, p_optimizer_on,
                 SafePredFlag | SyncPredFlag);
   Yap_InitCPred("$clean_up_dead_clauses", 0, p_clean_up_dead_clauses,

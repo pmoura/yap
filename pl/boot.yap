@@ -25,37 +25,10 @@
 %% Prolog boot support
 
 
-'$undefp0'(MG) :-
-    '$yap_strip_module'(MG,M,G),
-    MG \= M:G,
-    !,
-    '$undefp0'(M:G). 
-'$undefp0'(_:private(_L) ) :-
-	!.
-'$undefp0'(_:print_message(L,_E) ) :-
-    var(L),!.
-'$undefp0'(_:print_message(informational,_E) ) :-
-    !.
-'$undefp0'(_:system_module(_,_,_)) :-
-    !.
-'$undefp0'(_:private( _ )) :-
-    !.
-'$undefp0'(_:print_message(L,E )) :-
-    format( user_error,
-	    '~w in bootstrap, namely ~w~n',[L,E]).
-'$undefp0'(M: G) :-
-	stream_property( loop_stream, file_name(F)),
-	stream_property( loop_stream, line_number(L)),
-	current_source_module(prolog, prolog),
-	format(user_error,'~a:~d error undefined: call to ~w~n',[F,L,M:G]),
-	!,
-	fail.
-
-
-
 use_system_module(_,_).
+system_module(_,_,_).
 system_module_(_,_,_).
-
+private(_).
 
 :- system_module_( '$_init', [!/0,
         ':-'/1,
@@ -75,7 +48,7 @@ system_module_(_,_,_).
         '$do_static_clause'/5], [
         '$system_module'/1]).
 
-:- use_system_module( '$_boot', ['$cut_by'/1]).
+%:- use_system_module( '$_boot', ['$cut_by'/1]).
 
 :- set_prolog_flag(verbose, silent).
 :- set_prolog_flag(verbose_load, false).
@@ -293,6 +266,7 @@ mksys(op(A,B,C)) :-
 :- ensure_loaded('../os/edio.yap').
 
 :- ensure_loaded('spy.yap').
+:- ensure_loaded('undefined.yap').
 
 :- '$change_type_of_char'(36,7). % Make $ a symbol character
 

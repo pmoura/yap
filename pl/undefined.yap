@@ -79,41 +79,26 @@ followed by the failure of that call.
 %% Note:
 %%   - $undefp must deal with recursive undefinesa
 %%   - dynamic and multi-file predicates are always defined, even if 0 clauses.
-%%
+    %%
+    
 '$undefp'(G0) :-
-    setup_call_cleanup(
-´$enter_undefp',
-	'$undefp__'(G0, NewG),
-    '$exit_undefp'),
+    current_prolog_flag(unknown, Flag),
+'$exit_undefp',
+    '$undef_error'(Flag,G0,NewG),
     call(NewG).
 
-'$undefp__'(MGoal, FMGoal) :-
-    '$imported_predicate'(MGoal,FMGoal),
-    !.
-'$undefp__'(M:G, NewG) :-
-    '$number_of_clauses'(unknown_predicate_handler(_,_,_), user, N ),
-    N > 0,
+'$undef_error'(unknown_predicate_handler, M:G, NewG) :-
     user:unknown_predicate_handler(G, M, NewG),
-    !.
-'$undefp__'(M:G, _) :-
-    '$undefp_flag'(M:G).
-
-'$undefp_flag'(G) :-
-    current_prolog_flag(unknown, Flag),
-    '$undef_error'(Flag,G),
-    fail.
-
-'$undef_error'(error,  ModGoal) :-
-	'$yap_strip_module'(ModGoal, M, G),
+!.
+'$undef_error'(error,  M:G, _) :-
 	functor( G, N, A),
-	throw(error(existence_error(procedure,M:N/A),ModGoal)).
-'$undef_error'(warning,  ModGoal) :-
+	throw(error(existence_error(procedure,M:N/A),M:G)).
+'$undef_error'(warning,  ModGoal, _) :-
     '$yap_strip_module'(ModGoal, M, G),
 	functor( G, N, A),
 	print_warning( error(existence_error(procedure,M:N/A),ModGoal) ).
-% no need for code at this point.
-%'$undef_error'(fail,_) :-
-%	fail.
+'$undef_error'(fail, _Mod, _) :-
+    fail.
 
 /** @pred  unknown(- _O_,+ _N_)
 

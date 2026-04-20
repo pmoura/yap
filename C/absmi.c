@@ -128,7 +128,7 @@ static Term save_goal(PredEntry *pe USES_REGS) {
     HR[arity + 3] = AbsAppl(HR);
     HR+=arity+4;
   } else {
-    HR[0] = (CELL)(FunctorModule);
+     HR[0] = (CELL)(FunctorModule);
     HR[1] = (pe->ModuleOfPred == PROLOG_MODULE ? TermProlog : pe->ModuleOfPred);
     HR[2] = MkAtomTerm((Atom) pe->FunctorOfPred);
     HR+=3;
@@ -692,12 +692,27 @@ static void undef_goal(PredEntry *pe USES_REGS) {
   //  Yap_DebugPlWriteln(Yap_PredicateToIndicator(pe));
 
   // first, in these cases we should never be here.
-  if (pe->OpcodeOfPred != UNDEF_OPCODE|| LOCAL_DoingUndefp) {
+  if (pe->OpcodeOfPred != UNDEF_OPCODE) {
 #if defined(YAPOR) || defined(THREADS)
     if (PP)
       UNLOCKPE(19, PP);
     PP = NULL;
 #endif
+  }
+  if (      UndefHook->cs.p_code.NOfClauses == 0) {
+#if defined(YAPOR) || defined(THREADS)
+    if (PP)
+      UNLOCKPE(19, PP);
+    PP = NULL;
+#endif
+    if (!UndefHook ||UndefHook->cs.p_code.NOfClauses == 0 ) {
+      int line = Yap_source_line_no();
+      char *file = RepAtom(Yap_source_stream_name())->StrOfAE;
+      int arity = pe->ArityOfPE;
+      char *name = arity == 0? RepAtom((Atom)(pe->FunctorOfPred))->StrOfAE : RepAtom(NameOfFunctor(pe->FunctorOfPred))->StrOfAE;
+      char *mod = CurrentModule == 0? "prolog" : RepAtom(AtomOfTerm(CurrentModule))->StrOfAE;
+      fprintf(stderr, "%s:%d:0 error: call to undefined predicate %s:%s/%d\n",file,line,mod,name,arity);
+    }
     P = FAILCODE;
     return;
   }
@@ -709,35 +724,16 @@ static void undef_goal(PredEntry *pe USES_REGS) {
   //  UNLOCKPE(19, PP); //TODO 
   //  PP = NULL;
 #endif
-  CalculateStackGap(PASS_REGS1);
   PredEntry *hook;
-  Term tg = save_goal(pe PASS_REGS);
 
-  // Check if we have something at  user:unknown_predicate_handler/3 */
-  if ( UndefHook &&
-       UndefHook->OpcodeOfPred != UNDEF_OPCODE) {
     // this case happens while booting,
     //before we even declared the hook:
     hook = UndefHook;
-  } else        if (UndefHook0 &&
-		    UndefHook0->OpcodeOfPred != UNDEF_OPCODE){
-    hook = UndefHook0;
-  } else {
-    hook= NULL;
-  }
-  if (hook) {
+    Term tg = save_goal(pe PASS_REGS);
+    UndefHook0 =    UndefHook;
+    UndefHook = NULL;
     P = hook->CodeOfPred;
-  }
-  // control is done
-  ARG1 = tg;
-  // go forth to meet the handler.
-#if defined(YAPOR) || defined(THREADS)
-  //  UNLOCKPE(19, PP); //TODO
-  //  PP = NULL;
-#endif
- 
-
-  return;
+    ARG1 = tg;
 }
 
 static void spy_goal(PredEntry *pe USES_REGS) {

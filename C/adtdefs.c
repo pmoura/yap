@@ -647,7 +647,7 @@ lookup atom in atom table */
     /*   jmp_deb(1); */
 
     /* } */
-      p->cs.p_code.FirstClause = p->cs.p_code.LastClause = NULL;
+    p->cs.p_code.FirstClause = p->cs.p_code.LastClause = NULL;
     p->cs.p_code.NOfClauses = 0;
     p->PredFlags = UndefPredFlag;
     p->src.OwnerLine = Yap_source_line_no();

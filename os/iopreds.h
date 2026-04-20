@@ -303,11 +303,22 @@ inline static Term StreamPosition(int sno) {
   CACHE_REGS
     
   int cpos;
+
   cpos = GLOBAL_Stream[sno].charcount;
   LOCAL_StartCharCount = cpos;
   LOCAL_StartLineCount = GLOBAL_Stream[sno].linecount;
   LOCAL_StartLinePos = cpos + 1 - GLOBAL_Stream[sno].linestart;
   return StreamPositionToTerm(cpos, LOCAL_StartLineCount, LOCAL_StartLinePos);
+}
+
+inline static Term StreamPositionAtStart    (int sno) {
+  CACHE_REGS
+     Term sargs[5];
+  sargs[0] = MkIntTerm( LOCAL_StartCharCount);
+  sargs[1] = MkIntTerm(LOCAL_StartLineCount);
+  sargs[2] = MkIntTerm(LOCAL_StartCharCount-1-LOCAL_StartLineCount);
+  sargs[3] = sargs[4] = MkIntTerm(0);
+  return Yap_MkApplTerm(FunctorStreamPos, 5, sargs);
 }
 
 inline static Term CurrentPositionToTerm(void) {

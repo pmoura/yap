@@ -119,13 +119,13 @@ ignore(Goal) :- (Goal->true;true).
 
 notrace(G) :-
 	 strip_module(G, M, G1),
-	 ( current_choice_point(CP),
+    ( current_choice_point(CP),
 	   '$debug_stop'( State ),
 	   '$call'(G1, CP, G, M),
 	   current_choice_point(CP2),
 	   (CP == CP2 -> ! ; '$debug_state'( NState ), ( true ; '$debug_restart'(NState), fail ) ),
 	   '$debug_restart'( State )
-     ;
+	;
 	'$debug_restart'( State ),
 	fail
     ).
@@ -310,7 +310,7 @@ prolog:cleanup_handler(_Catcher,open(V),_Cleanup) :-
     !.
 prolog:cleanup_handler(Catcher,Open,Cleanup) :-
     '$is_catcher'(Catcher),
-   !,
+    !,
     nb_setarg(1,Open,closed),
     (Cleanup->true;true).
 prolog:cleanup_handler(answer,_,_Cleanup) :-
@@ -353,7 +353,13 @@ catch(MG,E,G) :-
     '$execute0'(MG),
     Done = true,
     current_choice_point(CP),
-    (CP == CP0 -> !;true).
+    (
+      CP == CP0
+      ->
+      !
+	;
+      true
+      ).
 
 '$catch'(_MG,E,G,_,_) :-    
     '$drop_exception'(E0,Info),
@@ -370,18 +376,22 @@ catch(MG,E,G) :-
 	%Info = NewInfo,
 	'$extend_info'(Info,U, NewInfo),
 	error_handler(error,error(K,NewInfo))
-	;
+	    ;
 	print_message(warning,error(existence_error(error_handler,E),catch)),
 	fail
 	)
-	;
+	    ;
 	call(G)
 	)
-    ;
+	;
     throw(E0)
     ).
     	
-'$rm_user_wrapper'(error(user_defined_error(user_defined_error,EW),_),E0) :-
+'$rm_user_wrapper'(error(
+		     user_defined_error(
+		       user_defined_error,EW),
+		       _),
+		     E0) :-
     !,
     '$rm_user_wrapper'(EW,E0).
 '$rm_user_wrapper'(error(user_defined_error,EW),E0) :-
@@ -418,7 +428,7 @@ catch(MG,E,G) :-
     (
 	atom_to_term(Hints0,Hints),
 	Hints  = [_=_|_]
-    ;
+	;
     atom_to_string(Hints0,Msg),
     Hints = [errorMsg=Msg]
     ),
@@ -428,7 +438,7 @@ catch(MG,E,G) :-
     (
 	string_to_term(Hints0,Hints),
 	Hints  = [_=_|_]
-    ;
+	;
     Hints = [errorMsg=Hints0]
     ),
     !.
@@ -519,7 +529,7 @@ garbage_collect_atoms :-
 '$good_list_of_character_codes'([]).
 '$good_list_of_character_codes'([X|L]) :-
 	'$good_character_code'(X),
-	'$good_list_of_character_codes'(L).
+    '$good_list_of_character_codes'(L).
 
 '$good_character_code'(X) :- var(X), !.
 '$good_character_code'(X) :- integer(X), X > -2, X < 256.
@@ -533,9 +543,9 @@ with SICStus Prolog's initialization/1.
 
 */
 prolog_initialization(G) :- var(G), !,
-	throw_error(instantiation_error,initialization(G)).
+    throw_error(instantiation_error,initialization(G)).
 prolog_initialization(T) :- must_be_callable(T), !,
-	'$assert_init'(T).
+    '$assert_init'(T).
 prolog_initialization(T) :-
 	throw_error(type_error(callable,T) ,initialization(T)).
 
@@ -563,7 +573,7 @@ possible to remove messages.
 
 */
 version(V) :- var(V),  !,
-	throw_r(instantiation_error,version(V)).
+    throw_r(instantiation_error,version(V)).
 version(T) :- atom(T), !, '$assert_version'(T).
 version(T) :-
 	throw_error(type_error(atom,T),version(T)).
@@ -573,11 +583,11 @@ version(T) :-
 
 '$set_toplevel_hook'(_) :-
 	recorded('$toplevel_hooks',_,R),
-	erase(R),
-	fail.
+    erase(R),
+    fail.
 '$set_toplevel_hook'(H) :-
 	recorda('$toplevel_hooks',H,_),
-	fail.
+    fail.
 '$set_toplevel_hook'(_).
 
 
@@ -587,31 +597,31 @@ version(T) :-
 
 '$debug_state'(state(Creep, SPYTarget,SpyOn,Trace, Debug, SPY_GN, GList)) :-
 	'$init_debugger',
-	nb_getval(creep,Creep),
-	nb_getval('$spy_on',SpyOn),
-	nb_getval('$spy_target',SPYTarget),
-	current_prolog_flag(debug, Debug),
-	current_prolog_flag(trace, Trace),
-	nb_getval('$spy_gn',SPY_GN),
-	b_getval('$spy_glist',GList).
+    nb_getval(creep,Creep),
+    nb_getval('$spy_on',SpyOn),
+    nb_getval('$spy_target',SPYTarget),
+    current_prolog_flag(debug, Debug),
+    current_prolog_flag(trace, Trace),
+    nb_getval('$spy_gn',SPY_GN),
+    b_getval('$spy_glist',GList).
 
 
 '$debug_stop' :-
 	 set_prolog_flag(trace,false),
-	set_prolog_flag(debug, false),
-	nb_setval('$spy_on',true),
-	nb_setval('$spy_target',-1),
-	b_setval('$spy_gn',0),
-	b_setval('$spy_glist',[]                                              ).
+    set_prolog_flag(debug, false),
+    nb_setval('$spy_on',true),
+    nb_setval('$spy_target',-1),
+    b_setval('$spy_gn',0),
+    b_setval('$spy_glist',[]                                              ).
 
  '$debug_restart'(state(Creep, SPYTarget,SpyOn,Trace, Debug, SPY_GN, GList)) :-
 	b_setval('$spy_glist',GList),
-	b_setval('$spy_gn',SPY_GN),
-	nb_setval('$spy_on',SpyOn),
-	nb_setval('$spy_target',SPYTarget),
-	nb_setval(creep,Creep),
-	set_prolog_flag(debug, Debug),
-	set_prolog_flag(trace, Trace).
+    b_setval('$spy_gn',SPY_GN),
+    nb_setval('$spy_on',SpyOn),
+    nb_setval('$spy_target',SPYTarget),
+    nb_setval(creep,Creep),
+    set_prolog_flag(debug, Debug),
+    set_prolog_flag(trace, Trace).
 
 /** @pred  break
 
@@ -631,25 +641,25 @@ debugging.
 */
 break :-
         '$debug_state'(DState),
-	'$break'( true ),
-	current_output(OutStream), current_input(InpStream),
-	current_prolog_flag(break_level, BL ),
-        NBL is BL+1,
-	set_prolog_flag(break_level, NBL ),
-	format(user_error, '% Break (level ~w)~n', [NBL]),
-	live,
-	!,
-	set_value('$live','$true'),
-        '$debug_restart'(DState),
-	set_input(InpStream),
-	set_output(OutStream),
-	set_prolog_flag(break_level, BL ),
-	'$break'( false ).
+    '$break'( true ),
+    current_output(OutStream), current_input(InpStream),
+    current_prolog_flag(break_level, BL ),
+    NBL is BL+1,
+    set_prolog_flag(break_level, NBL ),
+    format(user_error, '% Break (level ~w)~n', [NBL]),
+    live,
+    !,
+    set_value('$live','$true'),
+    '$debug_restart'(DState),
+    set_input(InpStream),
+    set_output(OutStream),
+    set_prolog_flag(break_level, BL ),
+    '$break'( false ).
 
 
 at_halt(G) :-
 	recorda('$halt', G, _),
-	fail.
+    fail.
 at_halt(_).
 
 /** @pred  halt is iso
@@ -659,7 +669,7 @@ halt/0 returns the exit code `0`.
 */
 halt :-
 	print_message(informational, halt),
-	fail.
+    fail.
 halt :-
     halt(0).
 
@@ -671,21 +681,21 @@ given by the integer  _I_.
 */
 halt(_V) :-
 	recorded('$halt', G, _),
-	catch(once(G), _Error, error_handler),
-	fail.
+    catch(once(G), _Error, error_handler),
+    fail.
 halt(X) :-
 	'$sync_mmapped_arrays',
-	set_value('$live','$false'),
-	'$halt'(X).
+    set_value('$live','$false'),
+    '$halt'(X).
 
 prolog_current_frame(Env) :-
 	Env is '$env'.
 
 '$run_atom_goal'(GA) :-
 	'$current_module'(Module),
-	atom_to_term(GA, G, _),
-	catch(Module:G, _Error,error_handler),
-	!.
+    atom_to_term(GA, G, _),
+    catch(Module:G, _Error,error_handler),
+    !.
 
 '$add_dot_to_atom_goal'([],[0'.]) :- !. %'
 '$add_dot_to_atom_goal'([0'.],[0'.]) :- !.
@@ -705,11 +715,11 @@ prolog_current_frame(Env) :-
    
 call_in_module(M:G) :-
     gated_call(
-	'$module_boundary'(call, M0, M),
+      '$module_boundary'(call, M0, M),
 	call(G),
-	Event,
-	'$module_boundary'(Event,M0,M)
-    ).
+	  Event,
+	    '$module_boundary'(Event,M0,M)
+	      ).
 
 
 
@@ -766,11 +776,11 @@ call_nth(Goal_0, Nth) :-
        Nth == C2
    ->
  !
-   ;
+	   ;
   nb_setarg(1, State, C2),
 	 fail
    )
-   ;
+       ;
        State = count(0,_), % note the extra argument which remains a variable
        Goal_0,
        arg(1, State, C1),
@@ -812,7 +822,7 @@ variable is used non-backtrackable.
 */
 nb_getval(GlobalVariable, Val) :-
 	'__NB_getval__'(GlobalVariable, Val, Error),
-	(var(Error)
+    (var(Error)
 	->
 	 true
 	;
@@ -851,7 +861,7 @@ the requested variable does not exist.
 */
 b_getval(GlobalVariable, Val) :-
 	'__NB_getval__'(GlobalVariable, Val, Error),
-	(var(Error)
+    (var(Error)
 	->
 	 true
 	;
@@ -863,8 +873,8 @@ b_getval(GlobalVariable, Val) :-
 
 '$getval_exception'(GlobalVariable, _Val, Caller) :-
 	user:exception(undefined_global_variable, GlobalVariable, Action),
-	!,
-	(
+    !,
+    (
 	 Action == fail
 	->
 	 fail

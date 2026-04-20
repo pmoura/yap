@@ -991,7 +991,7 @@ yamop *Yap_Error__(bool throw, const char *file, const char *function,
     error_exit_yap(1);
   }
   case SYSTEM_ERROR_FATAL: {
-    fprintf(stderr, "%d error: Fatal YAP Error while executing %s: %s exiting....\n", file, lineno, function, tmpbuf);
+    fprintf(stderr, "%s:%d:0 error: Fatal YAP Error while executing %s: %s exiting....\n", file, lineno, function, tmpbuf);
     error_exit_yap(1);
     return NULL;
   }

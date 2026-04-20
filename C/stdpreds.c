@@ -1341,16 +1341,9 @@ static Int p_unlock_system(USES_REGS1) {
   return TRUE;
 }
 
-static Int enter_undefp(USES_REGS1) {
-  if (LOCAL_DoingUndefp) {
-    return FALSE;
-  }
-  LOCAL_DoingUndefp = TRUE;
-  return TRUE;
-}
 
 static Int exit_undefp(USES_REGS1) {
-    LOCAL_DoingUndefp = false;
+  UndefHook = UndefHook0;
     return true;
 }
 
@@ -1476,7 +1469,6 @@ void Yap_InitCPreds(void) {
   Yap_InitCPred("$halt", 1, p_halt, SyncPredFlag);
   Yap_InitCPred("$lock_system", 0, p_lock_system, SafePredFlag);
   Yap_InitCPred("$unlock_system", 0, p_unlock_system, SafePredFlag);
-  Yap_InitCPred("$enter_undefp", 0, enter_undefp, SafePredFlag);
   Yap_InitCPred("$exit_undefp", 0, exit_undefp, SafePredFlag);
   Yap_InitCPred("$functors_for_atom", 2, functors_for_atom, SafePredFlag);
 
